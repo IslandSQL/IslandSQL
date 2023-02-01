@@ -57,7 +57,7 @@ PLSQL_DECLARATION:
         ('function'|'procedure') .*?  PLSQL_DECLARATION_END
 ;
 SELECT:
-    {isBeginOfStatement()}? ('with'|'select') .*? SQL_END
+    {isBeginOfStatement()}? ('with'|('(' WS?)* 'select') .*? SQL_END
 ;
 
 /*----------------------------------------------------------------------------*/
