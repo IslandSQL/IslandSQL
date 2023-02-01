@@ -25,15 +25,28 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Listener to be used to find nodes of a desiredType.
+ */
 public class FindRuleListener implements ParseTreeListener {
     private final List<ParseTree> result;
     private final Class<? extends ParseTree> desiredType;
 
+    /**
+     * Constructor.
+     *
+     * @param desiredType find nodes of this class.
+     */
     public FindRuleListener(Class<? extends ParseTree> desiredType) {
         this.result = new ArrayList<>();
         this.desiredType = desiredType;
     }
 
+    /**
+     * Add TerminalNode to result
+     *
+     * @param node TerminalNode
+     */
     @Override
     public void visitTerminal(TerminalNode node) {
         if (desiredType.isInstance(node)) {
@@ -41,11 +54,21 @@ public class FindRuleListener implements ParseTreeListener {
         }
     }
 
+    /**
+     * Not required to produce the result, but must be implemented.
+     *
+     * @param node ErrorNode
+     */
     @Override
     public void visitErrorNode(ErrorNode node) {
         // empty implementation
     }
 
+    /**
+     * Add ParserRuleContext to the result.
+     *
+     * @param ctx ParserRuleContext
+     */
     @Override
     public void enterEveryRule(ParserRuleContext ctx) {
         if (desiredType.isInstance(ctx)) {
@@ -53,11 +76,21 @@ public class FindRuleListener implements ParseTreeListener {
         }
     }
 
+    /**
+     * Not required to produce the result, but must be implemented.
+     *
+     * @param ctx ParserRuleContext
+     */
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
         // empty implementation
     }
 
+    /**
+     * Return the result after walking the parse-tree.
+     *
+     * @return list of nodes matching the desired class.
+     */
     @SuppressWarnings("unchecked")
     public <T extends ParseTree> List<T> getResult() {
         return (List<T>) result;
