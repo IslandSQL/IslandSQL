@@ -64,9 +64,9 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * Determines if the character at the passed position is a valid character.
      * Begin-of-file is considered a valid character.
      *
-     * @param validChars string containg valid characters.
-     * @param pos the position int the character stream.
-     * @return true if the caracter at the passed position is a valid character.
+     * @param validChars string containing valid characters.
+     * @param pos the position in the character stream.
+     * @return true if the character at the passed position is a valid character.
      */
     private boolean isCharOneOf(String validChars, int pos) {
         if (pos < 0) {
