@@ -30,7 +30,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     /**
      * Constructor.
      *
-     * @param input a character stream
+     * @param input A character stream.
      */
     public IslandSqlLexerBase(CharStream input) {
         super(input);
@@ -41,7 +41,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * Must be implemented as function returning a boolean value to ensure
      * it is executed.
      *
-     * @return true (always).
+     * @return Returns always true.
      */
     @SuppressWarnings("SameReturnValue")
     public boolean saveQuoteDelimiter1() {
@@ -53,7 +53,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * Determines if the character two positions before the current character
      * is equal to the character saved in "quoteDelimiter1".
      *
-     * @return true if character matches quoteDelimiter1.
+     * @return Returns true if character matches quoteDelimiter1.
      */
     public boolean checkQuoteDelimiter2() {
         String quoteDelimiter2 = _input.getText(new Interval(_input.index()-2, _input.index()-2));
@@ -64,9 +64,9 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * Determines if the character at the passed position is a valid character.
      * Begin-of-file is considered a valid character.
      *
-     * @param validChars string containing valid characters.
-     * @param pos the position in the character stream.
-     * @return true if the character at the passed position is a valid character.
+     * @param validChars A string containing valid characters.
+     * @param pos The position in the character stream.
+     * @return Returns true if the character at the passed position is a valid character.
      */
     private boolean isCharOneOf(String validChars, int pos) {
         if (pos < 0) {
@@ -83,7 +83,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * allowed. In other words a command can start in any column.
      * A command can start at begin-of-file.
      *
-     * @return true if the current position is valid for a command.
+     * @return Returns true if the current position is valid for a command.
      */
     public boolean isBeginOfCommand() {
         int i = _input.index() - 1;
@@ -103,7 +103,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * single line are allowed.
      * A SQL statement can start at begin-of-file.
      *
-     * @return true if the current position is valid for a SQL statement.
+     * @return Returns true if the current position is valid for a SQL statement.
      */
     public boolean isBeginOfStatement() {
         return isCharOneOf(" \t\r\n;", _input.index()-1);
