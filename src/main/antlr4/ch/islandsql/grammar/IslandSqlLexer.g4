@@ -27,14 +27,17 @@ options {
 
 ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' .*? (EOF|SINGLE_NL) -> channel(HIDDEN);
+
 REMARK_COMMAND:
     {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
         (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
+
 PROMPT_COMMAND:
     {isBeginOfCommand()}? 'pro' ('m' ('p' 't'?)?)?
        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
+
 STRING:
     'n'?
     (
@@ -46,6 +49,7 @@ STRING:
         | ('q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?)
     ) -> channel(HIDDEN)
 ;
+
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
