@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ch.islandsql.grammar;
+package ch.islandsql.grammar.util;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
