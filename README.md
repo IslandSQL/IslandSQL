@@ -22,11 +22,18 @@ The following table shows the DBMS and their grammar versions in scope:
 
 ### Statements
 
-The currrent islands of interests are:
+The current islands of interests are:
 
-| Statement | Notes                                |
-|-----------|--------------------------------------|
-| `select`  | complete statement as a single token |
+| Statement      | Notes                                |
+|----------------|--------------------------------------|
+| `call`         | complete statement as a single token |
+| `delete`       | complete statement as a single token |
+| `explain plan` | complete statement as a single token |
+| `insert`       | complete statement as a single token |
+| `lock table`   | complete statement as a single token |
+| `merge`        | complete statement as a single token |
+| `select`       | complete statement as a single token |
+| `update`       | complete statement as a single token |
 
 ## License
 
