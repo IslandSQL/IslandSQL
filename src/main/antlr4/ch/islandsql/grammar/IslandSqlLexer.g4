@@ -56,7 +56,35 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
-SELECT:
+CALL:
+    {isBeginOfStatement()}? 'call' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+DELETE:
+    {isBeginOfStatement()}? 'delete' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+EXPLAIN_PLAN:
+    {isBeginOfStatement()}? 'explain' COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+INSERT:
+    {isBeginOfStatement()}? 'insert' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+LOCK_TABLE:
+    {isBeginOfStatement()}? 'lock' COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+MERGE:
+    {isBeginOfStatement()}? 'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+UPDATE:
+    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+SELECT: // must be defined after other DML statements that may contain subqueries
     {isBeginOfStatement()}?
     (
           ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
