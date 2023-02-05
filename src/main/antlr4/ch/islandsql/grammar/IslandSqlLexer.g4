@@ -52,12 +52,13 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
-PLSQL_DECLARATION:
-    {isBeginOfStatement()}? 'with' WS
-        ('function'|'procedure') SQL_TEXT*?  PLSQL_DECLARATION_END
-;
 SELECT:
-    {isBeginOfStatement()}? ('with'|('(' WS?)* 'select') SQL_TEXT*? SQL_END
+    {isBeginOfStatement()}?
+    (
+          ('with' WS ('function'|'procedure') SQL_TEXT+?  PLSQL_DECLARATION_END)
+        | ('with' WS SQL_TEXT+? SQL_END)
+        | (('(' WS?)* 'select' WS SQL_TEXT+? SQL_END)
+    )
 ;
 
 /*----------------------------------------------------------------------------*/
