@@ -24,10 +24,28 @@ options {
 // Start rule
 /*----------------------------------------------------------------------------*/
 
-file: selectStatement* EOF;
+file: dmlStatement* EOF;
 
 /*----------------------------------------------------------------------------*/
 // Rules for reduced SQL grammar (islands of interest)
 /*----------------------------------------------------------------------------*/
 
+dmlStatement:
+      callStatement
+    | deleteStatement
+    | explainPlanStatement
+    | insertStatement
+    | lockTableStatement
+    | mergeStatement
+    | selectStatement
+    | updateStatement
+;
+
+callStatement: CALL;
+deleteStatement: DELETE;
+explainPlanStatement: EXPLAIN_PLAN;
+insertStatement: INSERT;
+lockTableStatement: LOCK_TABLE;
+mergeStatement: MERGE;
+updateStatement: UPDATE;
 selectStatement: SELECT;
