@@ -81,6 +81,7 @@ public class IslandSqlDocument {
      * @param parseTree start node.
      * @param desiredType desired class (must be a descendant of ParseTree).
      * @return list of nodes that are instances of the of desired class.
+     * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(ParseTree parseTree, Class<T> desiredType) {
         FindRuleListener listener = new FindRuleListener(desiredType);
@@ -94,6 +95,7 @@ public class IslandSqlDocument {
      *
      * @param desiredType desired class (must be a descendant of ParseTree).
      * @return list of nodes that are instances of the of desired class.
+     * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(Class<T> desiredType) {
         return getAllContentsOfType(file, desiredType);
