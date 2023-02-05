@@ -30,38 +30,44 @@ import java.util.List;
  */
 public class FindRuleListener implements ParseTreeListener {
     private final List<ParseTree> result;
-    private final Class<? extends ParseTree> desiredType;
+    private final List<Class<? extends ParseTree>> desiredTypes;
 
     /**
      * Constructor.
      *
-     * @param desiredType find nodes of this class.
+     * @param desiredTypes find nodes of these classes.
      */
-    public FindRuleListener(Class<? extends ParseTree> desiredType) {
+    FindRuleListener(List<Class<? extends ParseTree>> desiredTypes) {
         this.result = new ArrayList<>();
-        this.desiredType = desiredType;
+        this.desiredTypes = desiredTypes;
     }
 
     /**
-     * Add TerminalNode to result
+     * Add TerminalNode to result.
      *
      * @param node TerminalNode
      */
     @Override
     public void visitTerminal(TerminalNode node) {
-        if (desiredType.isInstance(node)) {
-            result.add(node);
+        for (Class<? extends ParseTree> desiredType : desiredTypes) {
+            if (desiredType.isInstance(node)) {
+                result.add(node);
+            }
         }
     }
 
     /**
-     * Not required to produce the result, but must be implemented.
+     * Add ErrorNode to result.
      *
      * @param node ErrorNode
      */
     @Override
     public void visitErrorNode(ErrorNode node) {
-        // empty implementation
+        for (Class<? extends ParseTree> desiredType : desiredTypes) {
+            if (desiredType.isInstance(node)) {
+                result.add(node);
+            }
+        }
     }
 
     /**
@@ -71,8 +77,10 @@ public class FindRuleListener implements ParseTreeListener {
      */
     @Override
     public void enterEveryRule(ParserRuleContext ctx) {
-        if (desiredType.isInstance(ctx)) {
-            result.add(ctx);
+        for (Class<? extends ParseTree> desiredType : desiredTypes) {
+            if (desiredType.isInstance(ctx)) {
+                result.add(ctx);
+            }
         }
     }
 
