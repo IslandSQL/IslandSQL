@@ -30,4 +30,4 @@ file: selectStatement* EOF;
 // Rules for reduced SQL grammar (islands of interest)
 /*----------------------------------------------------------------------------*/
 
-selectStatement: PLSQL_DECLARATION | SELECT;
+selectStatement: SELECT;
