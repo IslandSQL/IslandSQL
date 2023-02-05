@@ -55,9 +55,9 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 SELECT:
     {isBeginOfStatement()}?
     (
-          ('with' WS ('function'|'procedure') SQL_TEXT+?  PLSQL_DECLARATION_END)
-        | ('with' WS SQL_TEXT+? SQL_END)
-        | (('(' WS?)* 'select' WS SQL_TEXT+? SQL_END)
+          ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+        | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+        | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
     )
 ;
 
@@ -79,6 +79,7 @@ ANY_OTHER: . -> channel(HIDDEN);
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
+fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQL_TEXT: (ML_COMMENT|SL_COMMENT|STRING|.);
 fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
