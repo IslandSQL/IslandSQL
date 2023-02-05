@@ -49,7 +49,7 @@ public class IslandSqlDocument {
      * Factory to construct an IslandSqlDocument.
      *
      * @param sql SQL-script as string.
-     * @return constructed IslandSqlDocument,
+     * @return Constructed IslandSqlDocument.
      */
     public static IslandSqlDocument parse(String sql) {
         return new IslandSqlDocument(sql);
@@ -59,7 +59,7 @@ public class IslandSqlDocument {
      * Returns the token stream produced by the lexer.
      * Can be used to access hidden tokens.
      *
-     * @return token stream.
+     * @return Token stream.
      */
     public CommonTokenStream getTokenStream() {
         return tokenStream;
@@ -68,7 +68,7 @@ public class IslandSqlDocument {
     /**
      * Returns the start node of the parse tree.
      *
-     * @return file (start rule).
+     * @return File (start rule).
      */
     public IslandSqlParser.FileContext getFile() {
         return file;
@@ -78,9 +78,10 @@ public class IslandSqlDocument {
      * Gets all nodes that are instances of a desired class.
      * Start node can be any node in the parse tree.
      *
-     * @param parseTree start node.
-     * @param desiredType desired class (must be a descendant of ParseTree).
-     * @return list of nodes that are instances of the of desired class.
+     * @param parseTree Start node.
+     * @param desiredType Desired class (must be a descendant of ParseTree).
+     * @return List of nodes that are instances of the of desired class.
+     * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(ParseTree parseTree, Class<T> desiredType) {
         FindRuleListener listener = new FindRuleListener(desiredType);
@@ -88,12 +89,14 @@ public class IslandSqlDocument {
         walker.walk(listener, parseTree);
         return listener.getResult();
     }
+
     /**
      * Gets all nodes that are instances of a desired class.
      * Start node is file.
      *
-     * @param desiredType desired class (must be a descendant of ParseTree).
-     * @return list of nodes that are instances of the of desired class.
+     * @param desiredType Desired class (must be a descendant of ParseTree).
+     * @return List of nodes that are instances of the of desired class.
+     * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(Class<T> desiredType) {
         return getAllContentsOfType(file, desiredType);

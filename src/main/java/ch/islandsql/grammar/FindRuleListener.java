@@ -89,7 +89,8 @@ public class FindRuleListener implements ParseTreeListener {
     /**
      * Return the result after walking the parse-tree.
      *
-     * @return list of nodes matching the desired class.
+     * @return List of nodes matching the desired class.
+     * @param <T> The return type of the result.
      */
     @SuppressWarnings("unchecked")
     public <T extends ParseTree> List<T> getResult() {
