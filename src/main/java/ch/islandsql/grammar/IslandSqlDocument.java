@@ -16,11 +16,11 @@
 
 package ch.islandsql.grammar;
 
+import ch.islandsql.grammar.util.ParseTreeUtil;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import java.util.List;
 
@@ -76,22 +76,6 @@ public class IslandSqlDocument {
 
     /**
      * Gets all nodes that are instances of a desired class.
-     * Start node can be any node in the parse tree.
-     *
-     * @param parseTree Start node.
-     * @param desiredType Desired class (must be a descendant of ParseTree).
-     * @return List of nodes that are instances of the of desired class.
-     * @param <T> The return type of the result.
-     */
-    public <T extends ParseTree> List<T> getAllContentsOfType(ParseTree parseTree, Class<T> desiredType) {
-        FindRuleListener listener = new FindRuleListener(desiredType);
-        ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(listener, parseTree);
-        return listener.getResult();
-    }
-
-    /**
-     * Gets all nodes that are instances of a desired class.
      * Start node is file.
      *
      * @param desiredType Desired class (must be a descendant of ParseTree).
@@ -99,6 +83,6 @@ public class IslandSqlDocument {
      * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(Class<T> desiredType) {
-        return getAllContentsOfType(file, desiredType);
+        return ParseTreeUtil.getAllContentsOfType(file, desiredType);
     }
 }
