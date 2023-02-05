@@ -132,8 +132,8 @@
 
     <!-- More Project Information -->
     <name>islandsql</name>
-    <description>ANTLR4 grammar for IslandSQL</description>
-    <url>https://github.com/PhilippSalvisberg/island-sql/antlr4</url>
+    <description>Parser for grammars in SQL files</description>
+    <url>https://github.com/IslandSQL/IslandSQL</url>
     <inceptionYear>2023</inceptionYear>
     <organization>
         <name>IslandSQL</name>
