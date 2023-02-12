@@ -17,6 +17,7 @@
 lexer grammar IslandSqlLexer;
 
 options {
+    superClass=IslandSqlLexerBase;
     caseInsensitive = true;
 }
 
@@ -86,7 +87,7 @@ STRING:
         | ('q' ['] '(' .*? ')' ['])
         | ('q' ['] '{' .*? '}' ['])
         | ('q' ['] '<' .*? '>' ['])
-        | ('q' ['] . .+? . ['])
+        | ('q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?)
     )
 ;
 
