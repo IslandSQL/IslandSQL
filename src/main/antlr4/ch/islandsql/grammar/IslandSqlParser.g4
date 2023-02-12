@@ -27,7 +27,7 @@ options {
 file: dmlStatement* EOF;
 
 /*----------------------------------------------------------------------------*/
-// Rules for reduced SQL grammar (islands of interest)
+// Data Manipulation Language
 /*----------------------------------------------------------------------------*/
 
 dmlStatement:
@@ -45,7 +45,94 @@ callStatement: CALL;
 deleteStatement: DELETE;
 explainPlanStatement: EXPLAIN_PLAN;
 insertStatement: INSERT;
-lockTableStatement: LOCK_TABLE;
 mergeStatement: MERGE;
 updateStatement: UPDATE;
 selectStatement: SELECT;
+
+/*----------------------------------------------------------------------------*/
+// Lock table
+/*----------------------------------------------------------------------------*/
+
+lockTableStatement:
+    stmt=lockTableStatementUnterminated sqlEnd
+;
+
+lockTableStatementUnterminated:
+    K_LOCK K_TABLE lockTableObject (COMMA lockTableObject)*
+        K_IN lockmode=lockMode K_MODE lockTableWait?
+;
+
+lockTableObject:
+    (schema=sqlName DOT)? table=sqlName
+        (
+              partitionExtensionClause
+            | (AT_SIGN dblink=qualifiedName)
+        )?
+;
+
+lockTableWait:
+      K_NOWAIT          # nowait
+    | K_WAIT wait=INT   # wait
+;
+
+partitionExtensionClause:
+      (K_PARTITION OPEN_PAREN partition=sqlName CLOSE_PAREN)                            # partitionName
+    | (K_PARTITION K_FOR OPEN_PAREN (expression (COMMA expression)*) CLOSE_PAREN)       # partitionKeyValues
+    | (K_SUBPARTITION OPEN_PAREN subpartition=sqlName CLOSE_PAREN)                      # subpartitionName
+    | (K_SUBPARTITION K_FOR OPEN_PAREN (expression (COMMA expression)*) CLOSE_PAREN)    # subpartitionKeyValues
+;
+
+lockMode:
+      (K_ROW K_SHARE)               # rowShare
+    | (K_ROW K_EXCLUSIVE)           # rowExclusive
+    | (K_SHARE K_UPDATE)            # shareUpdate
+    | (K_SHARE)                     # share
+    | (K_SHARE K_ROW K_EXCLUSIVE)   # shareRowExclusive
+    | (K_EXCLUSIVE)                 # exclusive
+;
+
+// incomplete
+expression:
+      STRING        # stringLiteral
+    | INT           # integerLiteral
+    | sqlName       # variableName
+;
+
+/*----------------------------------------------------------------------------*/
+// Identifiers
+/*----------------------------------------------------------------------------*/
+
+keywordAsId:
+      K_EXCLUSIVE
+    | K_FOR
+    | K_IN
+    | K_MODE
+    | K_NOWAIT
+    | K_PARTITION
+    | K_ROW
+    | K_SHARE
+    | K_SUBPARTITION
+    | K_TABLE
+    | K_UPDATE
+    | K_WAIT
+;
+
+unquotedId:
+      ID
+    | keywordAsId
+;
+
+sqlName:
+      unquotedId
+    | QUOTED_ID
+;
+
+qualifiedName:
+	sqlName (DOT sqlName)*
+;
+
+/*----------------------------------------------------------------------------*/
+// SQL statement end, slash accepted without preceeding newline
+/*----------------------------------------------------------------------------*/
+
+sqlEnd: EOF | SEMI | SLASH;
