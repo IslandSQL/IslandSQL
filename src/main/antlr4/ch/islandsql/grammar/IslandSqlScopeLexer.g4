@@ -17,7 +17,7 @@
 lexer grammar IslandSqlScopeLexer;
 
 options {
-    superClass=IslandSqlScopeLexerBase;
+    superClass=IslandSqlLexerBase;
     caseInsensitive = true;
 }
 
