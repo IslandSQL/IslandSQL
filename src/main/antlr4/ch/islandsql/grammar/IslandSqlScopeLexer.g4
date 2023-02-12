@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-lexer grammar IslandSqlLexer;
+lexer grammar IslandSqlScopeLexer;
 
 options {
-    superClass=IslandSqlLexerBase;
+    superClass=IslandSqlScopeLexerBase;
     caseInsensitive = true;
 }
 
