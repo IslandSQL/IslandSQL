@@ -17,6 +17,9 @@
 package ch.islandsql.grammar;
 
 import ch.islandsql.grammar.util.ParseTreeUtil;
+import ch.islandsql.grammar.util.SyntaxErrorEntry;
+import ch.islandsql.grammar.util.SyntaxErrorListener;
+import ch.islandsql.grammar.util.TokenStreamUtil;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -31,6 +34,8 @@ import java.util.List;
 public class IslandSqlDocument {
     private final CommonTokenStream tokenStream;
     private final IslandSqlParser.FileContext file;
+    private final List<SyntaxErrorEntry> syntaxErrors;
+
 
     /**
      * Constructor. Private to allow future optimization such as caching.
@@ -38,11 +43,20 @@ public class IslandSqlDocument {
      * @param sql SQL-script as string.
      */
     private IslandSqlDocument(String sql) {
-        CodePointCharStream charStream = CharStreams.fromString(sql);
+        CodePointCharStream scopeCharStream = CharStreams.fromString(sql);
+        IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(scopeCharStream);
+        CommonTokenStream scopeTokenStream = new CommonTokenStream(scopeLexer);
+        CodePointCharStream charStream = CharStreams.fromString(TokenStreamUtil.getScopeText(scopeTokenStream));
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
         this.tokenStream = new CommonTokenStream(lexer);
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
+        SyntaxErrorListener errorListener = new SyntaxErrorListener();
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(errorListener);
+        parser.removeErrorListeners();
+        parser.addErrorListener(errorListener);
         this.file = parser.file();
+        this.syntaxErrors = errorListener.getSyntaxErrors();
     }
 
     /**
@@ -84,5 +98,15 @@ public class IslandSqlDocument {
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(Class<T> desiredType) {
         return ParseTreeUtil.getAllContentsOfType(file, desiredType);
+    }
+
+    /**
+     * Gets a syntax error entries for the document.
+     * The list is empty, if no syntax errors are found.
+     *
+     * @return Returns a list of syntax errors.
+     */
+    public List<SyntaxErrorEntry> getSyntaxErrors() {
+        return syntaxErrors;
     }
 }
