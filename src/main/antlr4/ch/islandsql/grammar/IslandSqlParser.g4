@@ -79,6 +79,13 @@ partitionExtensionClause:
         (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # subpartitionKeys
 ;
 
+// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
+expression:
+      STRING        # stringLiteral
+    | INT           # integerLiteral
+    | sqlName       # sqlNameExpression
+;
+
 lockMode:
       (K_ROW K_SHARE)               # rowShare
     | (K_ROW K_EXCLUSIVE)           # rowExclusive
@@ -86,13 +93,6 @@ lockMode:
     | (K_SHARE)                     # share
     | (K_SHARE K_ROW K_EXCLUSIVE)   # shareRowExclusive
     | (K_EXCLUSIVE)                 # exclusive
-;
-
-// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
-expression:
-      STRING        # stringLiteral
-    | INT           # integerLiteral
-    | sqlName       # sqlNameExpression
 ;
 
 lockTableWaitOption:
