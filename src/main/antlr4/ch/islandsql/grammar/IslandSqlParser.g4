@@ -93,7 +93,7 @@ lockMode:
     | (K_EXCLUSIVE)                 # exclusive
 ;
 
-// incomplete
+// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
 expression:
       STRING        # stringLiteral
     | INT           # integerLiteral
