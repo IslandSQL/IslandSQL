@@ -97,7 +97,7 @@ lockMode:
 expression:
       STRING        # stringLiteral
     | INT           # integerLiteral
-    | sqlName       # variableName
+    | sqlName       # sqlNameExpression
 ;
 
 /*----------------------------------------------------------------------------*/
