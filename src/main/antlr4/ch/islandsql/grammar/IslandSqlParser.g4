@@ -59,7 +59,7 @@ lockTableStatement:
 
 lockTableStatementUnterminated:
     K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
-        K_IN lockmode=lockMode K_MODE lockTableWait?
+        K_IN lockmode=lockMode K_MODE lockTableWaitOption?
 ;
 
 lockTableObject:
@@ -68,11 +68,6 @@ lockTableObject:
               partitionExtensionClause
             | (AT_SIGN dblink=qualifiedName)
         )?
-;
-
-lockTableWait:
-      K_NOWAIT          # nowait
-    | K_WAIT wait=INT   # wait
 ;
 
 partitionExtensionClause:
@@ -98,6 +93,11 @@ expression:
       STRING        # stringLiteral
     | INT           # integerLiteral
     | sqlName       # sqlNameExpression
+;
+
+lockTableWaitOption:
+      K_NOWAIT          # nowait
+    | K_WAIT wait=INT   # wait
 ;
 
 /*----------------------------------------------------------------------------*/
