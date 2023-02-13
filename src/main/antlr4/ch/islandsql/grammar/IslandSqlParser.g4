@@ -58,7 +58,7 @@ lockTableStatement:
 ;
 
 lockTableStatementUnterminated:
-    K_LOCK K_TABLE lockTableObject (COMMA lockTableObject)*
+    K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
         K_IN lockmode=lockMode K_MODE lockTableWait?
 ;
 
