@@ -108,6 +108,7 @@ keywordAsId:
       K_EXCLUSIVE
     | K_FOR
     | K_IN
+    | K_LOCK
     | K_MODE
     | K_NOWAIT
     | K_PARTITION
