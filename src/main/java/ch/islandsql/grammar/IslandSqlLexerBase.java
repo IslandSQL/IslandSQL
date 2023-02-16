@@ -98,9 +98,8 @@ public abstract class IslandSqlLexerBase extends Lexer {
 
     /**
      * Determines if the current position is valid for a SQL statement.
-     * A SQL statement starts after a whitespace, a semicolon or
-     * an open parenthesis. In other words multiple SQL statements on a
-     * single line are allowed.
+     * A SQL statement starts after a whitespace or a semicolon.
+     * In other words multiple SQL statements on a single line are allowed.
      * A SQL statement can start at begin-of-file.
      *
      * @return Returns true if the current position is valid for a SQL statement.

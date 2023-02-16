@@ -27,7 +27,7 @@ options {
 file: dmlStatement* EOF;
 
 /*----------------------------------------------------------------------------*/
-// Rules for reduced SQL grammar (islands of interest)
+// Data Manipulation Language
 /*----------------------------------------------------------------------------*/
 
 dmlStatement:
@@ -45,7 +45,97 @@ callStatement: CALL;
 deleteStatement: DELETE;
 explainPlanStatement: EXPLAIN_PLAN;
 insertStatement: INSERT;
-lockTableStatement: LOCK_TABLE;
 mergeStatement: MERGE;
 updateStatement: UPDATE;
 selectStatement: SELECT;
+
+/*----------------------------------------------------------------------------*/
+// Lock table
+/*----------------------------------------------------------------------------*/
+
+lockTableStatement:
+    stmt=lockTableStatementUnterminated sqlEnd
+;
+
+lockTableStatementUnterminated:
+    K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
+        K_IN lockmode=lockMode K_MODE lockTableWaitOption?
+;
+
+lockTableObject:
+    (schema=sqlName DOT)? table=sqlName
+        (
+              partitionExtensionClause
+            | (AT_SIGN dblink=qualifiedName)
+        )?
+;
+
+partitionExtensionClause:
+      (K_PARTITION OPEN_PAREN partition=sqlName CLOSE_PAREN)        # partition
+    | (K_PARTITION K_FOR OPEN_PAREN
+        (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # partitionKeys
+    | (K_SUBPARTITION OPEN_PAREN subpartition=sqlName CLOSE_PAREN)  # subpartition
+    | (K_SUBPARTITION K_FOR OPEN_PAREN
+        (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # subpartitionKeys
+;
+
+// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
+expression:
+      STRING        # stringLiteral
+    | INT           # integerLiteral
+    | sqlName       # sqlNameExpression
+;
+
+lockMode:
+      (K_ROW K_SHARE)               # rowShare
+    | (K_ROW K_EXCLUSIVE)           # rowExclusive
+    | (K_SHARE K_UPDATE)            # shareUpdate
+    | (K_SHARE)                     # share
+    | (K_SHARE K_ROW K_EXCLUSIVE)   # shareRowExclusive
+    | (K_EXCLUSIVE)                 # exclusive
+;
+
+lockTableWaitOption:
+      K_NOWAIT          # nowait
+    | K_WAIT wait=INT   # wait
+;
+
+/*----------------------------------------------------------------------------*/
+// Identifiers
+/*----------------------------------------------------------------------------*/
+
+keywordAsId:
+      K_EXCLUSIVE
+    | K_FOR
+    | K_IN
+    | K_LOCK
+    | K_MODE
+    | K_NOWAIT
+    | K_PARTITION
+    | K_ROW
+    | K_SHARE
+    | K_SUBPARTITION
+    | K_TABLE
+    | K_UPDATE
+    | K_WAIT
+;
+
+unquotedId:
+      ID
+    | keywordAsId
+;
+
+sqlName:
+      unquotedId
+    | QUOTED_ID
+;
+
+qualifiedName:
+	sqlName (DOT sqlName)*
+;
+
+/*----------------------------------------------------------------------------*/
+// SQL statement end, slash accepted without preceeding newline
+/*----------------------------------------------------------------------------*/
+
+sqlEnd: EOF | SEMI | SLASH;

@@ -22,21 +22,62 @@ options {
 }
 
 /*----------------------------------------------------------------------------*/
-// Comments and alike to be ignored
+// Fragments to name expressions and reduce code duplication
 /*----------------------------------------------------------------------------*/
 
+fragment SINGLE_NL: '\r'? '\n';
+fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
+fragment SQL_TEXT: (ML_COMMENT|SL_COMMENT|STRING|.);
+fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
+fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment SQL_END:
+      EOF
+    | (';' [ \t]* SINGLE_NL?)
+    | SLASH_END
+;
+
+/*----------------------------------------------------------------------------*/
+// Hidden tokens
+/*----------------------------------------------------------------------------*/
+
+WS: [ \t\r\n]+ -> channel(HIDDEN);
 ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' .*? (EOF|SINGLE_NL) -> channel(HIDDEN);
+CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
-REMARK_COMMAND:
-    {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
-        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
-;
+/*----------------------------------------------------------------------------*/
+// Keywords
+/*----------------------------------------------------------------------------*/
 
-PROMPT_COMMAND:
-    {isBeginOfCommand()}? 'pro' ('m' ('p' 't'?)?)?
-       (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
-;
+K_EXCLUSIVE: 'exclusive';
+K_FOR: 'for';
+K_IN: 'in';
+K_LOCK: 'lock';
+K_MODE: 'mode';
+K_NOWAIT: 'nowait';
+K_PARTITION: 'partition';
+K_ROW: 'row';
+K_SHARE: 'share';
+K_SUBPARTITION: 'subpartition';
+K_TABLE: 'table';
+K_UPDATE: 'update';
+K_WAIT: 'wait';
+
+/*----------------------------------------------------------------------------*/
+// Special characters
+/*----------------------------------------------------------------------------*/
+
+AT_SIGN: '@';
+CLOSE_PAREN: ')';
+COMMA: ',';
+DOT: '.';
+OPEN_PAREN: '(';
+SEMI: ';';
+SLASH: '/';
+
+/*----------------------------------------------------------------------------*/
+// Data types
+/*----------------------------------------------------------------------------*/
 
 STRING:
     'n'?
@@ -47,45 +88,47 @@ STRING:
         | ('q' ['] '{' .*? '}' ['])
         | ('q' ['] '<' .*? '>' ['])
         | ('q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?)
-    ) -> channel(HIDDEN)
+    )
 ;
 
-CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
+INT: [0-9]+;
 
 /*----------------------------------------------------------------------------*/
-// Islands of interest on DEFAULT_CHANNEL
+// Identifier
+/*----------------------------------------------------------------------------*/
+
+QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
+ID: [\p{Alpha}] [_$#0-9\p{Alpha}]*;
+
+/*----------------------------------------------------------------------------*/
+// Islands of interest as single tokens
 /*----------------------------------------------------------------------------*/
 
 CALL:
-    {isBeginOfStatement()}? 'call' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'call' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 DELETE:
-    {isBeginOfStatement()}? 'delete' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'delete' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 EXPLAIN_PLAN:
-    {isBeginOfStatement()}? 'explain' COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'explain' COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 INSERT:
-    {isBeginOfStatement()}? 'insert' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-LOCK_TABLE:
-    {isBeginOfStatement()}? 'lock' COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'insert' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 MERGE:
-    {isBeginOfStatement()}? 'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 UPDATE:
-    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
-SELECT: // must be defined after other DML statements that may contain subqueries
-    {isBeginOfStatement()}?
+SELECT:
     (
           ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
         | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
@@ -94,31 +137,7 @@ SELECT: // must be defined after other DML statements that may contain subquerie
 ;
 
 /*----------------------------------------------------------------------------*/
-// Whitespace
-/*----------------------------------------------------------------------------*/
-
-WS: [ \t\r\n]+ -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
 // Any other token
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: . -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Fragments to name expressions and reduce code duplication
-/*----------------------------------------------------------------------------*/
-
-fragment SINGLE_NL: '\r'? '\n';
-fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
-fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
-fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
-fragment SQL_TEXT: (ML_COMMENT|SL_COMMENT|STRING|.);
-fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
-fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
-fragment SQL_END:
-      EOF
-    | (';' [ \t]* SINGLE_NL?)
-    | SLASH_END
-;
-fragment SQLPLUS_END: EOF|SINGLE_NL;

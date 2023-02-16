@@ -211,4 +211,17 @@ public class ParseTreeUtil {
         }
         return result;
     }
+
+    /**
+     * Produces a hierarchical parse tree as string.
+     *
+     * @param root The start node.
+     * @return Returns a hierarchical parse tree as string.
+     */
+    public static String printParseTree(ParseTree root) {
+        PrintRuleListener listener = new PrintRuleListener();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        walker.walk(listener, root);
+        return listener.getResult();
+    }
 }

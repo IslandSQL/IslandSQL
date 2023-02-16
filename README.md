@@ -24,16 +24,16 @@ The following table shows the DBMS and their grammar versions in scope:
 
 The current islands of interests are:
 
-| Statement      | Notes                                |
-|----------------|--------------------------------------|
-| `call`         | complete statement as a single token |
-| `delete`       | complete statement as a single token |
-| `explain plan` | complete statement as a single token |
-| `insert`       | complete statement as a single token |
-| `lock table`   | complete statement as a single token |
-| `merge`        | complete statement as a single token |
-| `select`       | complete statement as a single token |
-| `update`       | complete statement as a single token |
+| Statement      | Notes                                                                    |
+|----------------|--------------------------------------------------------------------------|
+| `call`         | complete statement as a single token                                     |
+| `delete`       | complete statement as a single token                                     |
+| `explain plan` | complete statement as a single token                                     |
+| `insert`       | complete statement as a single token                                     |
+| `lock table`   | complete statement, expressions limited to strings and unsigned integers |
+| `merge`        | complete statement as a single token                                     |
+| `select`       | complete statement as a single token                                     |
+| `update`       | complete statement as a single token                                     |
 
 ## License
 
