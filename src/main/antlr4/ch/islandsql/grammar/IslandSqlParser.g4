@@ -96,8 +96,8 @@ lockMode:
 ;
 
 lockTableWaitOption:
-      K_NOWAIT          # nowait
-    | K_WAIT wait=INT   # wait
+      K_NOWAIT                  # nowait
+    | K_WAIT waitSeconds=INT    # wait
 ;
 
 /*----------------------------------------------------------------------------*/
