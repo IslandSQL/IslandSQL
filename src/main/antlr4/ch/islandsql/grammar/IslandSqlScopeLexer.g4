@@ -81,7 +81,7 @@ MERGE:
 ;
 
 UPDATE:
-    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 SELECT: // must be defined after other DML statements that may contain subqueries
