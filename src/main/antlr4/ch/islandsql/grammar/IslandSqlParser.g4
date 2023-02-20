@@ -65,7 +65,7 @@ lockTableStatementUnterminated:
 lockTableObject:
     (schema=sqlName DOT)? table=sqlName
         (
-              partitionExtensionClause
+              partitionExctensionClause=partitionExtensionClause
             | (AT_SIGN dblink=qualifiedName)
         )?
 ;
