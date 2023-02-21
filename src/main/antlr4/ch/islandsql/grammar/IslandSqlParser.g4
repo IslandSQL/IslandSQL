@@ -79,13 +79,6 @@ partitionExtensionClause:
         (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # subpartitionKeys
 ;
 
-// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
-expression:
-      STRING        # stringLiteral
-    | INT           # integerLiteral
-    | sqlName       # sqlNameExpression
-;
-
 lockMode:
       (K_ROW K_SHARE)               # rowShare
     | (K_ROW K_EXCLUSIVE)           # rowExclusive
@@ -96,8 +89,19 @@ lockMode:
 ;
 
 lockTableWaitOption:
-      K_NOWAIT                  # nowait
-    | K_WAIT waitSeconds=INT    # wait
+      K_NOWAIT                      # nowait
+    | K_WAIT waitSeconds=NUMBER     # wait
+;
+
+/*----------------------------------------------------------------------------*/
+// Expression
+/*----------------------------------------------------------------------------*/
+
+// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
+expression:
+      STRING        # stringLiteral
+    | NUMBER        # numberLiteral
+    | sqlName       # sqlNameExpression
 ;
 
 /*----------------------------------------------------------------------------*/
