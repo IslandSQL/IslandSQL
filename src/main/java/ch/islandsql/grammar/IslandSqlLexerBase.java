@@ -107,4 +107,38 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean isBeginOfStatement() {
         return isCharOneOf(" \t\r\n;", _input.index()-1);
     }
+
+    /**
+     * Determines if the character at a position matches the expected character.
+     *
+     * @param character The expected character.
+     * @param pos The position in the character stream.
+     * @return Returns true if the character at pos matches the expected character.
+     */
+    private boolean isChar(String character, int pos) {
+        if (pos < 0) {
+            return false;
+        }
+        String c = _input.getText(Interval.of(pos, pos));
+        return c.equals(character);
+    }
+
+    /**
+     * Determines if the character two positions before the current position is not a DOT.
+     * Ensures that the lexer recognises a "..2" as "DOT DOT NUMBER".
+     *
+     * @return Returns true if the character two positions before the current position is not a dot.
+     */
+    public boolean prevPrevNotDot() {
+        return !isChar(".", _input.index()-2);
+    }
+    /**
+     * Determines if the character at the current position is not a DOT.
+     * Ensures that the lexer recognises a "1.." as "NUMBER ".
+     *
+     * @return Returns true if the character at the current position is not a DOT.
+     */
+    public boolean currentNotDot() {
+        return !isChar(".", _input.index());
+    }
 }
