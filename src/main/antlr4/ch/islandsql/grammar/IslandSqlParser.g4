@@ -126,7 +126,8 @@ binaryOperator:
 /*----------------------------------------------------------------------------*/
 
 keywordAsId:
-      K_EXCLUSIVE
+      K_COLLATE
+    | K_EXCLUSIVE
     | K_FOR
     | K_IN
     | K_LOCK
