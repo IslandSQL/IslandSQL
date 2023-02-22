@@ -89,8 +89,8 @@ lockMode:
 ;
 
 lockTableWaitOption:
-      K_NOWAIT                      # nowait
-    | K_WAIT waitSeconds=NUMBER     # wait
+      K_NOWAIT                      # nowaitLockOption
+    | K_WAIT waitSeconds=expression # waitLockOption
 ;
 
 /*----------------------------------------------------------------------------*/
