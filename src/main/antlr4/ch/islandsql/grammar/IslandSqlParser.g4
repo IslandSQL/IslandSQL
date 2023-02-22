@@ -99,9 +99,26 @@ lockTableWaitOption:
 
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
 expression:
-      STRING        # stringLiteral
-    | NUMBER        # numberLiteral
-    | sqlName       # sqlNameExpression
+      expr=STRING                                               # simpleExpressionStringLiteral
+    | expr=NUMBER                                               # simpleExpressionNumberLiteral
+    | expr=sqlName                                              # simpleExpressionSqlName
+    | LPAR expr=expression RPAR                                 # parenthesisExpression
+    | operator=unaryOperator expr=expression                    # unaryExpression
+    | left=expression operator=binaryOperator right=expression  # binaryExpression
+;
+
+unaryOperator:
+      PLUS              # positiveSign
+    | MINUS             # negativeSign
+    | K_PRIOR           # prior
+;
+
+binaryOperator:
+      AST               # multiplication
+    | SOL               # division
+    | PLUS              # addition
+    | MINUS             # substraction
+    | VERBAR VERBAR     # concatination
 ;
 
 /*----------------------------------------------------------------------------*/
