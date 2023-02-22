@@ -57,6 +57,7 @@ K_LOCK: 'lock';
 K_MODE: 'mode';
 K_NOWAIT: 'nowait';
 K_PARTITION: 'partition';
+K_PRIOR: 'prior';
 K_ROW: 'row';
 K_SHARE: 'share';
 K_SUBPARTITION: 'subpartition';
