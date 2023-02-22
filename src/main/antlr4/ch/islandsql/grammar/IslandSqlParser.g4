@@ -133,6 +133,16 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
+    | substitionVariable
+;
+
+substitionVariable:
+    AMP AMP? name=substitionVariableName
+;
+
+substitionVariableName:
+      NUMBER
+    | sqlName
 ;
 
 qualifiedName:
