@@ -80,12 +80,12 @@ partitionExtensionClause:
 ;
 
 lockMode:
-      (K_ROW K_SHARE)               # rowShare
-    | (K_ROW K_EXCLUSIVE)           # rowExclusive
-    | (K_SHARE K_UPDATE)            # shareUpdate
-    | (K_SHARE)                     # share
-    | (K_SHARE K_ROW K_EXCLUSIVE)   # shareRowExclusive
-    | (K_EXCLUSIVE)                 # exclusive
+      K_ROW K_SHARE                 # rowShareLockMode
+    | K_ROW K_EXCLUSIVE             # rowExclusiveLockMode
+    | K_SHARE K_UPDATE              # shareUpdateLockMode
+    | K_SHARE                       # shareLockMode
+    | K_SHARE K_ROW K_EXCLUSIVE     # shareRowExclusiveLockMode
+    | K_EXCLUSIVE                   # exclusiveLockMode
 ;
 
 lockTableWaitOption:
