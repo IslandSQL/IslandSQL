@@ -63,10 +63,10 @@ lockTableStatementUnterminated:
 ;
 
 lockTableObject:
-    (schema=sqlName DOT)? table=sqlName
+    (schema=sqlName PERIOD)? table=sqlName
         (
               partitionExctensionClause=partitionExtensionClause
-            | (AT_SIGN dblink=qualifiedName)
+            | COMMAT dblink=qualifiedName
         )?
 ;
 
@@ -135,11 +135,11 @@ sqlName:
 ;
 
 qualifiedName:
-	sqlName (DOT sqlName)*
+	sqlName (PERIOD sqlName)*
 ;
 
 /*----------------------------------------------------------------------------*/
 // SQL statement end, slash accepted without preceeding newline
 /*----------------------------------------------------------------------------*/
 
-sqlEnd: EOF | SEMI | SLASH;
+sqlEnd: EOF | SEMI | SOL;
