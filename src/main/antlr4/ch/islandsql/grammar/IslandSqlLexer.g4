@@ -65,16 +65,23 @@ K_UPDATE: 'update';
 K_WAIT: 'wait';
 
 /*----------------------------------------------------------------------------*/
-// Special characters
+// Special characters - naming according HTML entity name
 /*----------------------------------------------------------------------------*/
 
-AT_SIGN: '@';
-CLOSE_PAREN: ')';
+// see https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#List_of_character_entity_references_in_HTML
+
+AST: '*';
+AMP: '&';
+COMMAT: '@';
 COMMA: ',';
-DOT: '.';
-OPEN_PAREN: '(';
+LPAR: '(';
+MINUS: '-';
+PERIOD: '.';
+PLUS: '+';
+RPAR: ')';
 SEMI: ';';
-SLASH: '/';
+SOL: '/';
+VERBAR: '|';
 
 /*----------------------------------------------------------------------------*/
 // Data types
@@ -95,8 +102,8 @@ STRING:
 NUMBER:
     ('+'|'-')?
     (
-          (INT (DOT {currentNotDot()}? INT?)?)
-        | (DOT {prevPrevNotDot()}? INT)
+          INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
+        | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
     )
     ('e' ('+'|'-')? INT)?
     ('f'|'d')?
