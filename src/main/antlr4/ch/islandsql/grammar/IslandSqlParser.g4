@@ -101,7 +101,7 @@ lockTableWaitOption:
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
-    | expr=sqlName                                              # simpleExpressionSqlName
+    | expr=qualifiedName                                        # simpleExpressionName
     | LPAR expr=expression RPAR                                 # parenthesisExpression
     | operator=unaryOperator expr=expression                    # unaryExpression
     | left=expression operator=binaryOperator right=expression  # binaryExpression
