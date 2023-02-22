@@ -117,14 +117,6 @@ unaryOperator:
     | K_PRIOR           # prior
 ;
 
-binaryOperator:
-      AST               # multiplication
-    | SOL               # division
-    | PLUS              # addition
-    | MINUS             # substraction
-    | VERBAR VERBAR     # concatination
-;
-
 /*----------------------------------------------------------------------------*/
 // Identifiers
 /*----------------------------------------------------------------------------*/
