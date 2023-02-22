@@ -116,6 +116,7 @@ keywordAsId:
     | K_MODE
     | K_NOWAIT
     | K_PARTITION
+    | K_PRIOR
     | K_ROW
     | K_SHARE
     | K_SUBPARTITION
