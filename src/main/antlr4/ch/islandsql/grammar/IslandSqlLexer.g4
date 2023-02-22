@@ -50,6 +50,7 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Keywords
 /*----------------------------------------------------------------------------*/
 
+K_COLLATE: 'collate';
 K_EXCLUSIVE: 'exclusive';
 K_FOR: 'for';
 K_IN: 'in';
