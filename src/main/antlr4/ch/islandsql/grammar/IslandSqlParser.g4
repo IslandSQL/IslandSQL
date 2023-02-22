@@ -71,12 +71,12 @@ lockTableObject:
 ;
 
 partitionExtensionClause:
-      (K_PARTITION OPEN_PAREN name=sqlName CLOSE_PAREN)             # partition
-    | (K_PARTITION K_FOR OPEN_PAREN
-        (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # partitionKeys
-    | (K_SUBPARTITION OPEN_PAREN name=sqlName CLOSE_PAREN)          # subpartition
-    | (K_SUBPARTITION K_FOR OPEN_PAREN
-        (keys+=expression (COMMA keys+=expression)*) CLOSE_PAREN)   # subpartitionKeys
+      K_PARTITION LPAR name=sqlName RPAR                    # partitionLock
+    | K_PARTITION K_FOR LPAR
+        keys+=expression (COMMA keys+=expression)* RPAR     # partitionLock
+    | K_SUBPARTITION LPAR name=sqlName RPAR                 # subpartitionLock
+    | K_SUBPARTITION K_FOR LPAR
+        keys+=expression (COMMA keys+=expression)* RPAR     # subpartitionLock
 ;
 
 lockMode:
