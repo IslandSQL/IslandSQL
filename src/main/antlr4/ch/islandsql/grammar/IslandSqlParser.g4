@@ -127,7 +127,12 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 keywordAsId:
-      K_COLLATE
+      K_ALL
+    | K_ANY
+    | K_CASE
+    | K_COLLATE
+    | K_ELSE
+    | K_END
     | K_EXCLUSIVE
     | K_FOR
     | K_IN
@@ -138,10 +143,13 @@ keywordAsId:
     | K_PRIOR
     | K_ROW
     | K_SHARE
+    | K_SOME
     | K_SUBPARTITION
     | K_TABLE
+    | K_THEN
     | K_UPDATE
     | K_WAIT
+    | K_WHEN
 ;
 
 unquotedId:
