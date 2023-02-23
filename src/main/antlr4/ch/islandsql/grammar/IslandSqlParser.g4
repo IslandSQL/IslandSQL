@@ -101,8 +101,9 @@ lockTableWaitOption:
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
-    | expr=qualifiedName                                        # simpleExpressionName
-    | LPAR expr=expression RPAR                                 # parenthesisExpression
+    | expr=sqlName                                              # simpleExpressionName
+    | LPAR expr+=expression (COMMA expr+=expression)* RPAR      # expressionList
+    | expr=caseExpression                                       # atomExpression
     | operator=unaryOperator expr=expression                    # unaryExpression
     | left=expression operator=(AST|SOL) right=expression       # binaryExpression
     | left=expression
@@ -114,6 +115,26 @@ expression:
       right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
     | left=expression operator=PERIOD right=expression          # binaryExpression
+;
+
+caseExpression:
+    K_CASE (simpleCaseExpression|searchedCaseExpression) elseClause? K_END
+;
+
+simpleCaseExpression:
+    expr=expression when+=simpleCaseExpressionWhenClause+
+;
+
+simpleCaseExpressionWhenClause:
+    K_WHEN compExpr=expression K_THEN expr=expression
+;
+
+searchedCaseExpression:
+    K_WHEN cond=condition K_THEN expr=expression
+;
+
+elseClause:
+    K_ELSE expr=expression
 ;
 
 unaryOperator:
