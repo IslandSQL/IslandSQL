@@ -123,6 +123,32 @@ unaryOperator:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Condition
+/*----------------------------------------------------------------------------*/
+
+condition:
+      cond=expression                           # booleanCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        right=expression                        # simpleComparisionCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        groupOperator=(K_ANY|K_SOME|K_ALL)
+        right=expression                        # groupComparisionCondition
+;
+
+simpleComparisionOperator:
+      EQUALS            # eq
+    | EXCL EQUALS       # ne
+    | LT GT             # ne
+    | TILDE EQUALS      # ne
+    | GT                # gt
+    | LT                # lt
+    | GT EQUALS         # ge
+    | LT EQUALS         # le
+;
+
+/*----------------------------------------------------------------------------*/
 // Identifiers
 /*----------------------------------------------------------------------------*/
 
