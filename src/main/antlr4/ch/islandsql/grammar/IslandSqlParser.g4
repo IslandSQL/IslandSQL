@@ -105,8 +105,13 @@ expression:
     | LPAR expr=expression RPAR                                 # parenthesisExpression
     | operator=unaryOperator expr=expression                    # unaryExpression
     | left=expression operator=(AST|SOL) right=expression       # binaryExpression
-    | left=expression operator=(PLUS|MINUS) right=expression    # binaryExpression
-    | left=expression operator=VERBAR VERBAR right=expression   # binaryExpression
+    | left=expression
+        (
+              operator=PLUS
+            | operator=MINUS
+            | operator=VERBAR VERBAR
+        )
+      right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
     | left=expression operator=PERIOD right=expression          # binaryExpression
 ;
