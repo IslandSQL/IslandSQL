@@ -50,7 +50,12 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Keywords
 /*----------------------------------------------------------------------------*/
 
+K_ALL: 'all';
+K_ANY: 'any';
+K_CASE: 'case';
 K_COLLATE: 'collate';
+K_ELSE: 'else';
+K_END: 'end';
 K_EXCLUSIVE: 'exclusive';
 K_FOR: 'for';
 K_IN: 'in';
@@ -61,28 +66,38 @@ K_PARTITION: 'partition';
 K_PRIOR: 'prior';
 K_ROW: 'row';
 K_SHARE: 'share';
+K_SOME: 'some';
 K_SUBPARTITION: 'subpartition';
 K_TABLE: 'table';
+K_THEN: 'then';
 K_UPDATE: 'update';
 K_WAIT: 'wait';
+K_WHEN: 'when';
 
 /*----------------------------------------------------------------------------*/
 // Special characters - naming according HTML entity name
 /*----------------------------------------------------------------------------*/
 
-// see https://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references#List_of_character_entity_references_in_HTML
+// see https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
+// or https://oinam.github.io/entities/
 
 AST: '*';
 AMP: '&';
 COMMAT: '@';
 COMMA: ',';
+EQUALS: '=';
+EXCL: '!';
+GT: '>';
+HAT: '^';
 LPAR: '(';
+LT: '<';
 MINUS: '-';
 PERIOD: '.';
 PLUS: '+';
 RPAR: ')';
 SEMI: ';';
 SOL: '/';
+TILDE: '~';
 VERBAR: '|';
 
 /*----------------------------------------------------------------------------*/
