@@ -285,37 +285,50 @@ simpleComparisionOperator:
 
 keywordAsId:
       K_ALL
+    | K_AND
     | K_ANY
     | K_ASC
+    | K_BETWEEN
     | K_BY
     | K_CASE
     | K_COLLATE
+    | K_CURRENT
     | K_DESC
     | K_DETERMINISTIC
     | K_DISTINCT
     | K_ELSE
     | K_END
+    | K_EXCLUDE
     | K_EXCLUSIVE
     | K_FIRST
+    | K_FOLLOWING
     | K_FOR
     | K_GROUP
+    | K_GROUPS
     | K_IN
     | K_LAST
     | K_LOCK
     | K_MODE
+    | K_NO
     | K_NOWAIT
     | K_NULLS
     | K_ORDER
+    | K_OTHERS
     | K_OVER
     | K_PARTITION
+    | K_PRECEDING
     | K_PRIOR
+    | K_RANGE
     | K_ROW
+    | K_ROWS
     | K_SHARE
     | K_SIBLINGS
     | K_SOME
     | K_SUBPARTITION
     | K_TABLE
     | K_THEN
+    | K_TIES
+    | K_UNBOUNDED
     | K_UPDATE
     | K_WAIT
     | K_WHEN
