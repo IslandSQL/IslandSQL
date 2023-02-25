@@ -51,28 +51,54 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 K_ALL: 'all';
+K_AND: 'and';
 K_ANY: 'any';
+K_ASC: 'asc';
+K_BETWEEN: 'between';
+K_BY: 'by';
 K_CASE: 'case';
 K_COLLATE: 'collate';
+K_CURRENT: 'current';
+K_DESC: 'desc';
+K_DETERMINISTIC: 'deterministic';
+K_DISTINCT: 'distinct';
 K_ELSE: 'else';
 K_END: 'end';
+K_EXCLUDE: 'exclude';
 K_EXCLUSIVE: 'exclusive';
+K_FIRST: 'first';
+K_FOLLOWING: 'following';
 K_FOR: 'for';
+K_GROUP: 'group';
+K_GROUPS: 'groups';
 K_IN: 'in';
+K_LAST: 'last';
 K_LOCK: 'lock';
 K_MODE: 'mode';
+K_NO: 'no';
 K_NOWAIT: 'nowait';
+K_NULLS: 'nulls';
+K_ORDER: 'order';
+K_OTHERS: 'others';
+K_OVER: 'over';
 K_PARTITION: 'partition';
+K_PRECEDING: 'preceding';
 K_PRIOR: 'prior';
+K_RANGE: 'range';
 K_ROW: 'row';
+K_ROWS: 'rows';
 K_SHARE: 'share';
+K_SIBLINGS: 'siblings';
 K_SOME: 'some';
 K_SUBPARTITION: 'subpartition';
 K_TABLE: 'table';
 K_THEN: 'then';
+K_TIES: 'ties';
+K_UNBOUNDED: 'unbounded';
 K_UPDATE: 'update';
 K_WAIT: 'wait';
 K_WHEN: 'when';
+K_WITHIN: 'within';
 
 /*----------------------------------------------------------------------------*/
 // Special characters - naming according HTML entity name
