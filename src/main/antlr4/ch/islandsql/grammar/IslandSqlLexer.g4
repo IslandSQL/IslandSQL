@@ -117,7 +117,6 @@ STRING:
 ;
 
 NUMBER:
-    ('+'|'-')?
     (
           INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
         | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
