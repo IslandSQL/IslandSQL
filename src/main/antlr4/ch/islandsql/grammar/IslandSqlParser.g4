@@ -224,7 +224,7 @@ qualifiedName:
 ;
 
 /*----------------------------------------------------------------------------*/
-// SQL statement end, slash accepted without preceeding newline
+// SQL statement end, slash accepted without preceding newline
 /*----------------------------------------------------------------------------*/
 
 sqlEnd: EOF | SEMI | SOL;
