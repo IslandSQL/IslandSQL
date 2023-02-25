@@ -99,13 +99,25 @@ lockTableWaitOption:
 /*----------------------------------------------------------------------------*/
 
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
+// TODO: analytic view expressions
+// TODO: cursor expressions
+// TODO: datetime expression
+// TODO: function expressions
+// TODO: interval expressions
+// TODO: JSON object access expressions
+// TODO: model expressions
+// TODO: placholder expressions
+// TODO: scalar subquery expressions
+// TODO: type construct expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
     | expr=sqlName                                              # simpleExpressionName
-    | LPAR expr+=expression (COMMA expr+=expression)* RPAR      # expressionList
-    | expr=caseExpression                                       # atomExpression
+    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
+    | expr=caseExpression                                       # caseExpr
     | operator=unaryOperator expr=expression                    # unaryExpression
+    | expr=functionExpression                                   # functionExpr
+    | expr=AST                                                  # allColumnWildcardExpression
     | left=expression operator=(AST|SOL) right=expression       # binaryExpression
     | left=expression
         (
@@ -119,11 +131,17 @@ expression:
 ;
 
 caseExpression:
-    K_CASE (simpleCaseExpression|searchedCaseExpression) elseClause? K_END
+    K_CASE
+        (
+              simple=simpleCaseExpression
+            | searched=searchedCaseExpression
+        )
+        else=elseClause?
+    K_END
 ;
 
 simpleCaseExpression:
-    expr=expression when+=simpleCaseExpressionWhenClause+
+    expr=expression whens+=simpleCaseExpressionWhenClause+
 ;
 
 simpleCaseExpressionWhenClause:
@@ -131,11 +149,102 @@ simpleCaseExpressionWhenClause:
 ;
 
 searchedCaseExpression:
+    whens+=searchedCaseExpressionWhenClause+
+;
+searchedCaseExpressionWhenClause:
     K_WHEN cond=condition K_THEN expr=expression
 ;
 
 elseClause:
     K_ELSE expr=expression
+;
+
+functionExpression:
+    name=sqlName LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
+    within=withinClause?    // e.g. approx_percentile
+    over=overClause?        // e.g. avg
+;
+
+functionParameter:
+    (name=sqlName EQUALS GT)? prefix=functionParameterPrefix?
+    expr=expression
+    suffix=functionParameterSuffix?
+;
+
+functionParameterPrefix:
+      K_DISTINCT        // e.g. in any_value
+    | K_ALL             // e.g. in any_value
+;
+
+functionParameterSuffix:
+      K_DETERMINISTIC                       // e.g. in approx_median, approx_percentile, approx_percentile_detail
+    | queryPartitionByClause orderByClause  // e.g. approx_rank
+    | queryPartitionByClause                // e.g. approx_rank
+    | orderByClause                         // e.g. approx_rank
+;
+
+withinClause:
+    K_WITHIN K_GROUP LPAR orderByClause RPAR
+;
+
+orderByClause:
+    K_ORDER siblings=K_SIBLINGS? K_BY items+=orderByItem (COMMA items+=orderByItem)*
+;
+
+orderByItem:
+    expr=expression (asc=K_ASC|desc=K_DESC)? (K_NULLS (nullsFirst=K_FIRST|nullsLast=K_LAST))?
+;
+
+queryPartitionByClause:
+    K_PARTITION K_BY exprs+=expression (COMMA exprs+=expression)*
+;
+
+overClause:
+    K_OVER
+    (
+          windowName=sqlName
+        | LPAR analytic=analyticClause RPAR
+    )
+;
+
+analyticClause:
+    (
+          windowName=sqlName
+        | partition=queryPartitionByClause
+    )?
+    (order=orderByClause windowing=windowingClause?)?
+;
+
+windowingClause:
+    windowFrame=(K_ROWS|K_RANGE|K_GROUPS)
+    (
+          K_BETWEEN
+          (
+                fromUnboundedPreceding=K_UNBOUNDED K_PRECEDING
+              | fromCurrentRow=K_CURRENT K_ROW
+              | fromValuePreceding=expression K_PRECEDING
+              | fromValueFollowing=expression K_FOLLOWING
+          )
+          K_AND
+          (
+                toUnboundedFollowing=K_UNBOUNDED K_FOLLOWING
+              | toCurrentRow=K_CURRENT K_ROW
+              | toValuePreceding=expression K_PRECEDING
+              | toValueFollowing=expression K_FOLLOWING
+          )
+        | unboundedPreceding=K_UNBOUNDED K_PRECEDING
+        | currentRow=K_CURRENT K_ROW
+        | valuePreceding=expression K_PRECEDING
+    )
+    (
+        K_EXCLUDE
+        (
+              excludeCurrentRow=K_CURRENT K_ROW
+            | excludeGroups=K_GROUPS
+            | excludeTies=K_TIES
+            | excludeNoOthers=K_NO K_OTHERS
+        )
+    )?
 ;
 
 unaryOperator:
@@ -177,20 +286,32 @@ simpleComparisionOperator:
 keywordAsId:
       K_ALL
     | K_ANY
+    | K_ASC
+    | K_BY
     | K_CASE
     | K_COLLATE
+    | K_DESC
+    | K_DETERMINISTIC
+    | K_DISTINCT
     | K_ELSE
     | K_END
     | K_EXCLUSIVE
+    | K_FIRST
     | K_FOR
+    | K_GROUP
     | K_IN
+    | K_LAST
     | K_LOCK
     | K_MODE
     | K_NOWAIT
+    | K_NULLS
+    | K_ORDER
+    | K_OVER
     | K_PARTITION
     | K_PRIOR
     | K_ROW
     | K_SHARE
+    | K_SIBLINGS
     | K_SOME
     | K_SUBPARTITION
     | K_TABLE
@@ -198,6 +319,7 @@ keywordAsId:
     | K_UPDATE
     | K_WAIT
     | K_WHEN
+    | K_WITHIN
 ;
 
 unquotedId:
