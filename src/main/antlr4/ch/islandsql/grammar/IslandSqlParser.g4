@@ -262,11 +262,11 @@ condition:
       cond=expression                           # booleanCondition
     | left=expression
         operator=simpleComparisionOperator
-        right=expression                        # simpleComparisionCondition
-    | left=expression
-        operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
         right=expression                        # groupComparisionCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        right=expression                        # simpleComparisionCondition
 ;
 
 simpleComparisionOperator:
