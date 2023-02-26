@@ -27,14 +27,15 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
-fragment SQL_TEXT: (ML_COMMENT|SL_COMMENT|STRING|.);
+fragment SQL_TEXT: ML_COMMENT|SL_COMMENT|STRING|.;
 fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment SQL_END:
       EOF
-    | (';' [ \t]* SINGLE_NL?)
+    | ';' [ \t]* SINGLE_NL?
     | SLASH_END
 ;
+fragment INT: [0-9]+;
 
 /*----------------------------------------------------------------------------*/
 // Hidden tokens
@@ -49,31 +50,93 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Keywords
 /*----------------------------------------------------------------------------*/
 
+K_ALL: 'all';
+K_AND: 'and';
+K_ANY: 'any';
+K_ASC: 'asc';
+K_BETWEEN: 'between';
+K_BY: 'by';
+K_CASE: 'case';
+K_COLLATE: 'collate';
+K_CONNECT_BY_ROOT: 'connect_by_root';
+K_CURRENT: 'current';
+K_DATE: 'date';
+K_DAY: 'day';
+K_DESC: 'desc';
+K_DETERMINISTIC: 'deterministic';
+K_DISTINCT: 'distinct';
+K_ELSE: 'else';
+K_END: 'end';
+K_EXCLUDE: 'exclude';
 K_EXCLUSIVE: 'exclusive';
+K_FIRST: 'first';
+K_FOLLOWING: 'following';
 K_FOR: 'for';
+K_GROUP: 'group';
+K_GROUPS: 'groups';
+K_HOUR: 'hour';
 K_IN: 'in';
+K_INTERVAL: 'interval';
+K_LAST: 'last';
 K_LOCK: 'lock';
+K_MINUTE: 'minute';
 K_MODE: 'mode';
+K_MONTH: 'month';
+K_NO: 'no';
 K_NOWAIT: 'nowait';
+K_NULLS: 'nulls';
+K_ORDER: 'order';
+K_OTHERS: 'others';
+K_OVER: 'over';
 K_PARTITION: 'partition';
+K_PRECEDING: 'preceding';
+K_PRIOR: 'prior';
+K_RANGE: 'range';
 K_ROW: 'row';
+K_ROWS: 'rows';
+K_SECOND: 'second';
 K_SHARE: 'share';
+K_SIBLINGS: 'siblings';
+K_SOME: 'some';
 K_SUBPARTITION: 'subpartition';
 K_TABLE: 'table';
+K_THEN: 'then';
+K_TIES: 'ties';
+K_TIMESTAMP: 'timestamp';
+K_TO: 'to';
+K_UNBOUNDED: 'unbounded';
+K_UNIQUE: 'unique';
 K_UPDATE: 'update';
 K_WAIT: 'wait';
+K_WHEN: 'when';
+K_WITHIN: 'within';
+K_YEAR: 'year';
 
 /*----------------------------------------------------------------------------*/
-// Special characters
+// Special characters - naming according HTML entity name
 /*----------------------------------------------------------------------------*/
 
-AT_SIGN: '@';
-CLOSE_PAREN: ')';
+// see https://html.spec.whatwg.org/multipage/named-characters.html#named-character-references
+// or https://oinam.github.io/entities/
+
+AST: '*';
+AMP: '&';
+COMMAT: '@';
 COMMA: ',';
-DOT: '.';
-OPEN_PAREN: '(';
+EQUALS: '=';
+EXCL: '!';
+GT: '>';
+HAT: '^';
+LPAR: '(';
+LT: '<';
+MINUS: '-';
+PERIOD: '.';
+PLUS: '+';
+RPAR: ')';
 SEMI: ';';
-SLASH: '/';
+SOL: '/';
+TILDE: '~';
+VERBAR: '|';
 
 /*----------------------------------------------------------------------------*/
 // Data types
@@ -91,7 +154,14 @@ STRING:
     )
 ;
 
-INT: [0-9]+;
+NUMBER:
+    (
+          INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
+        | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
+    )
+    ('e' ('+'|'-')? INT)?
+    ('f'|'d')?
+;
 
 /*----------------------------------------------------------------------------*/
 // Identifier

@@ -107,4 +107,19 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean isBeginOfStatement() {
         return isCharOneOf(" \t\r\n;", _input.index()-1);
     }
+
+    /**
+     * Determines if the character at a position matches the expected character.
+     *
+     * @param character The expected character.
+     * @param pos The position in the character stream.
+     * @return Returns true if the character at pos matches the expected character.
+     */
+    public boolean isCharAt(String character, int pos) {
+        if (pos < 0) {
+            return false;
+        }
+        String c = _input.getText(Interval.of(pos, pos));
+        return c.equals(character);
+    }
 }
