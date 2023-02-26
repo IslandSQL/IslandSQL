@@ -114,6 +114,7 @@ expression:
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
     | K_DATE expr=STRING                                        # dateLiteral
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
+    | expr=intervalExpression                                   # intervalLiteral
     | expr=sqlName                                              # simpleExpressionName
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
     | expr=caseExpression                                       # caseExpr
@@ -130,6 +131,31 @@ expression:
       right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
     | left=expression operator=PERIOD right=expression          # binaryExpression
+;
+
+intervalExpression:
+      intervalYearToMonth
+    | intervalDayToSecond
+;
+
+intervalYearToMonth:
+    K_INTERVAL expr=STRING
+        from=(K_YEAR|K_MONTH) (LPAR precision=NUMBER RPAR)? (K_TO to=(K_YEAR|K_MONTH))?
+;
+
+intervalDayToSecond:
+    K_INTERVAL expr=STRING
+        (
+              from=(K_DAY|K_HOUR|K_MINUTE) (LPAR precision=NUMBER RPAR)?
+            | from=K_SECOND (LPAR leadingPrecision=NUMBER (COMMA fromFractionalSecondPrecision=NUMBER)? RPAR)?
+        )
+        (
+            K_TO
+            (
+                  to=(K_DAY|K_HOUR|K_MINUTE)
+                | to=K_SECOND (LPAR toFractionalSecondsPercision=NUMBER RPAR)?
+            )
+        )?
 ;
 
 caseExpression:
@@ -316,6 +342,7 @@ keywordAsId:
     | K_CONNECT_BY_ROOT
     | K_CURRENT
     | K_DATE
+    | K_DAY
     | K_DESC
     | K_DETERMINISTIC
     | K_DISTINCT
@@ -328,10 +355,14 @@ keywordAsId:
     | K_FOR
     | K_GROUP
     | K_GROUPS
+    | K_HOUR
     | K_IN
+    | K_INTERVAL
     | K_LAST
     | K_LOCK
+    | K_MINUTE
     | K_MODE
+    | K_MONTH
     | K_NO
     | K_NOWAIT
     | K_NULLS
@@ -344,6 +375,7 @@ keywordAsId:
     | K_RANGE
     | K_ROW
     | K_ROWS
+    | K_SECOND
     | K_SHARE
     | K_SIBLINGS
     | K_SOME
@@ -352,12 +384,14 @@ keywordAsId:
     | K_THEN
     | K_TIES
     | K_TIMESTAMP
+    | K_TO
     | K_UNBOUNDED
     | K_UNIQUE
     | K_UPDATE
     | K_WAIT
     | K_WHEN
     | K_WITHIN
+    | K_YEAR
 ;
 
 unquotedId:
