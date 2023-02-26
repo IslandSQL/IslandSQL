@@ -112,6 +112,8 @@ lockTableWaitOption:
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
+    | K_DATE expr=STRING                                        # dateLiteral
+    | K_TIMESTAMP expr=STRING                                   # timestampLiteral
     | expr=sqlName                                              # simpleExpressionName
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
     | expr=caseExpression                                       # caseExpr
@@ -313,6 +315,7 @@ keywordAsId:
     | K_COLLATE
     | K_CONNECT_BY_ROOT
     | K_CURRENT
+    | K_DATE
     | K_DESC
     | K_DETERMINISTIC
     | K_DISTINCT
@@ -348,6 +351,7 @@ keywordAsId:
     | K_TABLE
     | K_THEN
     | K_TIES
+    | K_TIMESTAMP
     | K_UNBOUNDED
     | K_UNIQUE
     | K_UPDATE
