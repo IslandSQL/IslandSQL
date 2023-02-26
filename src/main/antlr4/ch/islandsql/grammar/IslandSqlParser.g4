@@ -406,7 +406,7 @@ sqlName:
 ;
 
 substitionVariable:
-    AMP AMP? name=substitionVariableName
+    AMP AMP? name=substitionVariableName period=PERIOD?
 ;
 
 substitionVariableName:
