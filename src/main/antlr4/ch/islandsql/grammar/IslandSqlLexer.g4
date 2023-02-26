@@ -95,6 +95,7 @@ K_TABLE: 'table';
 K_THEN: 'then';
 K_TIES: 'ties';
 K_UNBOUNDED: 'unbounded';
+K_UNIQUE: 'unique';
 K_UPDATE: 'update';
 K_WAIT: 'wait';
 K_WHEN: 'when';
