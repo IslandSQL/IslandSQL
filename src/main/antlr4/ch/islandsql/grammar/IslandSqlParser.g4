@@ -98,17 +98,17 @@ lockTableWaitOption:
 // Expression
 /*----------------------------------------------------------------------------*/
 
-// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/11
-// TODO: analytic view expressions
-// TODO: cursor expressions
-// TODO: datetime expression
-// TODO: function expressions
-// TODO: interval expressions
-// TODO: JSON object access expressions
-// TODO: model expressions
-// TODO: placholder expressions
-// TODO: scalar subquery expressions
-// TODO: type construct expressions
+// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
+// TODO: Analytic View Expressions
+// TODO: CURSOR Expressions
+// TODO: Datetime Expression
+// TODO: Function Expressions
+// TODO: Interval Expressions
+// TODO: JSON Object Access Expressions
+// TODO: Model Expressions
+// TODO: Placeholder Expressions
+// TODO: Scalar Subquery Expressions
+// TODO: Type Construct Expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
@@ -258,6 +258,22 @@ unaryOperator:
 // Condition
 /*----------------------------------------------------------------------------*/
 
+// TODO: https://github.com/IslandSQL/IslandSQL/issues/22
+// TODO: subquery in Simple Comparison Condition
+// TODO: subquery in Group Comparison Condition
+// TODO: Floating-point conditions
+// TODO: Logical Conditions
+// TODO: Model Conditions
+// TODO: Multiset Conditions
+// TODO: Pattern-matching Conditions
+// TODO: Null Conditions
+// TODO: XML Conditions
+// TODO: SQL For JSON Conditions
+// TODO: Compound Conditions
+// TODO: BETWEEN Condition
+// TODO: EXISTS Condition
+// TODO: IN Condition
+// TODO: IS OF type Condition
 condition:
       cond=expression                           # booleanCondition
     | left=expression
