@@ -290,6 +290,7 @@ simpleComparisionOperator:
     | EXCL EQUALS       # ne
     | LT GT             # ne
     | TILDE EQUALS      # ne
+    | HAT EQUALS        # ne
     | GT                # gt
     | LT                # lt
     | GT EQUALS         # ge
