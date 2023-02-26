@@ -174,6 +174,7 @@ functionParameter:
 functionParameterPrefix:
       K_DISTINCT        // e.g. in any_value
     | K_ALL             // e.g. in any_value
+    | K_UNIQUE          // e.g. bit_and_agg
 ;
 
 functionParameterSuffix:
@@ -329,6 +330,7 @@ keywordAsId:
     | K_THEN
     | K_TIES
     | K_UNBOUNDED
+    | K_UNIQUE
     | K_UPDATE
     | K_WAIT
     | K_WHEN
