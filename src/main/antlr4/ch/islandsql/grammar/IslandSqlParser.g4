@@ -251,7 +251,8 @@ windowingClause:
 unaryOperator:
       PLUS              # positiveSign
     | MINUS             # negativeSign
-    | K_PRIOR           # prior
+    | K_PRIOR           # prior             // hierarchical query operator
+    | K_CONNECT_BY_ROOT # connectByRoot     // hierarchical query operator
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -310,6 +311,7 @@ keywordAsId:
     | K_BY
     | K_CASE
     | K_COLLATE
+    | K_CONNECT_BY_ROOT
     | K_CURRENT
     | K_DESC
     | K_DETERMINISTIC

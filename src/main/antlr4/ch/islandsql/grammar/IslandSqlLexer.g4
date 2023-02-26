@@ -58,6 +58,7 @@ K_BETWEEN: 'between';
 K_BY: 'by';
 K_CASE: 'case';
 K_COLLATE: 'collate';
+K_CONNECT_BY_ROOT: 'connect_by_root';
 K_CURRENT: 'current';
 K_DESC: 'desc';
 K_DETERMINISTIC: 'deterministic';
