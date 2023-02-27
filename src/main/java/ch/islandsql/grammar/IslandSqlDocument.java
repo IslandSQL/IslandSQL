@@ -43,12 +43,10 @@ public class IslandSqlDocument {
      * @param sql SQL-script as string.
      */
     private IslandSqlDocument(String sql) {
-        CodePointCharStream scopeCharStream = CharStreams.fromString(sql);
-        IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(scopeCharStream);
-        CommonTokenStream scopeTokenStream = new CommonTokenStream(scopeLexer);
-        CodePointCharStream charStream = CharStreams.fromString(TokenStreamUtil.getScopeText(scopeTokenStream));
+        CodePointCharStream charStream = CharStreams.fromString(sql);
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
         this.tokenStream = new CommonTokenStream(lexer);
+        TokenStreamUtil.hideOutOfScopeTokens(tokenStream);
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
         SyntaxErrorListener errorListener = new SyntaxErrorListener();
         lexer.removeErrorListeners();
