@@ -211,16 +211,16 @@ MERGE:
     'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
-UPDATE:
-    'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
 SELECT:
     (
           ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
         | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
         | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
     )
+;
+
+UPDATE:
+    'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 /*----------------------------------------------------------------------------*/

@@ -98,17 +98,17 @@ MERGE:
     {isBeginOfStatement()}? 'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
-UPDATE:
-    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-SELECT: // must be defined after other DML statements that may contain subqueries
+SELECT:
     {isBeginOfStatement()}?
     (
           ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
         | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
         | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
     )
+;
+
+UPDATE:
+    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 /*----------------------------------------------------------------------------*/
