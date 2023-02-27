@@ -22,6 +22,24 @@ options {
 }
 
 /*----------------------------------------------------------------------------*/
+// Fragments to name expressions and reduce code duplication
+/*----------------------------------------------------------------------------*/
+
+fragment SINGLE_NL: '\r'? '\n';
+fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
+fragment SQL_TEXT: ML_COMMENT|SL_COMMENT|STRING|.;
+fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
+fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment SQL_END:
+      EOF
+    | ';' [ \t]* SINGLE_NL?
+    | SLASH_END
+;
+fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
+fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
+fragment SQLPLUS_END: EOF|SINGLE_NL;
+
+/*----------------------------------------------------------------------------*/
 // Comments and alike to be ignored
 /*----------------------------------------------------------------------------*/
 
@@ -104,21 +122,3 @@ WS: [ \t\r\n]+ -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: . -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Fragments to name expressions and reduce code duplication
-/*----------------------------------------------------------------------------*/
-
-fragment SINGLE_NL: '\r'? '\n';
-fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
-fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
-fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
-fragment SQL_TEXT: (ML_COMMENT|SL_COMMENT|STRING|.);
-fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
-fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
-fragment SQL_END:
-      EOF
-    | (';' [ \t]* SINGLE_NL?)
-    | SLASH_END
-;
-fragment SQLPLUS_END: EOF|SINGLE_NL;
