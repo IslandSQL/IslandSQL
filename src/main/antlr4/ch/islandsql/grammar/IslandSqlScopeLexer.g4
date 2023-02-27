@@ -70,6 +70,14 @@ STRING:
 
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
+GRANT:
+    {isBeginOfStatement()}? 'grant' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+REVOKE:
+    {isBeginOfStatement()}? 'revoke' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 /*----------------------------------------------------------------------------*/
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
