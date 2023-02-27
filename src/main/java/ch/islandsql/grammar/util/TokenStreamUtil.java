@@ -17,9 +17,16 @@
 package ch.islandsql.grammar.util;
 
 import ch.islandsql.grammar.IslandSqlScopeLexer;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStreamRewriter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * TokenStream utilities.
@@ -49,5 +56,28 @@ public class TokenStreamUtil {
                         }
                 );
         return rewriter.getText();
+    }
+
+    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream) {
+        tokenStream.fill();
+        List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
+        CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
+        IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
+        CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
+        scopeStream.fill();
+        List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
+        int scopeIndex = 0;
+        Token scopeToken = scopeTokens.get(scopeIndex);
+        for (CommonToken token : tokens) {
+            while (scopeToken.getType() != Token.EOF && scopeToken.getStopIndex() < token.getStartIndex()) {
+                scopeIndex++;
+                scopeToken = scopeTokens.get(scopeIndex);
+            }
+            if (token.getChannel() != Token.HIDDEN_CHANNEL &&
+                    (scopeToken.getChannel() == Token.HIDDEN_CHANNEL || scopeToken.getType() == Token.EOF) ) {
+                token.setChannel(Token.HIDDEN_CHANNEL);
+            }
+        }
+        tokenStream.seek(0);
     }
 }
