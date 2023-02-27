@@ -35,10 +35,27 @@ fragment SQL_END:
     | ';' [ \t]* SINGLE_NL?
     | SLASH_END
 ;
+fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
+fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
+fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment INT: [0-9]+;
 
 /*----------------------------------------------------------------------------*/
-// Hidden tokens
+// Hidden SQL*Plus commands
+/*----------------------------------------------------------------------------*/
+
+REMARK_COMMAND:
+    {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
+        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+;
+
+PROMPT_COMMAND:
+    {isBeginOfCommand()}? 'pro' ('m' ('p' 't'?)?)?
+       (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
+// Other hidden tokens
 /*----------------------------------------------------------------------------*/
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
