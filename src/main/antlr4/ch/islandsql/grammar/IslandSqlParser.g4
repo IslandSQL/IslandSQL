@@ -415,7 +415,7 @@ substitionVariableName:
 ;
 
 qualifiedName:
-	sqlName (PERIOD sqlName)*
+    sqlName (PERIOD sqlName)*
 ;
 
 /*----------------------------------------------------------------------------*/
