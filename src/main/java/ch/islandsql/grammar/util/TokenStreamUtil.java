@@ -17,37 +17,47 @@
 package ch.islandsql.grammar.util;
 
 import ch.islandsql.grammar.IslandSqlScopeLexer;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CodePointCharStream;
+import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStreamRewriter;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * TokenStream utilities.
  */
 public class TokenStreamUtil {
     /**
-     * Get only the text that is in scope.
-     * In scope are all tokens on the DEFAULT_CHANNEL.
-     * Any non whitespace character in tokens on the HIDDEN channel are replaced by a space.
-     * This way the line and charPositionInLine stays the same for all tokens in scope.
-     * And the number of characters is the same as in {@link org.antlr.v4.runtime.TokenStream#getText()}.
+     * Put all tokens that are not in the scope of IslandSQL on the HIDDEN channel.
+     * All tokens in the tokenStream that overlap with the hidden tokens provided
+     * by the IslandSqlScopeLexer are moved to the hidden channel.
      *
-     * @param tokenStream tokenStream produced by {@link ch.islandsql.grammar.IslandSqlScopeLexer}.
-     * @return Returns the text in scope while keeping line and charPositionInLine for all tokens.
+     * @param tokenStream The tokensStream produced by islandSqlLexer to process.
      */
-    static public String getScopeText(CommonTokenStream tokenStream) {
-        TokenStreamRewriter rewriter = new TokenStreamRewriter(tokenStream);
+    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream) {
         tokenStream.fill();
-        tokenStream.getTokens().stream()
-                .filter(token -> token.getChannel() == Token.HIDDEN_CHANNEL
-                        && token.getType() != IslandSqlScopeLexer.WS)
-                .forEach(token -> {
-                            StringBuilder sb = new StringBuilder();
-                            token.getText().codePoints().mapToObj(c -> (char) c)
-                                    .forEach(c -> sb.append(c == '\t' || c == '\r' || c == '\n' ? c : ' '));
-                            rewriter.replace(token, sb.toString());
-                        }
-                );
-        return rewriter.getText();
+        List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
+        CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
+        IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
+        CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
+        scopeStream.fill();
+        List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
+        int scopeIndex = 0;
+        Token scopeToken = scopeTokens.get(scopeIndex);
+        for (CommonToken token : tokens) {
+            while (scopeToken.getType() != Token.EOF && scopeToken.getStopIndex() < token.getStartIndex()) {
+                scopeIndex++;
+                scopeToken = scopeTokens.get(scopeIndex);
+            }
+            if (token.getChannel() != Token.HIDDEN_CHANNEL &&
+                    (scopeToken.getChannel() == Token.HIDDEN_CHANNEL || scopeToken.getType() == Token.EOF) ) {
+                token.setChannel(Token.HIDDEN_CHANNEL);
+            }
+        }
+        tokenStream.seek(0);
     }
 }
