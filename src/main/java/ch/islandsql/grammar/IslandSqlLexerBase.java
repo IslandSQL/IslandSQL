@@ -61,6 +61,20 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
+     * Determines if the next worked in the character stream is the word "loop".
+     * Whitespaces before the word "loop" are ignored.
+     *
+     * @return Returns true if "loop" is the next word in the character stream.
+     */
+    public boolean isLoop() {
+        int index = _input.index();
+        while (" \t\r\n".contains(_input.getText(Interval.of(index, index)))) {
+            index++;
+        }
+        return "loop".equalsIgnoreCase(getInputStream().getText(Interval.of(index, index + 3)));
+    }
+
+    /**
      * Saves the character at the previous position as "quoteDelimiter1".
      * Must be implemented as function returning a boolean value to ensure
      * it is executed.
