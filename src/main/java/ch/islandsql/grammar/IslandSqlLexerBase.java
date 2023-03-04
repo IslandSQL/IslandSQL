@@ -18,7 +18,6 @@ package ch.islandsql.grammar;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
-import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 /**
@@ -26,7 +25,6 @@ import org.antlr.v4.runtime.misc.Interval;
  * Used to provide methods to be used as semantic predicates in the lexer grammar.
  */
 public abstract class IslandSqlLexerBase extends Lexer {
-    private Token lastToken;
     private String quoteDelimiter1;
 
     /**
@@ -39,39 +37,12 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Override standard {@link org.antlr.v4.runtime.Lexer#emit(Token)}
-     * to save token for {@link #getLastTokenType()}.
-     *
-     * @return Return emitted token.
-     */
-    @Override
-    public Token emit() {
-        this.lastToken = super.emit();
-        return this.lastToken;
-    }
-
-    /**
-     * Returns the last emitted token type. If no token has been emitted yet
-     * than Token.EOF is returned.
-     *
-     * @return Returns the last emitted token type.
-     */
-    public int getLastTokenType() {
-        return this.lastToken != null ? this.lastToken.getType() : Token.EOF;
-    }
-
-    /**
-     * Determines if the next worked in the character stream is the word "loop".
-     * Whitespaces before the word "loop" are ignored.
+     * Determines if "loop" is the next word in the character stream.
      *
      * @return Returns true if "loop" is the next word in the character stream.
      */
     public boolean isLoop() {
-        int index = _input.index();
-        while (" \t\r\n".contains(_input.getText(Interval.of(index, index)))) {
-            index++;
-        }
-        return "loop".equalsIgnoreCase(getInputStream().getText(Interval.of(index, index + 3)));
+        return "loop".equalsIgnoreCase(getInputStream().getText(Interval.of(_input.index(), _input.index() + 3)));
     }
 
     /**
