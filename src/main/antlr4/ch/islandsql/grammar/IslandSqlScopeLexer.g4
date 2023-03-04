@@ -79,6 +79,16 @@ REVOKE:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Cursor for loop
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+CURSOR_FOR_LOOP_START:
+    'for' COMMENT_OR_WS+ SQL_TEXT+? 'in' COMMENT_OR_WS*
+    -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
+;
+
+/*----------------------------------------------------------------------------*/
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
@@ -109,9 +119,9 @@ MERGE:
 SELECT:
     {isBeginOfStatement()}?
     (
-          ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
-        | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-        | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
+        ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+      | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
     )
 ;
 
@@ -130,3 +140,26 @@ WS: [ \t\r\n]+ -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: . -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// Cursor for loop mode to identify select statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+mode CURSOR_FOR_LOOP;
+
+fragment CFL_SINGLE_NL: '\r'? '\n';
+fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|CFL_SL_COMMENT|CFL_WS;
+CFL_ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN), type(ML_COMMENT);
+CFL_SL_COMMENT: '--' .*? (EOF|CFL_SINGLE_NL) -> channel(HIDDEN), type(SL_COMMENT);
+CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
+CFL_ANY_OTHER: '.' -> channel(HIDDEN), type(ANY_OTHER);
+
+CFL_SELECT:
+    ('(' CFL_COMMENT_OR_WS*)+
+    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isLoop()}? -> type(SELECT)
+;
+
+CFL_END_OF_SELECT:
+    'loop' -> channel(HIDDEN), popMode
+;

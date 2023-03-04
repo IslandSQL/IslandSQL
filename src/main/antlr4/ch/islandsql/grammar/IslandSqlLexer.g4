@@ -212,11 +212,17 @@ MERGE:
 ;
 
 SELECT:
-    (
-          ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
-        | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-        | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
-    )
+      (
+          // TODO: remove alternative with https://github.com/IslandSQL/IslandSQL/issues/29
+          ('(' COMMENT_OR_WS*)+ ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isLoop()}?
+      )
+    | (
+          (
+                ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+              | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+              | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+          )
+      )
 ;
 
 UPDATE:
