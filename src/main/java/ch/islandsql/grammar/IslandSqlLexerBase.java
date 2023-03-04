@@ -18,6 +18,7 @@ package ch.islandsql.grammar;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 /**
@@ -25,6 +26,7 @@ import org.antlr.v4.runtime.misc.Interval;
  * Used to provide methods to be used as semantic predicates in the lexer grammar.
  */
 public abstract class IslandSqlLexerBase extends Lexer {
+    private Token lastToken;
     private String quoteDelimiter1;
 
     /**
@@ -34,6 +36,28 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     public IslandSqlLexerBase(CharStream input) {
         super(input);
+    }
+
+    /**
+     * Override standard {@link org.antlr.v4.runtime.Lexer#emit(Token)}
+     * to save token for {@link #getLastTokenType()}.
+     *
+     * @return Return emitted token.
+     */
+    @Override
+    public Token emit() {
+        this.lastToken = super.emit();
+        return this.lastToken;
+    }
+
+    /**
+     * Returns the last emitted token type. If no token has been emitted yet
+     * than Token.EOF is returned.
+     *
+     * @return Returns the last emitted token type.
+     */
+    public int getLastTokenType() {
+        return this.lastToken != null ? this.lastToken.getType() : Token.EOF;
     }
 
     /**
