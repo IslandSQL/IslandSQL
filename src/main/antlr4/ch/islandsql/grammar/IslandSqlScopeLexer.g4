@@ -79,6 +79,15 @@ REVOKE:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Cursor for loop
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+CURSOR_FOR_LOOP_START:
+    'for' COMMENT_OR_WS+ SQL_TEXT+? 'in' COMMENT_OR_WS* -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
@@ -107,12 +116,19 @@ MERGE:
 ;
 
 SELECT:
-    {isBeginOfStatement()}?
-    (
-          ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
-        | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-        | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS SQL_TEXT+? SQL_END)
-    )
+      (
+          // TODO: remove alternative with https://github.com/IslandSQL/IslandSQL/issues/29
+          {getLastTokenType() == CURSOR_FOR_LOOP_START}? '(' COMMENT_OR_WS*
+          ('select'|'with') COMMENT_OR_WS+ SQL_TEXT+? ')' {isLoop()}?
+      )
+    | (
+          {isBeginOfStatement()}?
+          (
+                ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+              | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+              | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+          )
+      )
 ;
 
 UPDATE:
