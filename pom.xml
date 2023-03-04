@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <antlr.version>4.11.1</antlr.version>
+        <antlr.version>4.12.0</antlr.version>
     </properties>
     <dependencies>
         <dependency>
@@ -27,7 +27,7 @@
                 <!-- configure Java compiler -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <release>8</release>
                 </configuration>
@@ -104,7 +104,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.5.0</version>
                 <configuration>
                     <doclint>all,-missing</doclint>
                 </configuration>
