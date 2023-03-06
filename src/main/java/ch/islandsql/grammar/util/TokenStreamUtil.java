@@ -39,7 +39,18 @@ public class TokenStreamUtil {
      * @param tokenStream The tokensStream produced by islandSqlLexer to process.
      */
     static public void hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener) {
-        tokenStream.fill();
+        try {
+            tokenStream.fill();
+        } catch (IllegalStateException e) {
+            // Workaround for issue 44 ("cannot consume EOF"). ATM no idea how to solve it.
+            // I see two options.
+            //   a) abort process and return; then syntax errors are reported
+            //   b) just ignore the exception and suppress the syntax errors
+            // Both options have pros and cons. In any case the number of tokens are incomplete.
+            // Suppressing the syntax errors is not optimal, but it's probably better than
+            // reporting errors for SQL scripts of out-of-scope dialects.
+            // TODO: add "return;" with https://github.com/IslandSQL/IslandSQL/issues/21
+        }
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
         IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
