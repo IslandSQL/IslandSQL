@@ -84,7 +84,7 @@ REVOKE:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_FOR_LOOP_START:
-    'for' COMMENT_OR_WS+ SQL_TEXT+? 'in' COMMENT_OR_WS*
+    'for' COMMENT_OR_WS+ SQL_TEXT+? COMMENT_OR_WS+ 'in' COMMENT_OR_WS*
     -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
 ;
 
