@@ -38,11 +38,15 @@ public class TokenStreamUtil {
      *
      * @param tokenStream The tokensStream produced by islandSqlLexer to process.
      */
-    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream) {
+    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener) {
         tokenStream.fill();
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
         IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
+        if (errorListener != null) {
+            scopeLexer.removeErrorListeners();
+            scopeLexer.addErrorListener(errorListener);
+        }
         CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
         scopeStream.fill();
         List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());

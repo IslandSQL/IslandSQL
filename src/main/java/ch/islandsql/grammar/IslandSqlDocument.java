@@ -45,12 +45,12 @@ public class IslandSqlDocument {
     private IslandSqlDocument(String sql) {
         CodePointCharStream charStream = CharStreams.fromString(sql);
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
-        this.tokenStream = new CommonTokenStream(lexer);
-        TokenStreamUtil.hideOutOfScopeTokens(tokenStream);
-        IslandSqlParser parser = new IslandSqlParser(tokenStream);
         SyntaxErrorListener errorListener = new SyntaxErrorListener();
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
+        this.tokenStream = new CommonTokenStream(lexer);
+        TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
+        IslandSqlParser parser = new IslandSqlParser(tokenStream);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         this.file = parser.file();
