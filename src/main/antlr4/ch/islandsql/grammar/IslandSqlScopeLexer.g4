@@ -153,7 +153,7 @@ fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|CFL_SL_COMMENT|CFL_WS;
 CFL_ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN), type(ML_COMMENT);
 CFL_SL_COMMENT: '--' .*? (EOF|CFL_SINGLE_NL) -> channel(HIDDEN), type(SL_COMMENT);
 CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
-CFL_ANY_OTHER: '.' -> channel(HIDDEN), type(ANY_OTHER);
+CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
 CFL_SELECT:
     ('(' CFL_COMMENT_OR_WS*)+
