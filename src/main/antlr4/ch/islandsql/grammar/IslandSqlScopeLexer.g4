@@ -157,7 +157,7 @@ CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
 CFL_SELECT:
     ('(' CFL_COMMENT_OR_WS*)+
-    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isLoop()}? -> type(SELECT)
+    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
 ;
 
 CFL_END_OF_SELECT:

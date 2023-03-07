@@ -214,7 +214,7 @@ MERGE:
 SELECT:
       (
           // TODO: remove alternative with https://github.com/IslandSQL/IslandSQL/issues/29
-          ('(' COMMENT_OR_WS*)+ ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isLoop()}?
+          ('(' COMMENT_OR_WS*)+ ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isText("loop")}?
       )
     | (
           (
