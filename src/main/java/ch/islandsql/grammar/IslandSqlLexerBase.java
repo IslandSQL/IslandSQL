@@ -37,12 +37,13 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if "loop" is the next word in the character stream.
+     * Determines if text is the next character sequencein the character stream.
      *
-     * @return Returns true if "loop" is the next word in the character stream.
+     * @return Returns true if text is the next character sequence in the character stream.
      */
-    public boolean isLoop() {
-        return "loop".equalsIgnoreCase(getInputStream().getText(Interval.of(_input.index(), _input.index() + 3)));
+    public boolean isText(String text) {
+        return text.equalsIgnoreCase(getInputStream()
+                .getText(Interval.of(_input.index(), _input.index() + text.length() - 1)));
     }
 
     /**
