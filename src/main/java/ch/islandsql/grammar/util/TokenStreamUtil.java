@@ -42,14 +42,8 @@ public class TokenStreamUtil {
         try {
             tokenStream.fill();
         } catch (IllegalStateException e) {
-            // Workaround for issue 44 ("cannot consume EOF"). ATM no idea how to solve it.
-            // I see the following options:
-            //   a) abort process and return; then syntax errors are reported
-            //   b) just ignore the exception and suppress the syntax errors
-            //   c) ignore the exception and report the issue as syntax error
-            // I chose c). However, the best would be to identify why this happens and to
-            // fix the lexer. Reporting the error is the best option ATM and should help
-            // to identify the root cause in the lexer.
+            // Fail-safe for issues like #44 ("cannot consume EOF").
+            // Syntax error is reported. This helps to identify the root cause in the lexer.
             if (errorListener != null) {
                 Token offendingToken = null;
                 int size = tokenStream.size();
@@ -74,7 +68,8 @@ public class TokenStreamUtil {
         try {
             scopeStream.fill();
         } catch (IllegalStateException e) {
-            // best effort, similar issue as for tokenStream, probably related.
+            // Fail save for issues in the lexer.
+            // Syntax error is reported. This helps to identify the root cause in the lexer.
             if (errorListener != null) {
                 Token offendingToken = null;
                 int size = scopeStream.size();
@@ -101,6 +96,7 @@ public class TokenStreamUtil {
                     // best effort, subsequent error of previous IllegalStateException
                     // no need to report this error, just stop the processing,
                     // the parser will probably produce further subsequent errors.
+                    // the root cause in the lexer needs to be identified and fixed.
                     break tokenLoop;
                 }
             }
