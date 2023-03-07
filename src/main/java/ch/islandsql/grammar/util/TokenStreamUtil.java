@@ -59,14 +59,24 @@ public class TokenStreamUtil {
             scopeLexer.addErrorListener(errorListener);
         }
         CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
-        scopeStream.fill();
+        try {
+            scopeStream.fill();
+        } catch (IllegalStateException e) {
+            // best effort
+        }
         List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
         int scopeIndex = 0;
         Token scopeToken = scopeTokens.get(scopeIndex);
+        tokenLoop:
         for (CommonToken token : tokens) {
             while (scopeToken.getType() != Token.EOF && scopeToken.getStopIndex() < token.getStartIndex()) {
                 scopeIndex++;
-                scopeToken = scopeTokens.get(scopeIndex);
+                try {
+                    scopeToken = scopeTokens.get(scopeIndex);
+                } catch (IndexOutOfBoundsException e) {
+                    // best effort
+                    break tokenLoop;
+                }
             }
             if (token.getChannel() != Token.HIDDEN_CHANNEL &&
                     (scopeToken.getChannel() == Token.HIDDEN_CHANNEL || scopeToken.getType() == Token.EOF) ) {
