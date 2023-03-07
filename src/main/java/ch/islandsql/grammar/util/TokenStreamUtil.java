@@ -43,13 +43,25 @@ public class TokenStreamUtil {
             tokenStream.fill();
         } catch (IllegalStateException e) {
             // Workaround for issue 44 ("cannot consume EOF"). ATM no idea how to solve it.
-            // I see two options.
+            // I see the following options:
             //   a) abort process and return; then syntax errors are reported
             //   b) just ignore the exception and suppress the syntax errors
-            // Both options have pros and cons. In any case the number of tokens are incomplete.
-            // Suppressing the syntax errors is not optimal, but it's probably better than
-            // reporting errors for SQL scripts of out-of-scope dialects.
-            // TODO: add "return;" with https://github.com/IslandSQL/IslandSQL/issues/21
+            //   c) ignore the exception and report the issue as syntax error
+            // I chose c). However, the best would be to identify why this happens and to
+            // fix the lexer. Reporting the error is the best option ATM and should help
+            // to identify the root cause in the lexer.
+            if (errorListener != null) {
+                Token offendingToken = null;
+                int size = tokenStream.size();
+                int line = 0;
+                int charPositionInLine = 0;
+                if (size > 0) {
+                    offendingToken = tokenStream.get(size-1);
+                    line = offendingToken.getLine();
+                    charPositionInLine = offendingToken.getCharPositionInLine();
+                }
+                errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlLexer)", null);
+            }
         }
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
@@ -62,7 +74,19 @@ public class TokenStreamUtil {
         try {
             scopeStream.fill();
         } catch (IllegalStateException e) {
-            // best effort
+            // best effort, similar issue as for tokenStream, probably related.
+            if (errorListener != null) {
+                Token offendingToken = null;
+                int size = scopeStream.size();
+                int line = 0;
+                int charPositionInLine = 0;
+                if (size > 0) {
+                    offendingToken = scopeStream.get(size-1);
+                    line = offendingToken.getLine();
+                    charPositionInLine = offendingToken.getCharPositionInLine();
+                }
+                errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlScopeLexer)", null);
+            }
         }
         List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
         int scopeIndex = 0;
@@ -74,7 +98,9 @@ public class TokenStreamUtil {
                 try {
                     scopeToken = scopeTokens.get(scopeIndex);
                 } catch (IndexOutOfBoundsException e) {
-                    // best effort
+                    // best effort, subsequent error of previous IllegalStateException
+                    // no need to report this error, just stop the processing,
+                    // the parser will probably produce further subsequent errors.
                     break tokenLoop;
                 }
             }
