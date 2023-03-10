@@ -44,7 +44,7 @@ fragment SQLPLUS_END: EOF|SINGLE_NL;
 /*----------------------------------------------------------------------------*/
 
 ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
-SL_COMMENT: '--' .*? (EOF|SINGLE_NL) -> channel(HIDDEN);
+SL_COMMENT: '--' (~[\r\n])* (EOF|SINGLE_NL) -> channel(HIDDEN);
 
 REMARK_COMMAND:
     {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
