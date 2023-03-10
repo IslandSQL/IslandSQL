@@ -47,12 +47,12 @@ ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' (~[\r\n])* (EOF|SINGLE_NL) -> channel(HIDDEN);
 
 REMARK_COMMAND:
-    {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
+    'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
         (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
-    {isBeginOfCommand()}? 'pro' ('m' ('p' 't'?)?)?
+    'pro' {isBeginOfCommand("pro")}?  ('m' ('p' 't'?)?)?
        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
@@ -71,11 +71,11 @@ STRING:
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 GRANT:
-    {isBeginOfStatement()}? 'grant' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+    'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 REVOKE:
-    {isBeginOfStatement()}? 'revoke' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+    'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -93,40 +93,40 @@ CURSOR_FOR_LOOP_START:
 /*----------------------------------------------------------------------------*/
 
 CALL:
-    {isBeginOfStatement()}? 'call' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'call' {isBeginOfStatement("call")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 DELETE:
-    {isBeginOfStatement()}? 'delete' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 EXPLAIN_PLAN:
-    {isBeginOfStatement()}? 'explain' COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 INSERT:
-    {isBeginOfStatement()}? 'insert' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'insert' {isBeginOfStatement("insert")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 LOCK_TABLE:
-    {isBeginOfStatement()}? 'lock' COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'lock' {isBeginOfStatement("lock")}? COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 MERGE:
-    {isBeginOfStatement()}? 'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 SELECT:
-    {isBeginOfStatement()}?
     (
-        ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
-      | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+      | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('(' {isBeginOfStatement("(")}? COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
     )
 ;
 
 UPDATE:
-    {isBeginOfStatement()}? 'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 /*----------------------------------------------------------------------------*/
