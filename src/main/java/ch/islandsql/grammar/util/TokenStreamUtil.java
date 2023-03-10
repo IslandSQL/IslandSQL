@@ -38,20 +38,67 @@ public class TokenStreamUtil {
      *
      * @param tokenStream The tokensStream produced by islandSqlLexer to process.
      */
-    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream) {
-        tokenStream.fill();
+    static public void hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener) {
+        try {
+            tokenStream.fill();
+        } catch (IllegalStateException e) {
+            // Fail-safe for issues like #44 ("cannot consume EOF").
+            // Syntax error is reported. This helps to identify the root cause in the lexer.
+            if (errorListener != null) {
+                Token offendingToken = null;
+                int size = tokenStream.size();
+                int line = 0;
+                int charPositionInLine = 0;
+                if (size > 0) {
+                    offendingToken = tokenStream.get(size-1);
+                    line = offendingToken.getLine();
+                    charPositionInLine = offendingToken.getCharPositionInLine();
+                }
+                errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlLexer)", null);
+            }
+        }
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
         IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
+        if (errorListener != null) {
+            scopeLexer.removeErrorListeners();
+            scopeLexer.addErrorListener(errorListener);
+        }
         CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
-        scopeStream.fill();
+        try {
+            scopeStream.fill();
+        } catch (IllegalStateException e) {
+            // Fail save for issues in the lexer.
+            // Syntax error is reported. This helps to identify the root cause in the lexer.
+            if (errorListener != null) {
+                Token offendingToken = null;
+                int size = scopeStream.size();
+                int line = 0;
+                int charPositionInLine = 0;
+                if (size > 0) {
+                    offendingToken = scopeStream.get(size-1);
+                    line = offendingToken.getLine();
+                    charPositionInLine = offendingToken.getCharPositionInLine();
+                }
+                errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlScopeLexer)", null);
+            }
+        }
         List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
         int scopeIndex = 0;
         Token scopeToken = scopeTokens.get(scopeIndex);
+        tokenLoop:
         for (CommonToken token : tokens) {
             while (scopeToken.getType() != Token.EOF && scopeToken.getStopIndex() < token.getStartIndex()) {
                 scopeIndex++;
-                scopeToken = scopeTokens.get(scopeIndex);
+                try {
+                    scopeToken = scopeTokens.get(scopeIndex);
+                } catch (IndexOutOfBoundsException e) {
+                    // best effort, subsequent error of previous IllegalStateException
+                    // no need to report this error, just stop the processing,
+                    // the parser will probably produce further subsequent errors.
+                    // the root cause in the lexer needs to be identified and fixed.
+                    break tokenLoop;
+                }
             }
             if (token.getChannel() != Token.HIDDEN_CHANNEL &&
                     (scopeToken.getChannel() == Token.HIDDEN_CHANNEL || scopeToken.getType() == Token.EOF) ) {

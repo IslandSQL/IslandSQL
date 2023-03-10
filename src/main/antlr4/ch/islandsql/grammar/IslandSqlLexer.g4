@@ -45,12 +45,12 @@ fragment INT: [0-9]+;
 /*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
-    {isBeginOfCommand()}? 'rem' ('a' ('r' 'k'?)?)?
+    'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
         (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
-    {isBeginOfCommand()}? 'pro' ('m' ('p' 't'?)?)?
+    'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
@@ -188,45 +188,50 @@ QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
 ID: [\p{Alpha}] [_$#0-9\p{Alpha}]*;
 
 /*----------------------------------------------------------------------------*/
+// Cursor for loop
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+CURSOR_FOR_LOOP_START:
+    'for' COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
+    -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
+;
+
+/*----------------------------------------------------------------------------*/
 // Islands of interest as single tokens
 /*----------------------------------------------------------------------------*/
 
 CALL:
-    'call' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'call' {isBeginOfStatement("call")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 DELETE:
-    'delete' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 EXPLAIN_PLAN:
-    'explain' COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 INSERT:
-    'insert' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'insert' {isBeginOfStatement("insert")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 MERGE:
-    'merge' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 SELECT:
-      (
-          // TODO: remove alternative with https://github.com/IslandSQL/IslandSQL/issues/29
-          ('(' COMMENT_OR_WS*)+ ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isLoop()}?
-      )
-    | (
-          (
-                ('with' COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
-              | ('with' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-              | (('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-          )
-      )
+    (
+        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+      | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('(' {isBeginOfStatement("(")}? COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+    )
 ;
 
 UPDATE:
-    'update' COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -234,3 +239,26 @@ UPDATE:
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: .;
+
+/*----------------------------------------------------------------------------*/
+// Cursor for loop mode to identify select statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+mode CURSOR_FOR_LOOP;
+
+fragment CFL_SINGLE_NL: '\r'? '\n';
+fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|CFL_SL_COMMENT|CFL_WS;
+CFL_ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN), type(ML_COMMENT);
+CFL_SL_COMMENT: '--' .*? (EOF|CFL_SINGLE_NL) -> channel(HIDDEN), type(SL_COMMENT);
+CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
+CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
+
+CFL_SELECT:
+    ('(' CFL_COMMENT_OR_WS*)+
+    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
+;
+
+CFL_END_OF_SELECT:
+    'loop' -> channel(HIDDEN), popMode
+;

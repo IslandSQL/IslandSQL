@@ -37,12 +37,13 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if "loop" is the next word in the character stream.
+     * Determines if text is the next character sequencein the character stream.
      *
-     * @return Returns true if "loop" is the next word in the character stream.
+     * @return Returns true if text is the next character sequence in the character stream.
      */
-    public boolean isLoop() {
-        return "loop".equalsIgnoreCase(getInputStream().getText(Interval.of(_input.index(), _input.index() + 3)));
+    public boolean isText(String text) {
+        return text.equalsIgnoreCase(getInputStream()
+                .getText(Interval.of(_input.index(), _input.index() + text.length() - 1)));
     }
 
     /**
@@ -86,16 +87,17 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if the current position is valid for a command.
+     * Determines if the position beforeString is valid for a command.
      * A command must start on a new line. Between the new line and
      * the start of command an unbounded number of whitespace is
      * allowed. In other words a command can start in any column.
      * A command can start at begin-of-file.
      *
+     * @param beforeString String used to determine start of command.
      * @return Returns true if the current position is valid for a command.
      */
-    public boolean isBeginOfCommand() {
-        int i = _input.index() - 1;
+    public boolean isBeginOfCommand(String beforeString) {
+        int i = _input.index() - beforeString.length() - 1;
         while (isCharOneOf(" \t\r\n", i)) {
             if (i < 0 || isCharOneOf("\r\n", i)) {
                 return true;
@@ -106,15 +108,16 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if the current position is valid for a SQL statement.
+     * Determines if the position beforeString is valid for a SQL statement.
      * A SQL statement starts after a whitespace or a semicolon.
      * In other words multiple SQL statements on a single line are allowed.
      * A SQL statement can start at begin-of-file.
      *
+     * @param beforeString String used to determine start of command.
      * @return Returns true if the current position is valid for a SQL statement.
      */
-    public boolean isBeginOfStatement() {
-        return isCharOneOf(" \t\r\n;", _input.index()-1);
+    public boolean isBeginOfStatement(String beforeString) {
+        return isCharOneOf(" \t\r\n;", _input.index() - beforeString.length() -1);
     }
 
     /**
