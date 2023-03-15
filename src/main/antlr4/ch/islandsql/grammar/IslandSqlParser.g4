@@ -197,7 +197,7 @@ filterClauses:
 
 // combinded filter_clause and hier_ids
 filterClause:
-    ids+=hierId (COMMA ids+=hierId) K_TO predicate=condition
+    ids+=hierId (COMMA ids+=hierId)* K_TO predicate=condition
 ;
 
 hierId:
