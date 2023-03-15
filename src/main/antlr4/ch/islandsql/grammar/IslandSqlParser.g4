@@ -906,7 +906,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: Floating-point conditions
 // TODO: Logical Conditions
 // TODO: Model Conditions
 // TODO: Multiset Conditions
@@ -928,6 +927,8 @@ condition:
     | left=expression
         operator=simpleComparisionOperator
         right=expression                        # simpleComparisionCondition
+    | left=expression
+        operator=K_IS K_NOT? (K_NAN|K_INFINITE) # floatingPointCondition
 ;
 
 simpleComparisionOperator:
@@ -1014,11 +1015,13 @@ keywordAsId:
     | K_IN
     | K_INCLUDE
     | K_INCREMENT
+    | K_INFINITE
     | K_INNER
     | K_INTERSECT
     | K_INTERVAL
     | K_INTO
     | K_INVISIBLE
+    | K_IS
     | K_ITERATE
     | K_JOIN
     | K_KEEP
@@ -1042,11 +1045,13 @@ keywordAsId:
     | K_MODEL
     | K_MODIFY
     | K_MONTH
+    | K_NAN
     | K_NATURAL
     | K_NAV
     | K_NEXT
     | K_NO
     | K_NOCYCLE
+    | K_NOT
     | K_NOWAIT
     | K_NULL
     | K_NULLS
