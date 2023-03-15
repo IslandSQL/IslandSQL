@@ -919,16 +919,20 @@ unaryOperator:
 // TODO: IN Condition
 // TODO: IS OF type Condition
 condition:
-      cond=expression                           # booleanCondition
+      cond=expression                                   # booleanCondition
+    | operator=K_NOT cond=expression                    # unaryCondition
+    | LPAR cond=condition RPAR                          # parenthesisCondition
+    | left=condition operator=K_AND right=condition     # logicalCondition
+    | left=condition operator=K_OR right=condition      # logicalCondition
     | left=expression
         operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                        # groupComparisionCondition
+        right=expression                                # groupComparisionCondition
     | left=expression
         operator=simpleComparisionOperator
-        right=expression                        # simpleComparisionCondition
+        right=expression                                # simpleComparisionCondition
     | left=expression
-        operator=K_IS K_NOT? (K_NAN|K_INFINITE) # floatingPointCondition
+        operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
 ;
 
 simpleComparisionOperator:
