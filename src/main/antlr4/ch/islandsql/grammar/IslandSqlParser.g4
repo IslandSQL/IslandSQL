@@ -184,7 +184,7 @@ subAvClause:
 ;
 
 hierarchiesClause:
-    K_HIERARCHIES LPAR (items+=hierarchyItem (COMMA items+=hierarchyItem))? RPAR
+    K_HIERARCHIES LPAR (items+=hierarchyItem (COMMA items+=hierarchyItem)*)? RPAR
 ;
 
 hierarchyItem:
