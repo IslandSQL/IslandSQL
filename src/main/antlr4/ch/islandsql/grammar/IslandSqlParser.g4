@@ -716,9 +716,7 @@ forUpdateColumn:
 // TODO: Function Expressions
 // TODO: Interval Expressions
 // TODO: JSON Object Access Expressions
-// TODO: Model Expressions
 // TODO: Placeholder Expressions
-// TODO: Scalar Subquery Expressions
 // TODO: Type Construct Expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
@@ -727,6 +725,7 @@ expression:
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalLiteral
     | expr=sqlName                                              # simpleExpressionName
+    | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
     | expr=caseExpression                                       # caseExpr
     | expr=modelExpression                                      # modelExpr
@@ -799,6 +798,7 @@ elseClause:
     K_ELSE expr=expression
 ;
 
+// analytic_function is handled in expression
 modelExpression:
     column=sqlName LSQB (cellAssignmentList|multiColumnForLoop) RSQB
 ;
@@ -906,8 +906,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: subquery in Simple Comparison Condition
-// TODO: subquery in Group Comparison Condition
 // TODO: Floating-point conditions
 // TODO: Logical Conditions
 // TODO: Model Conditions
