@@ -158,7 +158,7 @@ subqueryFactoringClause:
 
 searchClause:
     K_SEARCH (K_DEPTH|K_BREADTH) K_FIRST K_BY
-    columns+=searchColumn (COMMA columns+=searchColumn)
+    columns+=searchColumn (COMMA columns+=searchColumn)*
 ;
 
 searchColumn:
