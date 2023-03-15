@@ -44,7 +44,7 @@ fragment SQLPLUS_END: EOF|SINGLE_NL;
 /*----------------------------------------------------------------------------*/
 
 ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
-SL_COMMENT: '--' (~[\r\n])* (EOF|SINGLE_NL) -> channel(HIDDEN);
+SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
@@ -151,7 +151,7 @@ mode CURSOR_FOR_LOOP;
 fragment CFL_SINGLE_NL: '\r'? '\n';
 fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|CFL_SL_COMMENT|CFL_WS;
 CFL_ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN), type(ML_COMMENT);
-CFL_SL_COMMENT: '--' .*? (EOF|CFL_SINGLE_NL) -> channel(HIDDEN), type(SL_COMMENT);
+CFL_SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN), type(SL_COMMENT);
 CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
 CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
