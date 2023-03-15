@@ -141,7 +141,7 @@ functionDeclaration:
 
 // TODO: complete with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
 procedureDeclaration:
-    K_PROCEDURE .*? K_END sqlName? SEMI
+    K_PROCEDURE .+? K_END sqlName? SEMI
 ;
 
 factoringClause:
