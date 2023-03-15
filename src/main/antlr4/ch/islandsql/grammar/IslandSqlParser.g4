@@ -59,15 +59,11 @@ lockTableStatement:
 
 lockTableStatementUnterminated:
     K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
-        K_IN lockmode=lockMode K_MODE waitOption=lockTableWaitOption?
+        K_IN lockMode K_MODE lockTableWaitOption?
 ;
 
 lockTableObject:
-    (schema=sqlName PERIOD)? table=sqlName
-        (
-              partitionExctensionClause=partitionExtensionClause
-            | COMMAT dblink=qualifiedName
-        )?
+    (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause|COMMAT dblink=qualifiedName)?
 ;
 
 partitionExtensionClause:
@@ -772,10 +768,10 @@ intervalDayToSecond:
 caseExpression:
     K_CASE
         (
-              simple=simpleCaseExpression
-            | searched=searchedCaseExpression
+              simpleCaseExpression
+            | searchedCaseExpression
         )
-        else=elseClause?
+        elseClause?
     K_END
 ;
 
@@ -805,14 +801,12 @@ modelExpression:
 
 functionExpression:
     name=sqlName LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
-    within=withinClause?    // e.g. approx_percentile
-    over=overClause?        // e.g. avg
+    withinClause?   // e.g. approx_percentile
+    overClause?     // e.g. avg
 ;
 
 functionParameter:
-    (name=sqlName EQUALS GT)? prefix=functionParameterPrefix?
-    expr=expression
-    suffix=functionParameterSuffix?
+    (name=sqlName EQUALS GT)? functionParameterPrefix? expr=expression functionParameterSuffix?
 ;
 
 functionParameterPrefix:
@@ -833,11 +827,11 @@ withinClause:
 ;
 
 orderByClause:
-    K_ORDER siblings=K_SIBLINGS? K_BY items+=orderByItem (COMMA items+=orderByItem)*
+    K_ORDER K_SIBLINGS? K_BY items+=orderByItem (COMMA items+=orderByItem)*
 ;
 
 orderByItem:
-    expr=expression (asc=K_ASC|desc=K_DESC)? (K_NULLS (nullsFirst=K_FIRST|nullsLast=K_LAST))?
+    expr=expression (K_ASC|K_DESC)? (K_NULLS (K_FIRST|K_LAST))?
 ;
 
 queryPartitionClause:
@@ -845,19 +839,11 @@ queryPartitionClause:
 ;
 
 overClause:
-    K_OVER
-    (
-          windowName=sqlName
-        | LPAR analytic=analyticClause RPAR
-    )
+    K_OVER (windowName=sqlName|LPAR analyticClause RPAR)
 ;
 
 analyticClause:
-    (
-          windowName=sqlName
-        | partition=queryPartitionClause
-    )?
-    (order=orderByClause windowing=windowingClause?)?
+    (windowName=sqlName|queryPartitionClause)? (orderByClause windowingClause?)?
 ;
 
 windowingClause:
