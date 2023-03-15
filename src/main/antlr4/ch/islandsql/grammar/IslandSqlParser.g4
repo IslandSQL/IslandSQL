@@ -920,7 +920,7 @@ unaryOperator:
 // TODO: IS OF type Condition
 condition:
       cond=expression                                   # booleanCondition
-    | operator=K_NOT cond=expression                    # unaryCondition
+    | operator=K_NOT cond=condition                     # unaryCondition
     | LPAR cond=condition RPAR                          # parenthesisCondition
     | left=condition operator=K_AND right=condition     # logicalCondition
     | left=condition operator=K_OR right=condition      # logicalCondition
