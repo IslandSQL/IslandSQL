@@ -919,6 +919,8 @@ condition:
         right=expression                                # simpleComparisionCondition
     | left=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
+    | left=sqlName operator=K_IS K_ANY                  # isAnyCondition // "any" only is handled as sqlName
+    | left=expression operator=K_IS K_PRESENT           # isPresentCondition
 ;
 
 simpleComparisionOperator:
@@ -1051,6 +1053,7 @@ keywordAsId:
     | K_ONE
     | K_ONLY
     | K_OPTION
+    | K_OR
     | K_ORDER
     | K_OTHERS
     | K_OUTER
@@ -1065,6 +1068,7 @@ keywordAsId:
     | K_PERMUTE
     | K_PIVOT
     | K_PRECEDING
+    | K_PRESENT
     | K_PRIOR
     | K_PROCEDURE
     | K_RANGE
