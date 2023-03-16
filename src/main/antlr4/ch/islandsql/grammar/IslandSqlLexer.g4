@@ -195,6 +195,7 @@ K_PERIOD: 'period';
 K_PERMUTE: 'permute';
 K_PIVOT: 'pivot';
 K_PRECEDING: 'preceding';
+K_PRESENT: 'present';
 K_PRIOR: 'prior';
 K_PROCEDURE: 'procedure';
 K_RANGE: 'range';
