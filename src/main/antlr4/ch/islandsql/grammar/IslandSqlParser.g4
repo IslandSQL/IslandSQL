@@ -892,9 +892,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: Logical Conditions
-// TODO: Model Conditions
-// TODO: Multiset Conditions
 // TODO: Pattern-matching Conditions
 // TODO: Null Conditions
 // TODO: XML Conditions
