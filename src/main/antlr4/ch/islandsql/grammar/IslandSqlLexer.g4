@@ -67,6 +67,7 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // Keywords
 /*----------------------------------------------------------------------------*/
 
+K_A: 'a';
 K_ACCESS: 'access';
 K_ADD: 'add';
 K_AFTER: 'after';
@@ -109,6 +110,7 @@ K_DIRECTORY: 'directory';
 K_DISCARD: 'discard';
 K_DISTINCT: 'distinct';
 K_ELSE: 'else';
+K_EMPTY: 'empty';
 K_END: 'end';
 K_EXCEPT: 'except';
 K_EXCLUDE: 'exclude';
@@ -158,6 +160,7 @@ K_MATCH: 'match';
 K_MATCH_RECOGNIZE: 'match_recognize';
 K_MEASURE: 'measure';
 K_MEASURES: 'measures';
+K_MEMBER: 'member';
 K_MINUS: 'minus';
 K_MINUTE: 'minute';
 K_MODE: 'mode';
@@ -224,6 +227,7 @@ K_SKIP: 'skip';
 K_SOME: 'some';
 K_SORT: 'sort';
 K_START: 'start';
+K_SUBMULTISET: 'submultiset';
 K_SUBPARTITION: 'subpartition';
 K_SUBSET: 'subset';
 K_TABLE: 'table';
