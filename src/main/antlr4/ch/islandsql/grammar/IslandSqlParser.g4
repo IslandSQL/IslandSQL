@@ -921,6 +921,12 @@ condition:
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
     | left=sqlName operator=K_IS K_ANY                  # isAnyCondition // "any" only is handled as sqlName
     | left=expression operator=K_IS K_PRESENT           # isPresentCondition
+    | left=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
+    | left=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
+    | left=expression K_NOT? operator=K_MEMBER
+        K_OF? right=expression                          # memberCondition
+    | left=expression K_NOT? operator=K_SUBMULTISET
+        K_OF? right=expression                          # submultisetCondition
 ;
 
 simpleComparisionOperator:
@@ -940,7 +946,8 @@ simpleComparisionOperator:
 /*----------------------------------------------------------------------------*/
 
 keywordAsId:
-      K_ACCESS
+      K_A
+    | K_ACCESS
     | K_ADD
     | K_AFTER
     | K_AGGREGATE
@@ -982,6 +989,7 @@ keywordAsId:
     | K_DISCARD
     | K_DISTINCT
     | K_ELSE
+    | K_EMPTY
     | K_END
     | K_EXCEPT
     | K_EXCLUDE
@@ -1031,6 +1039,7 @@ keywordAsId:
     | K_MATCH_RECOGNIZE
     | K_MEASURE
     | K_MEASURES
+    | K_MEMBER
     | K_MINUS
     | K_MINUTE
     | K_MODE
@@ -1097,6 +1106,7 @@ keywordAsId:
     | K_SOME
     | K_SORT
     | K_START
+    | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
     | K_TABLE
