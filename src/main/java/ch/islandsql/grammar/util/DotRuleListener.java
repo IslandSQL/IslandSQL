@@ -31,13 +31,23 @@ import java.util.List;
 /**
  * Listener to be used to produce a DOT representation of the parse tree.
  * The output can be used to produce a graphical representation of the parse tree
- * via online tools such as <a href="https://dreampuf.github.io/GraphvizOnline/">GraphvizOnline</a>
- * or <a href="http://www.webgraphviz.com/">WebGraphviz</a>.
+ * via online tools such as
+ * <p>
+ * <ul>
+ * <li> <a href="https://dreampuf.github.io/GraphvizOnline/">GraphvizOnline</a>
+ * <li> <a href="https://edotor.net/">Edotor</a>
+ * <li> <a href="http://viz-js.com/">Viz.js</a>
+ * <li> <a href="http://www.webgraphviz.com/">WebGraphviz</a>
+ * </ul>
+ * <p>
+ * See also <a href="https://www.graphviz.org">Graphviz</a>.
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class DotRuleListener implements ParseTreeListener {
     private final String NL = System.getProperty("line.separator");
     private final StringBuilder sb = new StringBuilder();
     private final List<String> parserRuleNames;
+    private final String BG_COLOR="transparent";
     private final String CTX_FILL_COLOR="#bfe6ff";
     private final String TERMINAL_FILL_COLOR="#fadabd";
     private int level = 0;
@@ -94,6 +104,11 @@ public class DotRuleListener implements ParseTreeListener {
     public void enterEveryRule(ParserRuleContext ctx) {
         if (level == 0) {
             sb.append("digraph islandSQL {");
+            sb.append(NL);
+            sb.append("  bgcolor=");
+            sb.append('"');
+            sb.append(BG_COLOR);
+            sb.append('"');
             sb.append(NL);
         }
         level++;
