@@ -109,7 +109,7 @@ subquery:
 
 queryBlock:
     withClause?
-    {unhideFirstHintStyleComment();} K_SELECT (hint=(SL_COMMENT|ML_COMMENT))?
+    {unhideFirstHintStyleComment();} K_SELECT hintStyleComment?
     queryBlockSetOperator?
     selectList
     (intoClause | bulkCollectIntoClause)? // in PL/SQL only
@@ -119,6 +119,11 @@ queryBlock:
     groupByClause?
     modelClause?
     windowClause?
+;
+
+hintStyleComment:
+      SL_COMMENT
+    | ML_COMMENT
 ;
 
 withClause:
