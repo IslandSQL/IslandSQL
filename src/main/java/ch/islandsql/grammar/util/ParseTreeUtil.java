@@ -243,4 +243,17 @@ public class ParseTreeUtil {
         walker.walk(listener, root);
         return listener.getResult();
     }
+
+    /**
+     * Produces a parse tree as string in DOT format.
+     *
+     * @param root The start node.
+     * @return Returns a parse tree as string in DOT format.
+     */
+    public static String dotParseTree(ParseTree root) {
+        DotRuleListener listener = new DotRuleListener();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        walker.walk(listener, root);
+        return listener.getResult();
+    }
 }
