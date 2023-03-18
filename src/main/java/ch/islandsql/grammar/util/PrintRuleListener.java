@@ -85,7 +85,7 @@ public class PrintRuleListener implements ParseTreeListener {
     @Override
     public void enterEveryRule(ParserRuleContext ctx) {
         printNewLineAndIndent();
-        String labelName = getLabelName(ctx);
+        String labelName = ParseTreeUtil.getLabelName(ctx);
         if (labelName == null) {
             sb.append(Utils.escapeWhitespace(Trees.getNodeText(ctx, parserRuleNames), false));
         } else {
@@ -127,25 +127,6 @@ public class PrintRuleListener implements ParseTreeListener {
         }
         for (int i=0; i<level; i++) {
             sb.append("  ");
-        }
-    }
-
-    /**
-     * Gets the label name of an alternative.
-     * If an alternative is labeld with "#someLabel" in the grammar, then
-     * a subclass named "IslandSqlParser$SomeLabelContext" of another
-     * rule class (not ParserRuleContext) is created.
-     *
-     * @param ctx ParserRuleContext to get the alternative label name from.
-     * @return Returns the label name or null, if no label is defined.
-     */
-    private String getLabelName(ParserRuleContext ctx) {
-        if (ctx.getClass().getSuperclass().getSimpleName().equals("ParserRuleContext")) {
-            return null;
-        } else {
-            String className = ctx.getClass().getName();
-            String labelName = className.substring(className.indexOf("$") + 1, className.lastIndexOf("Context"));
-            return Character.toLowerCase(labelName.charAt(0)) + labelName.substring(1);
         }
     }
 }
