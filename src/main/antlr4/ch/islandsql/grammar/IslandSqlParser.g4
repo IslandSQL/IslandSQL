@@ -897,16 +897,17 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: Null Conditions
-// TODO: XML Conditions
-// TODO: SQL For JSON Conditions
 // TODO: Compound Conditions
 // TODO: BETWEEN Condition
 // TODO: EXISTS Condition
 // TODO: IN Condition
 // TODO: IS OF type Condition
 condition:
-      cond=expression                                   # booleanCondition
+      K_JSON_EXISTS LPAR expr=expression
+      (K_FORMAT K_JSON)? COMMA path=expression
+      jsonPassingClause? jsonExistsOnErrorClause?
+      jsonExistsOnEmptyClause? RPAR                     # jsonExistsCondition
+    | cond=expression                                   # booleanCondition
     | operator=K_NOT cond=condition                     # unaryCondition
     | LPAR cond=condition RPAR                          # parenthesisCondition
     | left=condition operator=K_AND right=condition     # logicalCondition
@@ -925,6 +926,13 @@ condition:
     | left=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
     | left=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
     | left=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
+    | left=expression
+        operator=K_IS K_NOT? K_JSON
+        (K_FORMAT K_JSON)?
+        (
+            LPAR (options+=jsonConditionOption+) RPAR
+          | options+=jsonConditionOption*
+        )                                               # isJsonCondition
     | left=expression K_NOT? operator=K_MEMBER
         K_OF? right=expression                          # memberCondition
     | left=expression K_NOT? operator=K_SUBMULTISET
@@ -932,7 +940,23 @@ condition:
     | left=expression
         operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
         right=expression
-        (K_ESCAPE operator2=expression)?                # likeCondition
+        (K_ESCAPE escChar=expression)?                  # likeCondition
+;
+
+jsonPassingClause:
+    K_PASSING items+=jsonPassingItem (COMMA items+=jsonPassingItem)*
+;
+
+jsonPassingItem:
+    expr=expression K_AS identifier=sqlName
+;
+
+jsonExistsOnErrorClause:
+    (K_ERROR|K_TRUE|K_FALSE) K_ON K_ERROR
+;
+
+jsonExistsOnEmptyClause:
+    (K_ERROR|K_TRUE|K_FALSE) K_ON K_EMPTY
 ;
 
 simpleComparisionOperator:
@@ -947,6 +971,17 @@ simpleComparisionOperator:
     | LT EQUALS         # le
 ;
 
+// it's possible but not documented that options can be used in an arbitrary order
+// it's also possible but not documented to place the options in parenthesis
+jsonConditionOption:
+      K_STRICT                  # jsonConditionOptionStrict
+    | K_LAX                     # jsonConditionOptionLax
+    | K_ALLOW K_SCALARS         # jsonConditionOptionAllowScalars
+    | K_DISALLOW K_SCALARS      # jsonConditionOptionDisallowSclars
+    | K_WITH K_UNIQUE K_KEYS    # jsonConditionOptionWithUniqueKeys
+    | K_WITHOUT K_UNIQUE K_KEYS # jsonConditionOptionWithoutUniqueKeys
+;
+
 /*----------------------------------------------------------------------------*/
 // Identifiers
 /*----------------------------------------------------------------------------*/
@@ -958,6 +993,7 @@ keywordAsId:
     | K_AFTER
     | K_AGGREGATE
     | K_ALL
+    | K_ALLOW
     | K_ANALYTIC
     | K_AND
     | K_ANY
@@ -992,23 +1028,27 @@ keywordAsId:
     | K_DETERMINISTIC
     | K_DIMENSION
     | K_DIRECTORY
+    | K_DISALLOW
     | K_DISCARD
     | K_DISTINCT
     | K_ELSE
     | K_EMPTY
     | K_END
+    | K_ERROR
     | K_ESCAPE
     | K_EXCEPT
     | K_EXCLUDE
     | K_EXCLUSIVE
     | K_EXTERNAL
     | K_FACT
+    | K_FALSE
     | K_FETCH
     | K_FILTER
     | K_FINAL
     | K_FIRST
     | K_FOLLOWING
     | K_FOR
+    | K_FORMAT
     | K_FROM
     | K_FULL
     | K_FUNCTION
@@ -1031,9 +1071,13 @@ keywordAsId:
     | K_IS
     | K_ITERATE
     | K_JOIN
+    | K_JSON
+    | K_JSON_EXISTS
     | K_KEEP
+    | K_KEYS
     | K_LAST
     | K_LATERAL
+    | K_LAX
     | K_LEFT
     | K_LIKE2
     | K_LIKE4
@@ -1079,6 +1123,7 @@ keywordAsId:
     | K_OVER
     | K_PARAMETERS
     | K_PARTITION
+    | K_PASSING
     | K_PAST
     | K_PATTERN
     | K_PER
@@ -1101,6 +1146,7 @@ keywordAsId:
     | K_RULES
     | K_RUNNING
     | K_SAMPLE
+    | K_SCALARS
     | K_SCN
     | K_SEARCH
     | K_SECOND
@@ -1116,6 +1162,7 @@ keywordAsId:
     | K_SOME
     | K_SORT
     | K_START
+    | K_STRICT
     | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
@@ -1124,6 +1171,7 @@ keywordAsId:
     | K_TIES
     | K_TIMESTAMP
     | K_TO
+    | K_TRUE
     | K_TYPE
     | K_UNBOUNDED
     | K_UNION
@@ -1143,6 +1191,7 @@ keywordAsId:
     | K_WINDOW
     | K_WITH
     | K_WITHIN
+    | K_WITHOUT
     | K_XML
     | K_YEAR
 ;
