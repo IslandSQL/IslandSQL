@@ -924,6 +924,7 @@ condition:
     | left=expression operator=K_IS K_PRESENT           # isPresentCondition
     | left=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
     | left=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
+    | left=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
     | left=expression K_NOT? operator=K_MEMBER
         K_OF? right=expression                          # memberCondition
     | left=expression K_NOT? operator=K_SUBMULTISET
