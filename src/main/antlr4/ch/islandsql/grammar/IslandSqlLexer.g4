@@ -29,7 +29,6 @@ fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
 fragment SQL_TEXT: ML_COMMENT|SL_COMMENT|STRING|.;
 fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
-fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment SQL_END:
       EOF
     | ';' [ \t]* SINGLE_NL?
