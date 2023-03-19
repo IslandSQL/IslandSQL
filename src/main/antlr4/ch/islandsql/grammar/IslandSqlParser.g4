@@ -921,7 +921,7 @@ condition:
         right=expression                                # simpleComparisionCondition
     | left=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
-    | left=sqlName operator=K_IS K_ANY                  # isAnyCondition // "any" only is handled as sqlName
+    | left=expression operator=K_IS K_ANY               # isAnyCondition // "any" only is handled as sqlName
     | left=expression operator=K_IS K_PRESENT           # isPresentCondition
     | left=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
     | left=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
