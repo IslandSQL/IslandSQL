@@ -897,7 +897,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: Pattern-matching Conditions
 // TODO: Null Conditions
 // TODO: XML Conditions
 // TODO: SQL For JSON Conditions
@@ -929,6 +928,10 @@ condition:
         K_OF? right=expression                          # memberCondition
     | left=expression K_NOT? operator=K_SUBMULTISET
         K_OF? right=expression                          # submultisetCondition
+    | left=expression
+        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        right=expression
+        (K_ESCAPE operator2=expression)?                # likeCondition
 ;
 
 simpleComparisionOperator:
@@ -993,6 +996,7 @@ keywordAsId:
     | K_ELSE
     | K_EMPTY
     | K_END
+    | K_ESCAPE
     | K_EXCEPT
     | K_EXCLUDE
     | K_EXCLUSIVE
@@ -1030,7 +1034,10 @@ keywordAsId:
     | K_LAST
     | K_LATERAL
     | K_LEFT
+    | K_LIKE2
+    | K_LIKE4
     | K_LIKE
+    | K_LIKEC
     | K_LIMIT
     | K_LOCATION
     | K_LOCK
