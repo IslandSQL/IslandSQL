@@ -731,6 +731,7 @@ expression:
     | expr=caseExpression                                       # caseExpr
     | expr=modelExpression                                      # modelExpr
     | operator=unaryOperator expr=expression                    # unaryExpression
+    | expr=specialFunctionExpression                            # specialFunctionExpr
     | expr=functionExpression                                   # functionExpr
     | expr=AST                                                  # allColumnWildcardExpression
     | left=expression operator=(AST|SOL) right=expression       # binaryExpression
@@ -802,6 +803,21 @@ elseClause:
 // analytic_function is handled in expression
 modelExpression:
     column=sqlName LSQB (cellAssignmentList|multiColumnForLoop) RSQB
+;
+
+// Functions and function-like conditions that have a syntax that
+// cannot be handled by the generic functionExpression.
+specialFunctionExpression:
+    jsonExistsCondition
+;
+
+jsonExistsCondition:
+    K_JSON_EXISTS LPAR
+        expr=expression
+        (K_FORMAT K_JSON)? COMMA path=expression
+        jsonPassingClause? jsonExistsOnErrorClause?
+        jsonExistsOnEmptyClause?
+    RPAR
 ;
 
 functionExpression:
@@ -903,11 +919,7 @@ unaryOperator:
 // TODO: IN Condition
 // TODO: IS OF type Condition
 condition:
-      K_JSON_EXISTS LPAR expr=expression
-      (K_FORMAT K_JSON)? COMMA path=expression
-      jsonPassingClause? jsonExistsOnErrorClause?
-      jsonExistsOnEmptyClause? RPAR                     # jsonExistsCondition
-    | cond=expression                                   # booleanCondition
+      cond=expression                                   # booleanCondition
     | operator=K_NOT cond=condition                     # unaryCondition
     | LPAR cond=condition RPAR                          # parenthesisCondition
     | left=condition operator=K_AND right=condition     # logicalCondition
