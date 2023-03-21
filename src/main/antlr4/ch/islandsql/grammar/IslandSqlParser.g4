@@ -141,12 +141,16 @@ plsqlDeclarations:
 
 // TODO: complete with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
 functionDeclaration:
-    K_FUNCTION .+? K_END sqlName? SEMI
+    K_FUNCTION plsqlCode K_END sqlName? SEMI
 ;
 
 // TODO: complete with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
 procedureDeclaration:
-    K_PROCEDURE .+? K_END sqlName? SEMI
+    K_PROCEDURE plsqlCode K_END sqlName? SEMI
+;
+
+plsqlCode:
+    .+?
 ;
 
 factoringClause:
@@ -441,7 +445,7 @@ modifyExternalTableProperties:
     | K_ACCESS K_PARAMETERS
         (
               LPAR opaqueFormatSpec=expression RPAR // only as string and variable
-            | LPAR .+? RPAR // driver-specific grammar, cannot add to array field, accessible via children
+            | LPAR nativeOpaqueFormatSpec RPAR // driver-specific grammar, cannot add to array field, accessible via children
         )                                                   # accessParameterModifyExternalTableProperty
     | K_REJECT K_LIMIT rejectLimit=expression               # rejectLimitModifyExternalProperty
 ;
@@ -476,11 +480,15 @@ externalTableDataProps:
     | K_ACCESS K_PARAMETERS
         (
               LPAR opaqueFormatSpec=expression RPAR // only as string and variable
-            | LPAR .+? RPAR // driver-specific grammar, cannot add to array field, accessible via children
+            | LPAR nativeOpaqueFormatSpec RPAR // driver-specific grammar, cannot add to array field, accessible via children
             | K_USING K_CLOB subquery
         )                                                   # accessParameterExternalTableDataProperty
     | K_LOCATION LPAR locations+=externalFileLocation
         (COMMA locations+=externalFileLocation)* RPAR       # locationExternalTableDataProperty
+;
+
+nativeOpaqueFormatSpec:
+    .+?
 ;
 
 // minimal clause for use in inlineExternalTable; the following is missing:
@@ -913,7 +921,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: Compound Conditions
 // TODO: BETWEEN Condition
 // TODO: EXISTS Condition
 // TODO: IN Condition
