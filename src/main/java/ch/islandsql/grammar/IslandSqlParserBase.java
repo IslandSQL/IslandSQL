@@ -40,21 +40,17 @@ public abstract class IslandSqlParserBase extends Parser {
 
     /**
      * Puts the first hint-style comment right to the current position on the default channel.
-     * A hint-style comment is a comment that starts with a plus sign. We call it hint-style because
-     * we do not know if this comment contains hints nor if they are valid. However, we know that
-     * the Oracle Database base considers only the first hint-style comment. See
+     * We know that the Oracle Database base considers only the first hint-style comment. See
      * <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/Comments.html#GUID-D316D545-89E2-4D54-977F-FC97815CD62E">Hints</a>.
-     * We do not want to define a lexer token for hint-style comments and put them on the
-     * DEFAULT_CHANNEL because they are still comments and can be used anywhere in the code.
-     * As a result this would lead to parsing errors. Therefore, we handle it in the parser in
-     * places where we expect hints.
+     * We do not want to put hint-style comments the DEFAULT_CHANNEL because they are still
+     * comments and can be used anywhere in the code. As a result this would lead to parsing errors.
+     * Therefore, we handle it in the parser in places where we expect a hint.
      */
-    public void unhideFirstHintStyleComment() {
+    public void unhideFirstHint() {
         CommonTokenStream input = ((CommonTokenStream) this.getTokenStream());
         List<Token> tokens = input.getHiddenTokensToRight(input.index());
         for (Token token : tokens) {
-            if ((token.getType() == IslandSqlLexer.ML_COMMENT || token.getType() == IslandSqlLexer.SL_COMMENT)
-                    && "+".equals(token.getText().substring(2, 3))) {
+            if (token.getType() == IslandSqlLexer.ML_HINT || token.getType() == IslandSqlLexer.SL_HINT) {
                 ((CommonToken) token).setChannel(Token.DEFAULT_CHANNEL);
                 return; // stop after first hint style comment
             }
