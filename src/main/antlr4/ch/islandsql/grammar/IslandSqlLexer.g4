@@ -120,6 +120,7 @@ K_ESCAPE: 'escape';
 K_EXCEPT: 'except';
 K_EXCLUDE: 'exclude';
 K_EXCLUSIVE: 'exclusive';
+K_EXISTS: 'exists';
 K_EXTERNAL: 'external';
 K_FACT: 'fact';
 K_FALSE: 'false';
