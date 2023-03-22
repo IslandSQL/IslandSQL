@@ -39,6 +39,7 @@ dmlStatement:
     | lockTableStatement
     | mergeStatement
     | selectStatement
+    | LPAR select RPAR // TODO: remove with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
     | updateStatement
 ;
 
@@ -921,7 +922,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: IN Condition
 // TODO: IS OF type Condition
 condition:
       cond=expression                                   # booleanCondition
@@ -961,6 +961,8 @@ condition:
     | expr1=expression K_NOT? operator=K_BETWEEN
         expr2=expression K_AND expr3=expression         # betweenCondition
     | K_EXISTS LPAR subquery RPAR                       # existsCondition
+    | left=expression K_NOT? operator=K_IN
+        right=expression                                # inCondition
 ;
 
 jsonPassingClause:
