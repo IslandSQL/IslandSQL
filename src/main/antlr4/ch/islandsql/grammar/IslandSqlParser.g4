@@ -921,7 +921,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: EXISTS Condition
 // TODO: IN Condition
 // TODO: IS OF type Condition
 condition:
@@ -961,6 +960,7 @@ condition:
         (K_ESCAPE escChar=expression)?                  # likeCondition
     | expr1=expression K_NOT? operator=K_BETWEEN
         expr2=expression K_AND expr3=expression         # betweenCondition
+    | K_EXISTS LPAR subquery RPAR                       # existsCondition
 ;
 
 jsonPassingClause:
@@ -1059,6 +1059,7 @@ keywordAsId:
     | K_EXCEPT
     | K_EXCLUDE
     | K_EXCLUSIVE
+    | K_EXISTS
     | K_EXTERNAL
     | K_FACT
     | K_FALSE
