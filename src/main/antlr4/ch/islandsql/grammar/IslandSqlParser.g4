@@ -921,7 +921,6 @@ unaryOperator:
 /*----------------------------------------------------------------------------*/
 
 // TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: BETWEEN Condition
 // TODO: EXISTS Condition
 // TODO: IN Condition
 // TODO: IS OF type Condition
@@ -938,14 +937,14 @@ condition:
     | left=expression
         operator=simpleComparisionOperator
         right=expression                                # simpleComparisionCondition
-    | left=expression
+    | expr=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
-    | left=expression operator=K_IS K_ANY               # isAnyCondition // "any" only is handled as sqlName
-    | left=expression operator=K_IS K_PRESENT           # isPresentCondition
-    | left=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
-    | left=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
-    | left=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
-    | left=expression
+    | expr=expression operator=K_IS K_ANY               # isAnyCondition // "any" only is handled as sqlName
+    | expr=expression operator=K_IS K_PRESENT           # isPresentCondition
+    | expr=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
+    | expr=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
+    | expr=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
+    | expr=expression
         operator=K_IS K_NOT? K_JSON
         (K_FORMAT K_JSON)?
         (
@@ -960,6 +959,8 @@ condition:
         operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
         right=expression
         (K_ESCAPE escChar=expression)?                  # likeCondition
+    | expr1=expression K_NOT? operator=K_BETWEEN
+        expr2=expression K_AND expr3=expression         # betweenCondition
 ;
 
 jsonPassingClause:
