@@ -921,8 +921,6 @@ unaryOperator:
 // Condition
 /*----------------------------------------------------------------------------*/
 
-// TODO: https://github.com/IslandSQL/IslandSQL/issues/22
-// TODO: IS OF type Condition
 condition:
       cond=expression                                   # booleanCondition
     | operator=K_NOT cond=condition                     # notCondition
@@ -963,6 +961,9 @@ condition:
     | K_EXISTS LPAR subquery RPAR                       # existsCondition
     | left=expression K_NOT? operator=K_IN
         right=expression                                # inCondition
+    | expr=expression K_IS K_NOT? K_OF K_TYPE?
+        LPAR types+=isOfTypeConditionItem
+        (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeCondition
 ;
 
 jsonPassingClause:
@@ -1002,6 +1003,10 @@ jsonConditionOption:
     | K_DISALLOW K_SCALARS      # jsonConditionOptionDisallowSclars
     | K_WITH K_UNIQUE K_KEYS    # jsonConditionOptionWithUniqueKeys
     | K_WITHOUT K_UNIQUE K_KEYS # jsonConditionOptionWithoutUniqueKeys
+;
+
+isOfTypeConditionItem:
+    K_ONLY? (schema=sqlName PERIOD)? type=sqlName
 ;
 
 /*----------------------------------------------------------------------------*/
