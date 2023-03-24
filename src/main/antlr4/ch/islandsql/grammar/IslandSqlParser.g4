@@ -39,7 +39,6 @@ dmlStatement:
     | lockTableStatement
     | mergeStatement
     | selectStatement
-    | LPAR select RPAR // TODO: remove with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
     | updateStatement
 ;
 
@@ -95,7 +94,8 @@ lockTableWaitOption:
 /*----------------------------------------------------------------------------*/
 
 selectStatement:
-    select sqlEnd
+      select sqlEnd
+    | LPAR select RPAR // in cursor for loop - TODO: remove with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
 ;
 
 select:
