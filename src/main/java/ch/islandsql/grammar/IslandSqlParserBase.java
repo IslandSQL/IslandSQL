@@ -49,10 +49,12 @@ public abstract class IslandSqlParserBase extends Parser {
     public void unhideFirstHint() {
         CommonTokenStream input = ((CommonTokenStream) this.getTokenStream());
         List<Token> tokens = input.getHiddenTokensToRight(input.index());
-        for (Token token : tokens) {
-            if (token.getType() == IslandSqlLexer.ML_HINT || token.getType() == IslandSqlLexer.SL_HINT) {
-                ((CommonToken) token).setChannel(Token.DEFAULT_CHANNEL);
-                return; // stop after first hint style comment
+        if (tokens != null) {
+            for (Token token : tokens) {
+                if (token.getType() == IslandSqlLexer.ML_HINT || token.getType() == IslandSqlLexer.SL_HINT) {
+                    ((CommonToken) token).setChannel(Token.DEFAULT_CHANNEL);
+                    return; // stop after first hint style comment
+                }
             }
         }
     }
