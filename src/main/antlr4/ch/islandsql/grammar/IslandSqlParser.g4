@@ -428,6 +428,7 @@ queryTableExpression:
             | hierarchiesClause
         )? sampleClause?
     | inlineExternalTable sampleClause?
+    | functionExpression (LPAR PLUS RPAR)?
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
 ;
 
