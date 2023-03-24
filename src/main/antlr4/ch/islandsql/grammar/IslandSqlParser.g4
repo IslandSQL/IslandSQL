@@ -818,7 +818,19 @@ modelExpression:
 // Functions and function-like conditions that have a syntax that
 // cannot be handled by the generic functionExpression.
 specialFunctionExpression:
-    jsonExistsCondition
+      cast
+    | jsonExistsCondition
+;
+
+// TODO: complete
+cast:
+    K_CAST LPAR
+        (
+              expr=expression
+            | K_MULTISET LPAR subquery RPAR
+        )
+        K_AS typeName=sqlName
+    RPAR
 ;
 
 jsonExistsCondition:
@@ -1036,6 +1048,7 @@ keywordAsId:
     | K_BULK
     | K_BY
     | K_CASE
+    | K_CAST
     | K_CHECK
     | K_CLOB
     | K_COLLATE
@@ -1129,6 +1142,7 @@ keywordAsId:
     | K_MODEL
     | K_MODIFY
     | K_MONTH
+    | K_MULTISET
     | K_NAN
     | K_NATURAL
     | K_NAV
