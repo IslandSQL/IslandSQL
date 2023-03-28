@@ -533,16 +533,8 @@ pivotForClause:
     )
 ;
 
-// TODO: simlify/less ambiguous: handle subquery and any as expression
 pivotInClause:
-    K_IN LPAR
-    (
-          expr+=pivotInClauseExpression (COMMA expr+=pivotInClauseExpression)*
-        | LPAR subquery RPAR
-        | subquery
-        | K_ANY (COMMA K_ANY)*
-    )
-    RPAR
+    K_IN LPAR expr+=pivotInClauseExpression (COMMA expr+=pivotInClauseExpression)* RPAR
 ;
 
 pivotInClauseExpression:
