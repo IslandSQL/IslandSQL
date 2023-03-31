@@ -789,7 +789,6 @@ userDefinedTypes:
 
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
 // TODO: Analytic View Expressions
-// TODO: CURSOR Expressions
 // TODO: Datetime Expression
 // TODO: Function Expressions
 // TODO: Interval Expressions
@@ -805,6 +804,7 @@ expression:
     | expr=sqlName                                              # simpleExpressionName
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
+    | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpr
     | expr=modelExpression                                      # modelExpr
     | operator=unaryOperator expr=expression                    # unaryExpression
@@ -1134,6 +1134,7 @@ keywordAsId:
     | K_CONVERSION
     | K_CROSS
     | K_CURRENT
+    | K_CURSOR
     | K_CYCLE
     | K_DATE
     | K_DAY
