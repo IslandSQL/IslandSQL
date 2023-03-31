@@ -709,6 +709,81 @@ forUpdateColumn:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Data types
+/*----------------------------------------------------------------------------*/
+
+dataTypes:
+      oracleBuiltInDatatypes
+    | ansiSupportedDatatypes
+    | userDefinedTypes
+;
+
+oracleBuiltInDatatypes:
+      characterDatatypes
+    | numberDatatypes
+    | longAndRawDatatypes
+    | datetimeDatatypes
+    | largeObjectDatatypes
+    | rowidDatatypes
+;
+
+characterDatatypes:
+      K_CHAR (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
+    | K_VARCHAR2 LPAR size=expression (K_BYTE|K_CHAR)? RPAR
+    | K_NCHAR (LPAR size=expression RPAR)
+    | K_NVARCHAR2 (LPAR size=expression RPAR)
+;
+
+numberDatatypes:
+      K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
+    | K_FLOAT (precision=expression)?
+    | K_BINARY_FLOAT
+    | K_BINARY_DOUBLE
+;
+
+longAndRawDatatypes:
+    | K_LONG
+    | K_LONG K_RAW
+    | K_RAW LPAR size=expression RPAR
+;
+
+datetimeDatatypes:
+      K_DATE
+    | K_TIMESTAMP (LPAR fractionalSecondsPrecision=expression RPAR)? (K_WITH K_LOCAL? K_TIME K_ZONE)?
+    | K_INTERVAL K_YEAR (LPAR yearPrecision=expression RPAR)? K_TO K_MONTH
+    | K_INTERVAL K_DAY (LPAR dayPrecision=expression RPAR)? K_TO K_SECOND (LPAR fractionalSecondsPrecision=expression RPAR)?
+;
+
+largeObjectDatatypes:
+      K_BLOB
+    | K_CLOB
+    | K_NCLOB
+    | K_BFILE
+;
+
+rowidDatatypes:
+      K_ROWID
+    | K_UROWID (LPAR size=expression RPAR)?
+;
+
+ansiSupportedDatatypes:
+      K_CHARACTER K_VARYING? LPAR size=expression RPAR
+    | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression RPAR
+    | K_VARCHAR LPAR size=expression RPAR
+    | K_NATIONAL (K_CHARACTER|K_CHAR) K_VARYING? LPAR size=expression RPAR
+    | (K_NUMERIC|K_DECIMAL|K_DEC) (LPAR precision=expression (COMMA scale=expression)? RPAR)?
+    | (K_INTEGER|K_INT|K_SMALLINT)
+    | K_FLOAT (LPAR size=expression RPAR)?
+    | K_DOUBLE K_PRECISION
+    | K_REAL
+;
+
+// handles also Oracle_supplied_types, which are just a special type of user_defined_types
+userDefinedTypes:
+    name=qualifiedName
+;
+
+/*----------------------------------------------------------------------------*/
 // Expression
 /*----------------------------------------------------------------------------*/
 
@@ -814,14 +889,15 @@ specialFunctionExpression:
     | jsonExistsCondition
 ;
 
-// TODO: complete
 cast:
     K_CAST LPAR
         (
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS typeName=sqlName
+        K_AS typeName=dataTypes
+        (K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR)?
+        (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
 ;
 
@@ -1035,12 +1111,19 @@ keywordAsId:
     | K_AUTOMATIC
     | K_BADFILE
     | K_BETWEEN
+    | K_BFILE
+    | K_BINARY_DOUBLE
+    | K_BINARY_FLOAT
+    | K_BLOB
     | K_BLOCK
     | K_BREADTH
     | K_BULK
     | K_BY
+    | K_BYTE
     | K_CASE
     | K_CAST
+    | K_CHAR
+    | K_CHARACTER
     | K_CHECK
     | K_CLOB
     | K_COLLATE
@@ -1048,11 +1131,14 @@ keywordAsId:
     | K_CONNECT
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
+    | K_CONVERSION
     | K_CROSS
     | K_CURRENT
     | K_CYCLE
     | K_DATE
     | K_DAY
+    | K_DEC
+    | K_DECIMAL
     | K_DECREMENT
     | K_DEFAULT
     | K_DEFINE
@@ -1064,6 +1150,7 @@ keywordAsId:
     | K_DISALLOW
     | K_DISCARD
     | K_DISTINCT
+    | K_DOUBLE
     | K_ELSE
     | K_EMPTY
     | K_END
@@ -1080,6 +1167,7 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FLOAT
     | K_FOLLOWING
     | K_FOR
     | K_FORMAT
@@ -1098,6 +1186,8 @@ keywordAsId:
     | K_INCREMENT
     | K_INFINITE
     | K_INNER
+    | K_INT
+    | K_INTEGER
     | K_INTERSECT
     | K_INTERVAL
     | K_INTO
@@ -1118,10 +1208,12 @@ keywordAsId:
     | K_LIKE
     | K_LIKEC
     | K_LIMIT
+    | K_LOCAL
     | K_LOCATION
     | K_LOCK
     | K_LOCKED
     | K_LOGFILE
+    | K_LONG
     | K_MAIN
     | K_MATCH
     | K_MATCH_RECOGNIZE
@@ -1136,8 +1228,11 @@ keywordAsId:
     | K_MONTH
     | K_MULTISET
     | K_NAN
+    | K_NATIONAL
     | K_NATURAL
     | K_NAV
+    | K_NCHAR
+    | K_NCLOB
     | K_NEXT
     | K_NO
     | K_NOCYCLE
@@ -1145,6 +1240,9 @@ keywordAsId:
     | K_NOWAIT
     | K_NULL
     | K_NULLS
+    | K_NUMBER
+    | K_NUMERIC
+    | K_NVARCHAR2
     | K_OF
     | K_OFFSET
     | K_ON
@@ -1167,16 +1265,20 @@ keywordAsId:
     | K_PERMUTE
     | K_PIVOT
     | K_PRECEDING
+    | K_PRECISION
     | K_PRESENT
     | K_PRIOR
     | K_PROCEDURE
     | K_RANGE
+    | K_RAW
     | K_READ
+    | K_REAL
     | K_REFERENCE
     | K_REJECT
     | K_RETURN
     | K_RIGHT
     | K_ROW
+    | K_ROWID
     | K_ROWS
     | K_RULES
     | K_RUNNING
@@ -1194,6 +1296,7 @@ keywordAsId:
     | K_SIBLINGS
     | K_SINGLE
     | K_SKIP
+    | K_SMALLINT
     | K_SOME
     | K_SORT
     | K_START
@@ -1204,6 +1307,7 @@ keywordAsId:
     | K_TABLE
     | K_THEN
     | K_TIES
+    | K_TIME
     | K_TIMESTAMP
     | K_TO
     | K_TRUE
@@ -1216,7 +1320,11 @@ keywordAsId:
     | K_UPDATE
     | K_UPDATED
     | K_UPSERT
+    | K_UROWID
     | K_USING
+    | K_VARCHAR2
+    | K_VARCHAR
+    | K_VARYING
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
@@ -1229,6 +1337,7 @@ keywordAsId:
     | K_WITHOUT
     | K_XML
     | K_YEAR
+    | K_ZONE
 ;
 
 unquotedId:
