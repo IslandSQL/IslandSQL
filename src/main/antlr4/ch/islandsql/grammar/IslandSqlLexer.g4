@@ -107,6 +107,7 @@ K_CONSTRAINT: 'constraint';
 K_CONVERSION: 'conversion';
 K_CROSS: 'cross';
 K_CURRENT: 'current';
+K_CURSOR: 'cursor';
 K_CYCLE: 'cycle';
 K_DATE: 'date';
 K_DAY: 'day';
