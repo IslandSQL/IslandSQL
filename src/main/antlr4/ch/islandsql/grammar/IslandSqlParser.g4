@@ -1357,7 +1357,7 @@ substitionVariable:
 
 substitionVariableName:
       NUMBER
-    | sqlName
+    | unquotedId
 ;
 
 qualifiedName:
