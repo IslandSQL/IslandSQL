@@ -1348,7 +1348,7 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
-    | substitionVariable
+    | substitionVariable+
 ;
 
 substitionVariable:
