@@ -712,61 +712,61 @@ forUpdateColumn:
 // Data types
 /*----------------------------------------------------------------------------*/
 
-dataTypes:
-      oracleBuiltInDatatypes
-    | ansiSupportedDatatypes
-    | userDefinedTypes
+dataType:
+      oracleBuiltInDatatype
+    | ansiSupportedDatatype
+    | userDefinedType
 ;
 
-oracleBuiltInDatatypes:
-      characterDatatypes
-    | numberDatatypes
-    | longAndRawDatatypes
-    | datetimeDatatypes
-    | largeObjectDatatypes
-    | rowidDatatypes
+oracleBuiltInDatatype:
+      characterDatatype
+    | numberDatatype
+    | longAndRawDatatype
+    | datetimeDatatype
+    | largeObjectDatatype
+    | rowidDatatype
 ;
 
-characterDatatypes:
+characterDatatype:
       K_CHAR (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
     | K_VARCHAR2 LPAR size=expression (K_BYTE|K_CHAR)? RPAR
     | K_NCHAR (LPAR size=expression RPAR)
     | K_NVARCHAR2 (LPAR size=expression RPAR)
 ;
 
-numberDatatypes:
+numberDatatype:
       K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
     | K_FLOAT (precision=expression)?
     | K_BINARY_FLOAT
     | K_BINARY_DOUBLE
 ;
 
-longAndRawDatatypes:
+longAndRawDatatype:
     | K_LONG
     | K_LONG K_RAW
     | K_RAW LPAR size=expression RPAR
 ;
 
-datetimeDatatypes:
+datetimeDatatype:
       K_DATE
     | K_TIMESTAMP (LPAR fractionalSecondsPrecision=expression RPAR)? (K_WITH K_LOCAL? K_TIME K_ZONE)?
     | K_INTERVAL K_YEAR (LPAR yearPrecision=expression RPAR)? K_TO K_MONTH
     | K_INTERVAL K_DAY (LPAR dayPrecision=expression RPAR)? K_TO K_SECOND (LPAR fractionalSecondsPrecision=expression RPAR)?
 ;
 
-largeObjectDatatypes:
+largeObjectDatatype:
       K_BLOB
     | K_CLOB
     | K_NCLOB
     | K_BFILE
 ;
 
-rowidDatatypes:
+rowidDatatype:
       K_ROWID
     | K_UROWID (LPAR size=expression RPAR)?
 ;
 
-ansiSupportedDatatypes:
+ansiSupportedDatatype:
       K_CHARACTER K_VARYING? LPAR size=expression RPAR
     | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression RPAR
     | K_VARCHAR LPAR size=expression RPAR
@@ -779,7 +779,7 @@ ansiSupportedDatatypes:
 ;
 
 // handles also Oracle_supplied_types, which are just a special type of user_defined_types
-userDefinedTypes:
+userDefinedType:
     name=qualifiedName
 ;
 
@@ -895,7 +895,7 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS typeName=dataTypes
+        K_AS typeName=dataType
         (K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR)?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
