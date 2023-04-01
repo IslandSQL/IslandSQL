@@ -790,7 +790,6 @@ userDefinedType:
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
 // TODO: Analytic View Expressions
 // TODO: Function Expressions
-// TODO: JSON Object Access Expressions
 // TODO: Placeholder Expressions
 // TODO: Type Construct Expressions
 expression:
@@ -799,11 +798,11 @@ expression:
     | K_DATE expr=STRING                                        # dateLiteral
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpr
-    | expr=sqlName                                              # simpleExpressionName
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpr
+    | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpr
     | expr=modelExpression                                      # modelExpr
     | operator=unaryOperator expr=expression                    # unaryExpression
     | expr=specialFunctionExpression                            # specialFunctionExpr
@@ -829,6 +828,7 @@ expression:
                    | right=expression
                 )
         )                                                       # datetimeExpression
+    | expr=sqlName                                              # simpleExpressionName
 ;
 
 intervalExpression:
@@ -877,6 +877,24 @@ caseExpression:
         )
         elseClause?
     K_END
+;
+
+// recognized only with array step, qualified names are recognized as binaryExpression with PERIOD operator
+jsonObjectAccessExpression:
+    tableAlias=sqlName PERIOD jsonColumn=sqlName (PERIOD keys+=jsonObjectKey)+
+;
+
+jsonObjectKey:
+    key=sqlName arraySteps+=jsonArrayStep+
+;
+
+jsonArrayStep:
+    LSQB values+=jsonArrayStepValue (COMMA values+=jsonArrayStepValue)* RSQB
+;
+
+jsonArrayStepValue:
+      expr=expression
+    | from=expression K_TO to=expression
 ;
 
 simpleCaseExpression:
