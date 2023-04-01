@@ -821,6 +821,16 @@ expression:
       right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
     | left=expression operator=PERIOD right=expression          # binaryExpression
+    | left=expression K_AT
+        (
+              K_LOCAL
+            | K_TIME K_ZONE
+                (
+                     K_DBTIMEZONE
+                   | K_SESSIONTIMEZONE
+                   | right=expression
+                )
+        )                                                       # datetimeExpression
 ;
 
 intervalExpression:
@@ -1108,6 +1118,7 @@ keywordAsId:
     | K_APPLY
     | K_AS
     | K_ASC
+    | K_AT
     | K_AUTOMATIC
     | K_BADFILE
     | K_BETWEEN
@@ -1138,6 +1149,7 @@ keywordAsId:
     | K_CYCLE
     | K_DATE
     | K_DAY
+    | K_DBTIMEZONE
     | K_DEC
     | K_DECIMAL
     | K_DECREMENT
@@ -1291,6 +1303,7 @@ keywordAsId:
     | K_SEED
     | K_SELECT
     | K_SEQUENTIAL
+    | K_SESSIONTIMEZONE
     | K_SET
     | K_SETS
     | K_SHARE
