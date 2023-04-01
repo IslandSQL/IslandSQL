@@ -808,6 +808,12 @@ expression:
     | expr=specialFunctionExpression                            # specialFunctionExpr
     | expr=functionExpression                                   # functionExpr
     | expr=AST                                                  # allColumnWildcardExpression
+    | left=expression K_MULTISET operator=K_EXCEPT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_INTERSECT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_UNION
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | left=expression operator=(AST|SOL) right=expression       # binaryExpression
     | left=expression
         (
