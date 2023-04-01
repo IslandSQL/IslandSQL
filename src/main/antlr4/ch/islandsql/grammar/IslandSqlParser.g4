@@ -789,9 +789,7 @@ userDefinedType:
 
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
 // TODO: Analytic View Expressions
-// TODO: Datetime Expression
 // TODO: Function Expressions
-// TODO: Interval Expressions
 // TODO: JSON Object Access Expressions
 // TODO: Placeholder Expressions
 // TODO: Type Construct Expressions
@@ -800,7 +798,7 @@ expression:
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
     | K_DATE expr=STRING                                        # dateLiteral
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
-    | expr=intervalExpression                                   # intervalLiteral
+    | expr=intervalExpression                                   # intervalExpr
     | expr=sqlName                                              # simpleExpressionName
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
@@ -834,16 +832,18 @@ expression:
 ;
 
 intervalExpression:
-      intervalYearToMonth
-    | intervalDayToSecond
+      intervalLiteralYearToMonth
+    | intervalLiteralDayToSecond
+    | intervalExpressionYearToMonth
+    | intervalExpressionDayToSecond
 ;
 
-intervalYearToMonth:
+intervalLiteralYearToMonth:
     K_INTERVAL expr=STRING
         from=(K_YEAR|K_MONTH) (LPAR precision=NUMBER RPAR)? (K_TO to=(K_YEAR|K_MONTH))?
 ;
 
-intervalDayToSecond:
+intervalLiteralDayToSecond:
     K_INTERVAL expr=STRING
         (
               from=(K_DAY|K_HOUR|K_MINUTE) (LPAR precision=NUMBER RPAR)?
@@ -856,6 +856,17 @@ intervalDayToSecond:
                 | to=K_SECOND (LPAR toFractionalSecondsPercision=NUMBER RPAR)?
             )
         )?
+;
+
+intervalExpressionYearToMonth:
+    LPAR expr1=expression MINUS expr2=expression RPAR
+        K_YEAR (LPAR leadingFieldPrecision=expression RPAR)? K_TO K_MONTH
+;
+
+intervalExpressionDayToSecond:
+    LPAR expr1=expression MINUS expr2=expression RPAR
+        K_DAY (LPAR leadingFieldPrecision=expression RPAR)?
+        K_TO K_SECOND (LPAR fractionalSecondPrecision=expression RPAR)?
 ;
 
 caseExpression:
