@@ -209,6 +209,7 @@ K_NATURAL: 'natural';
 K_NAV: 'nav';
 K_NCHAR: 'nchar';
 K_NCLOB: 'nclob';
+K_NEW: 'new';
 K_NEXT: 'next';
 K_NO: 'no';
 K_NOCYCLE: 'nocycle';
