@@ -791,7 +791,6 @@ userDefinedType:
 // TODO: Analytic View Expressions
 // TODO: Function Expressions
 // TODO: Placeholder Expressions
-// TODO: Type Construct Expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
@@ -1041,6 +1040,7 @@ unaryOperator:
     | K_CONNECT_BY_ROOT # connectByRootOperator     // hierarchical query operator
     | K_RUNNING         # runningOperator           // row_pattern_nav_logical
     | K_FINAL           # finalOperator             // row_pattern_nav_logical
+    | K_NEW             # newOperator               // type constructor
 ;
 
 /*----------------------------------------------------------------------------*/
