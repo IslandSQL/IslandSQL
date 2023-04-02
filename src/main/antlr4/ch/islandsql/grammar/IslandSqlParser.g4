@@ -968,6 +968,7 @@ functionParameterPrefix:
       K_DISTINCT        // e.g. in any_value
     | K_ALL             // e.g. in any_value
     | K_UNIQUE          // e.g. bit_and_agg
+    | K_INTO            // e.g. cluster_details
 ;
 
 functionParameterSuffix:
@@ -977,6 +978,7 @@ functionParameterSuffix:
     | queryPartitionClause orderByClause            // e.g. approx_rank
     | queryPartitionClause                          // e.g. approx_rank
     | orderByClause                                 // e.g. approx_rank
+    | (K_DESC|K_ASC|K_ABS)                          // e.g. cluster_details
     | (K_DESC|K_ASC|K_ABS)? miningAttributeClause   // e.g. cluster_details
 ;
 
