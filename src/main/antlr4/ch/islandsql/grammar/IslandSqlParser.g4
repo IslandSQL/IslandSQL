@@ -790,7 +790,6 @@ userDefinedType:
 // TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
 // TODO: Analytic View Expressions
 // TODO: Function Expressions
-// TODO: Placeholder Expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
@@ -806,6 +805,7 @@ expression:
     | operator=unaryOperator expr=expression                    # unaryExpression
     | expr=specialFunctionExpression                            # specialFunctionExpr
     | expr=functionExpression                                   # functionExpr
+    | expr=placeholderExpression                                # placeholderExpr
     | expr=AST                                                  # allColumnWildcardExpression
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
@@ -975,6 +975,16 @@ functionParameterSuffix:
     | queryPartitionClause orderByClause    // e.g. approx_rank
     | queryPartitionClause                  // e.g. approx_rank
     | orderByClause                         // e.g. approx_rank
+;
+
+placeholderExpression:
+    COLON hostVariable=placeholderVariable (K_INDICATOR? COLON indicatorVariable=placeholderVariable)?
+;
+
+// a host variable be a unsigned integer
+placeholderVariable:
+      sqlName
+    | NUMBER
 ;
 
 withinClause:
@@ -1232,6 +1242,7 @@ keywordAsId:
     | K_IN
     | K_INCLUDE
     | K_INCREMENT
+    | K_INDICATOR
     | K_INFINITE
     | K_INNER
     | K_INT
@@ -1281,6 +1292,7 @@ keywordAsId:
     | K_NAV
     | K_NCHAR
     | K_NCLOB
+    | K_NEW
     | K_NEXT
     | K_NO
     | K_NOCYCLE
