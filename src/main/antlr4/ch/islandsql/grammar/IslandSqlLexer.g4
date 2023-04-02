@@ -160,6 +160,7 @@ K_IGNORE: 'ignore';
 K_IN: 'in';
 K_INCLUDE: 'include';
 K_INCREMENT: 'increment';
+K_INDICATOR: 'indicator';
 K_INFINITE: 'infinite';
 K_INNER: 'inner';
 K_INT: 'int';
