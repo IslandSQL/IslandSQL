@@ -971,10 +971,13 @@ functionParameterPrefix:
 ;
 
 functionParameterSuffix:
-      K_DETERMINISTIC                       // e.g. in approx_median, approx_percentile, approx_percentile_detail
-    | queryPartitionClause orderByClause    // e.g. approx_rank
-    | queryPartitionClause                  // e.g. approx_rank
-    | orderByClause                         // e.g. approx_rank
+      K_DETERMINISTIC                               // e.g. in approx_median, approx_percentile, approx_percentile_detail
+    | K_USING K_NCHAR_CS                            // e.g. chr
+    | K_USING K_CHAR_CS                             // e.g. translate
+    | queryPartitionClause orderByClause            // e.g. approx_rank
+    | queryPartitionClause                          // e.g. approx_rank
+    | orderByClause                                 // e.g. approx_rank
+    | (K_DESC|K_ASC|K_ABS)? miningAttributeClause   // e.g. cluster_details
 ;
 
 placeholderExpression:
@@ -1001,6 +1004,18 @@ orderByItem:
 
 queryPartitionClause:
     K_PARTITION K_BY exprs+=expression (COMMA exprs+=expression)*
+;
+
+miningAttributeClause:
+    K_USING (
+          AST
+        | attributes+=miningAttribute (COMMA attributes+=miningAttribute)*
+    )
+;
+
+miningAttribute:
+      (schema=expression PERIOD) table=expression PERIOD AST
+    | expr=expression (K_AS alias=sqlName)?
 ;
 
 overClause:
@@ -1151,6 +1166,7 @@ isOfTypeConditionItem:
 
 keywordAsId:
       K_A
+    | K_ABS
     | K_ACCESS
     | K_ADD
     | K_AFTER
@@ -1180,6 +1196,7 @@ keywordAsId:
     | K_CAST
     | K_CHAR
     | K_CHARACTER
+    | K_CHAR_CS
     | K_CHECK
     | K_CLOB
     | K_COLLATE
@@ -1291,6 +1308,7 @@ keywordAsId:
     | K_NATURAL
     | K_NAV
     | K_NCHAR
+    | K_NCHAR_CS
     | K_NCLOB
     | K_NEW
     | K_NEXT
