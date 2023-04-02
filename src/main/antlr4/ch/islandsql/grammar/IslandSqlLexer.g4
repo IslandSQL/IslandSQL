@@ -69,6 +69,7 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 K_A: 'a';
+K_ABS: 'abs';
 K_ACCESS: 'access';
 K_ADD: 'add';
 K_AFTER: 'after';
@@ -98,6 +99,7 @@ K_CASE: 'case';
 K_CAST: 'cast';
 K_CHAR: 'char';
 K_CHARACTER: 'character';
+K_CHAR_CS: 'char_cs';
 K_CHECK: 'check';
 K_CLOB: 'clob';
 K_COLLATE: 'collate';
@@ -209,6 +211,7 @@ K_NATIONAL: 'national';
 K_NATURAL: 'natural';
 K_NAV: 'nav';
 K_NCHAR: 'nchar';
+K_NCHAR_CS: 'nchar_cs';
 K_NCLOB: 'nclob';
 K_NEW: 'new';
 K_NEXT: 'next';
