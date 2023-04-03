@@ -978,8 +978,9 @@ functionParameterSuffix:
     | queryPartitionClause orderByClause            // e.g. approx_rank
     | queryPartitionClause                          // e.g. approx_rank
     | orderByClause                                 // e.g. approx_rank
-    | (K_DESC|K_ASC|K_ABS)                          // e.g. cluster_details
-    | (K_DESC|K_ASC|K_ABS)? miningAttributeClause   // e.g. cluster_details
+    | weightOrderClause miningAttributeClause       // e.g. cluster_details
+    | weightOrderClause                             // e.g. cluster_details
+    | miningAttributeClause                         // e.g. cluster_details
 ;
 
 placeholderExpression:
@@ -1006,6 +1007,13 @@ orderByItem:
 
 queryPartitionClause:
     K_PARTITION K_BY exprs+=expression (COMMA exprs+=expression)*
+;
+
+// artifical clause used before mining_attribute_clause
+weightOrderClause:
+      K_DESC
+    | K_ASC
+    | K_ABS
 ;
 
 miningAttributeClause:
