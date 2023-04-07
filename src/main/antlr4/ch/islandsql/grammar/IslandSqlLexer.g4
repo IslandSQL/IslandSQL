@@ -139,6 +139,7 @@ K_EXCLUDE: 'exclude';
 K_EXCLUSIVE: 'exclusive';
 K_EXISTS: 'exists';
 K_EXTERNAL: 'external';
+K_EXTRACT: 'extract';
 K_FACT: 'fact';
 K_FALSE: 'false';
 K_FETCH: 'fetch';
