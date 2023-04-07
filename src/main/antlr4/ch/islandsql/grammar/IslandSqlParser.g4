@@ -930,6 +930,7 @@ modelExpression:
 // cannot be handled by the generic functionExpression.
 specialFunctionExpression:
       cast
+    | extract
     | jsonExistsCondition
 ;
 
@@ -943,6 +944,11 @@ cast:
         (K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR)?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
+;
+
+// extract (datetime)
+extract:
+    K_EXTRACT LPAR what=sqlName K_FROM expr=expression RPAR
 ;
 
 jsonExistsCondition:
@@ -1246,6 +1252,7 @@ keywordAsId:
     | K_EXCLUSIVE
     | K_EXISTS
     | K_EXTERNAL
+    | K_EXTRACT
     | K_FACT
     | K_FALSE
     | K_FETCH
