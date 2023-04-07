@@ -182,6 +182,7 @@ K_ITERATE: 'iterate';
 K_JOIN: 'join';
 K_JSON: 'json';
 K_JSON_ARRAY: 'json_array';
+K_JSON_ARRAYAGG: 'json_arrayagg';
 K_JSON_EXISTS: 'json_exists';
 K_KEEP: 'keep';
 K_KEYS: 'keys';
