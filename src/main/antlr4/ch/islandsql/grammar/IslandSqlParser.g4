@@ -935,6 +935,7 @@ specialFunctionExpression:
     | firstValue
     | jsonArray
     | jsonArrayagg
+    | jsonMergepatch
     | jsonExistsCondition
 ;
 
@@ -990,6 +991,7 @@ jsonOption:
       K_STRICT
     | K_PRETTY
     | K_ASCII
+    | K_TRUNCATE // from JSON_MERGEPATCH
 ;
 
 jsonArrayElement:
@@ -1017,6 +1019,19 @@ jsonReturningClause:
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
+;
+
+jsonMergepatch:
+    K_JSON_MERGEPATCH LPAR
+        jsonTargetExpr=expression COMMA jsonPatchExpr=expression
+        jsonReturningClause?
+        options+=jsonOption*
+        jsonOnErrorClause?
+    RPAR
+;
+
+jsonOnErrorClause:
+    (K_ERROR|K_NULL) K_ON K_ERROR
 ;
 
 jsonExistsCondition:
@@ -1371,6 +1386,7 @@ keywordAsId:
     | K_JSON_ARRAY
     | K_JSON_ARRAYAGG
     | K_JSON_EXISTS
+    | K_JSON_MERGEPATCH
     | K_KEEP
     | K_KEYS
     | K_LAST
@@ -1491,6 +1507,7 @@ keywordAsId:
     | K_TIMESTAMP
     | K_TO
     | K_TRUE
+    | K_TRUNCATE
     | K_TYPE
     | K_TYPENAME
     | K_UNBOUNDED
