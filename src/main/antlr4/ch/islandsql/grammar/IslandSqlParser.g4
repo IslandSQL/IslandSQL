@@ -934,6 +934,7 @@ specialFunctionExpression:
     | featureCompare
     | firstValue
     | jsonArray
+    | jsonArrayagg
     | jsonExistsCondition
 ;
 
@@ -981,11 +982,11 @@ jsonArrayContent:
     (element+=jsonArrayElement (COMMA element+=jsonArrayElement)*)?
         jsonOnNullClause?
         jsonReturningClause?
-        jsonArrayContentOptions*
+        options+=jsonOption*
 ;
 
 // undocumented: pretty/ascii
-jsonArrayContentOptions:
+jsonOption:
       K_STRICT
     | K_PRETTY
     | K_ASCII
@@ -1011,6 +1012,11 @@ jsonReturningClause:
             | K_BLOB
             | K_JSON
         )
+;
+
+jsonArrayagg:
+    K_JSON_ARRAYAGG LPAR expr=expression
+        formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
 ;
 
 jsonExistsCondition:
@@ -1363,6 +1369,7 @@ keywordAsId:
     | K_JOIN
     | K_JSON
     | K_JSON_ARRAY
+    | K_JSON_ARRAYAGG
     | K_JSON_EXISTS
     | K_KEEP
     | K_KEYS
