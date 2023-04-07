@@ -933,6 +933,7 @@ specialFunctionExpression:
     | extract
     | featureCompare
     | firstValue
+    | jsonArray
     | jsonExistsCondition
 ;
 
@@ -969,6 +970,47 @@ firstValue:
 
 respectIgnoreNullsClause:
     (K_RESPECT | K_IGNORE) K_NULLS
+;
+
+jsonArray:
+      K_JSON_ARRAY LPAR jsonArrayContent RPAR
+    | K_JSON LSQB jsonArrayContent RSQB
+;
+
+jsonArrayContent:
+    (element+=jsonArrayElement (COMMA element+=jsonArrayElement)*)?
+        jsonOnNullClause?
+        jsonReturningClause?
+        jsonArrayContentOptions*
+;
+
+// undocumented: pretty/ascii
+jsonArrayContentOptions:
+      K_STRICT
+    | K_PRETTY
+    | K_ASCII
+;
+
+jsonArrayElement:
+    expr=expression formatClause?
+;
+
+formatClause:
+    K_FORMAT K_JSON
+;
+
+jsonOnNullClause:
+    (K_NULL|K_ABSENT) K_ON K_NULL
+;
+
+jsonReturningClause:
+    K_RETURNING
+        (
+              K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? (K_WITH K_TYPENAME)?
+            | K_CLOB
+            | K_BLOB
+            | K_JSON
+        )
 ;
 
 jsonExistsCondition:
@@ -1209,6 +1251,7 @@ isOfTypeConditionItem:
 keywordAsId:
       K_A
     | K_ABS
+    | K_ABSENT
     | K_ACCESS
     | K_ADD
     | K_AFTER
@@ -1221,6 +1264,7 @@ keywordAsId:
     | K_APPLY
     | K_AS
     | K_ASC
+    | K_ASCII
     | K_AT
     | K_AUTOMATIC
     | K_BADFILE
@@ -1318,6 +1362,7 @@ keywordAsId:
     | K_ITERATE
     | K_JOIN
     | K_JSON
+    | K_JSON_ARRAY
     | K_JSON_EXISTS
     | K_KEEP
     | K_KEYS
@@ -1391,6 +1436,7 @@ keywordAsId:
     | K_PRECEDING
     | K_PRECISION
     | K_PRESENT
+    | K_PRETTY
     | K_PRIOR
     | K_PROCEDURE
     | K_RANGE
@@ -1401,6 +1447,7 @@ keywordAsId:
     | K_REJECT
     | K_RESPECT
     | K_RETURN
+    | K_RETURNING
     | K_RIGHT
     | K_ROW
     | K_ROWID
@@ -1438,6 +1485,7 @@ keywordAsId:
     | K_TO
     | K_TRUE
     | K_TYPE
+    | K_TYPENAME
     | K_UNBOUNDED
     | K_UNION
     | K_UNIQUE
