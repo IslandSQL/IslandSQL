@@ -932,6 +932,7 @@ specialFunctionExpression:
       cast
     | extract
     | featureCompare
+    | firstValue
     | jsonExistsCondition
 ;
 
@@ -957,6 +958,19 @@ featureCompare:
     miningAttributeClause1=miningAttributeClause K_AND miningAttributeClause2=miningAttributeClause RPAR
 ;
 
+firstValue:
+    K_FIRST_VALUE
+        (
+              LPAR expr=expression RPAR
+            | LPAR expr=expression RPAR respectIgnoreNullsClause
+            | LPAR expr=expression respectIgnoreNullsClause RPAR
+        ) overClause
+;
+
+respectIgnoreNullsClause:
+    (K_RESPECT | K_IGNORE) K_NULLS
+;
+
 jsonExistsCondition:
     K_JSON_EXISTS LPAR
         expr=expression
@@ -969,6 +983,7 @@ jsonExistsCondition:
 functionExpression:
     name=sqlName LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
     withinClause?   // e.g. approx_percentile
+    keepClause?     // e.g. first, last
     overClause?     // e.g. avg
 ;
 
@@ -1007,6 +1022,10 @@ placeholderVariable:
 
 withinClause:
     K_WITHIN K_GROUP LPAR orderByClause RPAR
+;
+
+keepClause:
+    K_KEEP LPAR K_DENSE_RANK (K_FIRST|K_LAST) orderByClause RPAR
 ;
 
 orderByClause:
@@ -1240,6 +1259,7 @@ keywordAsId:
     | K_DECREMENT
     | K_DEFAULT
     | K_DEFINE
+    | K_DENSE_RANK
     | K_DEPTH
     | K_DESC
     | K_DETERMINISTIC
@@ -1267,6 +1287,7 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FIRST_VALUE
     | K_FLOAT
     | K_FOLLOWING
     | K_FOR
@@ -1378,6 +1399,7 @@ keywordAsId:
     | K_REAL
     | K_REFERENCE
     | K_REJECT
+    | K_RESPECT
     | K_RETURN
     | K_RIGHT
     | K_ROW
