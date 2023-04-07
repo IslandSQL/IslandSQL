@@ -931,6 +931,7 @@ modelExpression:
 specialFunctionExpression:
       cast
     | extract
+    | featureCompare
     | jsonExistsCondition
 ;
 
@@ -949,6 +950,11 @@ cast:
 // extract (datetime)
 extract:
     K_EXTRACT LPAR what=sqlName K_FROM expr=expression RPAR
+;
+
+featureCompare:
+    K_FEATURE_COMPARE LPAR (schema=sqlName PERIOD)? model=sqlName
+    miningAttributeClause1=miningAttributeClause K_AND miningAttributeClause2=miningAttributeClause RPAR
 ;
 
 jsonExistsCondition:
@@ -1029,9 +1035,10 @@ miningAttributeClause:
     )
 ;
 
+// undocumented: optionality of "as"
 miningAttribute:
       (schema=expression PERIOD) table=expression PERIOD AST
-    | expr=expression (K_AS alias=sqlName)?
+    | expr=expression (K_AS? alias=sqlName)?
 ;
 
 overClause:
@@ -1255,6 +1262,7 @@ keywordAsId:
     | K_EXTRACT
     | K_FACT
     | K_FALSE
+    | K_FEATURE_COMPARE
     | K_FETCH
     | K_FILTER
     | K_FINAL
