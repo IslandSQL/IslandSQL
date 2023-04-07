@@ -142,6 +142,7 @@ K_EXTERNAL: 'external';
 K_EXTRACT: 'extract';
 K_FACT: 'fact';
 K_FALSE: 'false';
+K_FEATURE_COMPARE: 'feature_compare';
 K_FETCH: 'fetch';
 K_FILTER: 'filter';
 K_FINAL: 'final';
