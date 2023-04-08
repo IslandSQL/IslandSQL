@@ -936,6 +936,7 @@ specialFunctionExpression:
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
+    | jsonObject
     | jsonExistsCondition
 ;
 
@@ -1032,6 +1033,30 @@ jsonMergepatch:
 
 jsonOnErrorClause:
     (K_ERROR|K_NULL) K_ON K_ERROR
+;
+
+jsonObject:
+      K_JSON_OBJECT LPAR jsonObjectContent RPAR
+    | K_JSON LCUB jsonObjectContent RCUB
+;
+
+jsonObjectContent:
+    (
+          AST
+        | entries+=entry (COMMA entries+=entry)*
+    )
+    jsonOnNullClause? jsonReturningClause? jsonOption*
+    (K_WITH K_UNIQUE K_KEYS)?
+;
+
+entry:
+    regularEntry formatClause?
+;
+
+regularEntry:
+      K_KEY? key=expression K_VALUE value=expression
+    | key=expression COLON value=expression
+    | value=expression
 ;
 
 jsonExistsCondition:
@@ -1387,7 +1412,9 @@ keywordAsId:
     | K_JSON_ARRAYAGG
     | K_JSON_EXISTS
     | K_JSON_MERGEPATCH
+    | K_JSON_OBJECT
     | K_KEEP
+    | K_KEY
     | K_KEYS
     | K_LAST
     | K_LATERAL
@@ -1520,6 +1547,7 @@ keywordAsId:
     | K_UPSERT
     | K_UROWID
     | K_USING
+    | K_VALUE
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
