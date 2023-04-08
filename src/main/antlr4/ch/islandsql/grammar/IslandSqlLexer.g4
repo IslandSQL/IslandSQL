@@ -186,6 +186,7 @@ K_JSON_ARRAYAGG: 'json_arrayagg';
 K_JSON_EXISTS: 'json_exists';
 K_JSON_MERGEPATCH: 'json_mergepatch';
 K_JSON_OBJECT: 'json_object';
+K_JSON_OBJECTAGG: 'json_objectagg';
 K_KEEP: 'keep';
 K_KEY: 'key';
 K_KEYS: 'keys';
