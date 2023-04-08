@@ -937,6 +937,7 @@ specialFunctionExpression:
     | jsonArrayagg
     | jsonMergepatch
     | jsonObject
+    | jsonObjectagg
     | jsonExistsCondition
 ;
 
@@ -1057,6 +1058,11 @@ regularEntry:
       K_KEY? key=expression K_VALUE value=expression
     | key=expression COLON value=expression
     | value=expression
+;
+
+jsonObjectagg:
+    K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
+    jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
 jsonExistsCondition:
@@ -1413,6 +1419,7 @@ keywordAsId:
     | K_JSON_EXISTS
     | K_JSON_MERGEPATCH
     | K_JSON_OBJECT
+    | K_JSON_OBJECTAGG
     | K_KEEP
     | K_KEY
     | K_KEYS
