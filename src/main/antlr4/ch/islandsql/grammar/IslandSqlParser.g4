@@ -938,6 +938,7 @@ specialFunctionExpression:
     | jsonMergepatch
     | jsonObject
     | jsonObjectagg
+    | jsonQuery
     | jsonExistsCondition
 ;
 
@@ -994,6 +995,7 @@ jsonOption:
     | K_PRETTY
     | K_ASCII
     | K_TRUNCATE // from JSON_MERGEPATCH
+    | (K_ALLOW | K_DISALLOW) K_SCALARS    // from JSON_QUERY
 ;
 
 jsonArrayElement:
@@ -1065,10 +1067,50 @@ jsonObjectagg:
     jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
+jsonQuery:
+    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
+    jsonReturningClause? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
+    jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
+;
+
+// in SQL ins just a string
+jsonBasicPathExpression:
+    expr=expression
+;
+
+jsonQueryWrapperClause:
+      K_WITHOUT K_ARRAY? K_WRAPPER
+    | K_WITH (K_UNCONDITIONAL|K_CONDITIONAL)? K_ARRAY? K_WRAPPER
+;
+
+jsonQueryOnErrorClause:
+    (
+          K_ERROR
+        | K_NULL
+        | K_EMPTY
+        | K_EMPTY K_ARRAY
+        | K_EMPTY K_OBJECT
+    ) K_ON K_ERROR
+;
+
+jsonQueryOnEmptyClause:
+    (
+          K_ERROR
+        | K_NULL
+        | K_EMPTY
+        | K_EMPTY K_ARRAY
+        | K_EMPTY K_OBJECT
+    ) K_ON K_EMPTY
+;
+
+jsonQueryOnMismatchClause:
+    (K_ERROR|K_NULL) K_ON K_MISMATCH
+;
+
 jsonExistsCondition:
     K_JSON_EXISTS LPAR
         expr=expression
-        (K_FORMAT K_JSON)? COMMA path=expression
+        formatClause? COMMA path=expression
         jsonPassingClause? jsonExistsOnErrorClause?
         jsonExistsOnEmptyClause?
     RPAR
@@ -1229,8 +1271,7 @@ condition:
     | expr=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
     | expr=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
     | expr=expression
-        operator=K_IS K_NOT? K_JSON
-        (K_FORMAT K_JSON)?
+        operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
@@ -1314,6 +1355,7 @@ keywordAsId:
     | K_AND
     | K_ANY
     | K_APPLY
+    | K_ARRAY
     | K_AS
     | K_ASC
     | K_ASCII
@@ -1339,6 +1381,7 @@ keywordAsId:
     | K_CLOB
     | K_COLLATE
     | K_COLLECT
+    | K_CONDITIONAL
     | K_CONNECT
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
@@ -1420,6 +1463,7 @@ keywordAsId:
     | K_JSON_MERGEPATCH
     | K_JSON_OBJECT
     | K_JSON_OBJECTAGG
+    | K_JSON_QUERY
     | K_KEEP
     | K_KEY
     | K_KEYS
@@ -1446,6 +1490,7 @@ keywordAsId:
     | K_MEMBER
     | K_MINUS
     | K_MINUTE
+    | K_MISMATCH
     | K_MODE
     | K_MODEL
     | K_MODIFY
@@ -1469,6 +1514,7 @@ keywordAsId:
     | K_NUMBER
     | K_NUMERIC
     | K_NVARCHAR2
+    | K_OBJECT
     | K_OF
     | K_OFFSET
     | K_ON
@@ -1545,6 +1591,7 @@ keywordAsId:
     | K_TYPE
     | K_TYPENAME
     | K_UNBOUNDED
+    | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
     | K_UNPIVOT
@@ -1568,6 +1615,7 @@ keywordAsId:
     | K_WITH
     | K_WITHIN
     | K_WITHOUT
+    | K_WRAPPER
     | K_XML
     | K_YEAR
     | K_ZONE
