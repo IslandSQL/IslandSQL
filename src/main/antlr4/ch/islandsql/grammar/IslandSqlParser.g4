@@ -801,11 +801,11 @@ expression:
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpr
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpr
-    | expr=modelExpression                                      # modelExpr
     | operator=unaryOperator expr=expression                    # unaryExpression
     | expr=specialFunctionExpression                            # specialFunctionExpr
     | expr=functionExpression                                   # functionExpr
     | expr=placeholderExpression                                # placeholderExpr
+    | expr=modelExpression                                      # modelExpr
     | expr=AST                                                  # allColumnWildcardExpression
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
