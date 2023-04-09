@@ -939,6 +939,7 @@ specialFunctionExpression:
     | jsonObject
     | jsonObjectagg
     | jsonQuery
+    | jsonScalar
     | jsonExistsCondition
 ;
 
@@ -1105,6 +1106,10 @@ jsonQueryOnEmptyClause:
 
 jsonQueryOnMismatchClause:
     (K_ERROR|K_NULL) K_ON K_MISMATCH
+;
+
+jsonScalar:
+    K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? RPAR
 ;
 
 jsonExistsCondition:
@@ -1464,6 +1469,7 @@ keywordAsId:
     | K_JSON_OBJECT
     | K_JSON_OBJECTAGG
     | K_JSON_QUERY
+    | K_JSON_SCALAR
     | K_KEEP
     | K_KEY
     | K_KEYS
@@ -1575,6 +1581,7 @@ keywordAsId:
     | K_SMALLINT
     | K_SOME
     | K_SORT
+    | K_SQL
     | K_START
     | K_STRICT
     | K_SUBMULTISET
