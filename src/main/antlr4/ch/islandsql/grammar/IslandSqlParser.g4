@@ -940,6 +940,7 @@ specialFunctionExpression:
     | jsonObjectagg
     | jsonQuery
     | jsonScalar
+    | jsonSerialize
     | jsonExistsCondition
 ;
 
@@ -995,8 +996,9 @@ jsonOption:
       K_STRICT
     | K_PRETTY
     | K_ASCII
-    | K_TRUNCATE // from JSON_MERGEPATCH
-    | (K_ALLOW | K_DISALLOW) K_SCALARS    // from JSON_QUERY
+    | K_TRUNCATE                            // from JSON_MERGEPATCH
+    | (K_ALLOW | K_DISALLOW) K_SCALARS      // from JSON_QUERY
+    | K_ORDERED                             // from JSON_SERIALIZE
 ;
 
 jsonArrayElement:
@@ -1110,6 +1112,10 @@ jsonQueryOnMismatchClause:
 
 jsonScalar:
     K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? RPAR
+;
+
+jsonSerialize:
+    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
 jsonExistsCondition:
@@ -1470,6 +1476,7 @@ keywordAsId:
     | K_JSON_OBJECTAGG
     | K_JSON_QUERY
     | K_JSON_SCALAR
+    | K_JSON_SERIALIZE
     | K_KEEP
     | K_KEY
     | K_KEYS
@@ -1529,6 +1536,7 @@ keywordAsId:
     | K_OPTION
     | K_OR
     | K_ORDER
+    | K_ORDERED
     | K_OTHERS
     | K_OUTER
     | K_OVER
