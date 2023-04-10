@@ -203,6 +203,7 @@ K_JSON_SCALAR: 'json_scalar';
 K_JSON_SERIALIZE: 'json_serialize';
 K_JSON_TABLE: 'json_table';
 K_JSON_TRANSFORM: 'json_transform';
+K_JSON_VALUE: 'json_value';
 K_KEEP: 'keep';
 K_KEY: 'key';
 K_KEYS: 'keys';
