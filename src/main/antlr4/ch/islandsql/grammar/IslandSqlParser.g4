@@ -653,6 +653,7 @@ joinVariant:
       innerCrossJoinClause
     | outerJoinClause
     | crossOuterApplyClause
+    | nestedClause
 ;
 
 innerCrossJoinClause:
@@ -680,6 +681,15 @@ outerJoinType:
 
 crossOuterApplyClause:
     (K_CROSS|K_OUTER) K_APPLY (tableReference|expression)
+;
+
+// "equivalent to a left-outer ANSI join with JSON_TABLE"
+nestedClause:
+    K_NESTED K_PATH? identifier=sqlName
+        (
+              (PERIOD keys+=jsonObjectKey)+
+            | (COMMA jsonBasicPathExpression)
+        )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause
 ;
 
 inlineAnalyticView:
