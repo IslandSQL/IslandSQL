@@ -953,6 +953,7 @@ specialFunctionExpression:
     | jsonSerialize
     | jsonTable
     | jsonTransform
+    | jsonValue
     | jsonExistsCondition
 ;
 
@@ -1051,6 +1052,10 @@ jsonQueryReturnType:
     | K_CLOB
     | K_BLOB
     | K_JSON
+;
+
+jsonValueReturningClause:
+    K_RETURNING jsonValueReturnType jsonOption*
 ;
 
 jsonValueReturnType:
@@ -1299,6 +1304,13 @@ keepOp:
 
 keepOpItem:
     pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+;
+
+// jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
+jsonValue:
+    K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
+    jsonValueReturningClause? jsonValueOnErrorClause?
+    jsonValueOnEmptyClause? jsonValueOnMismatchClause? RPAR
 ;
 
 jsonExistsCondition:
@@ -1671,6 +1683,7 @@ keywordAsId:
     | K_JSON_SERIALIZE
     | K_JSON_TABLE
     | K_JSON_TRANSFORM
+    | K_JSON_VALUE
     | K_KEEP
     | K_KEY
     | K_KEYS
