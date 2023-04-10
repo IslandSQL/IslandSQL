@@ -951,6 +951,7 @@ specialFunctionExpression:
     | jsonQuery
     | jsonScalar
     | jsonSerialize
+    | jsonTable
     | jsonExistsCondition
 ;
 
@@ -1033,6 +1034,32 @@ jsonReturningClause:
         )
 ;
 
+jsonQueryReturnType:
+      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
+    | K_CLOB
+    | K_BLOB
+    | K_JSON
+;
+
+jsonValueReturnType:
+      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? K_TRUNCATE?
+    | K_CLOB
+    | K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
+    | (K_ALLOW|K_DISALLOW) K_BOOLEAN? K_TO K_NUMBER K_CONVERSION?
+    | K_DATE ((K_TRUNCATE|K_PRESERVE) K_TIME)?
+    | K_TIMESTAMP (K_WITH K_TIMEZONE)?
+    | K_SDO_GEOMETRY
+    | jsonValueReturnObjectInstance
+;
+
+jsonValueReturnObjectInstance:
+    objectTypeName=qualifiedName jsonValueMapperClause?
+;
+
+jsonValueMapperClause:
+    K_USING K_CASE_SENSITIVE K_MAPPING
+;
+
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
@@ -1082,7 +1109,7 @@ jsonObjectagg:
 
 jsonQuery:
     K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
-    jsonReturningClause? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
+    (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
 ;
 
@@ -1126,6 +1153,82 @@ jsonScalar:
 
 jsonSerialize:
     K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
+;
+
+jsonTable:
+    K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
+    jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
+;
+
+jsonTableOnErrorClause:
+    (K_ERROR|K_NULL) K_ON K_ERROR
+;
+
+jsonTableOnEmptyClause:
+    (K_ERROR|K_NULL) K_ON K_EMPTY
+;
+
+jsonColumnsClause:
+    K_COLUMNS LPAR columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)* RPAR
+;
+
+jsonColumnDefinition:
+      jsonExistColumn
+    | jsonQueryColumn
+    | jsonValueColumn
+    | jsonNestedPath
+    | ordinalityColumn
+;
+
+jsonExistColumn:
+    columnName=sqlName jsonValueReturnType? K_EXISTS (K_PATH jsonPath)?
+    jsonExistsOnErrorClause? jsonExistsOnEmptyClause?
+;
+
+jsonQueryColumn:
+    columnName=sqlName jsonQueryReturnType? formatClause? ((K_ALLOW|K_DISALLOW) K_SCALARS)?
+    jsonQueryWrapperClause? (K_PATH jsonPath)? jsonQueryOnErrorClause?
+;
+
+jsonValueColumn:
+    columnName=sqlName jsonValueReturnType? K_TRUNCATE? (K_PATH jsonPath)?
+    jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
+;
+
+jsonValueOnErrorClause:
+    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_ERROR
+;
+
+jsonValueOnEmptyClause:
+    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_EMPTY
+;
+
+jsonValueOnMismatchClause:
+    (K_IGNORE|K_ERROR|K_NULL) K_ON K_MISMATCH
+    (LPAR options+=jsonValueOnMismatchClauseOption (COMMA options+=jsonValueOnMismatchClauseOption)* RPAR)?
+;
+
+jsonValueOnMismatchClauseOption:
+      K_MISSING K_DATA
+    | K_EXTRA K_DATA
+    | K_TYPE K_ERROR
+;
+
+jsonNestedPath:
+    K_NESTED K_PATH? jsonPath jsonColumnsClause
+;
+
+jsonPath:
+      jsonBasicPathExpression
+    | jsonRelativeObjectAccess
+;
+
+jsonRelativeObjectAccess:
+    keys+=jsonObjectKey (PERIOD keys+=jsonObjectKey)*
+;
+
+ordinalityColumn:
+    columnName=sqlName K_FOR K_ORDINALITY
 ;
 
 jsonExistsCondition:
@@ -1389,11 +1492,13 @@ keywordAsId:
     | K_BINARY_FLOAT
     | K_BLOB
     | K_BLOCK
+    | K_BOOLEAN
     | K_BREADTH
     | K_BULK
     | K_BY
     | K_BYTE
     | K_CASE
+    | K_CASE_SENSITIVE
     | K_CAST
     | K_CHAR
     | K_CHARACTER
@@ -1402,6 +1507,7 @@ keywordAsId:
     | K_CLOB
     | K_COLLATE
     | K_COLLECT
+    | K_COLUMNS
     | K_CONDITIONAL
     | K_CONNECT
     | K_CONNECT_BY_ROOT
@@ -1411,6 +1517,7 @@ keywordAsId:
     | K_CURRENT
     | K_CURSOR
     | K_CYCLE
+    | K_DATA
     | K_DATE
     | K_DAY
     | K_DBTIMEZONE
@@ -1439,6 +1546,7 @@ keywordAsId:
     | K_EXCLUSIVE
     | K_EXISTS
     | K_EXTERNAL
+    | K_EXTRA
     | K_EXTRACT
     | K_FACT
     | K_FALSE
@@ -1487,6 +1595,7 @@ keywordAsId:
     | K_JSON_QUERY
     | K_JSON_SCALAR
     | K_JSON_SERIALIZE
+    | K_JSON_TABLE
     | K_KEEP
     | K_KEY
     | K_KEYS
@@ -1506,6 +1615,7 @@ keywordAsId:
     | K_LOGFILE
     | K_LONG
     | K_MAIN
+    | K_MAPPING
     | K_MATCH
     | K_MATCH_RECOGNIZE
     | K_MEASURE
@@ -1514,6 +1624,7 @@ keywordAsId:
     | K_MINUS
     | K_MINUTE
     | K_MISMATCH
+    | K_MISSING
     | K_MODE
     | K_MODEL
     | K_MODIFY
@@ -1526,6 +1637,7 @@ keywordAsId:
     | K_NCHAR
     | K_NCHAR_CS
     | K_NCLOB
+    | K_NESTED
     | K_NEW
     | K_NEXT
     | K_NO
@@ -1547,6 +1659,7 @@ keywordAsId:
     | K_OR
     | K_ORDER
     | K_ORDERED
+    | K_ORDINALITY
     | K_OTHERS
     | K_OUTER
     | K_OVER
@@ -1554,6 +1667,7 @@ keywordAsId:
     | K_PARTITION
     | K_PASSING
     | K_PAST
+    | K_PATH
     | K_PATTERN
     | K_PER
     | K_PERCENT
@@ -1563,6 +1677,7 @@ keywordAsId:
     | K_PRECEDING
     | K_PRECISION
     | K_PRESENT
+    | K_PRESERVE
     | K_PRETTY
     | K_PRIOR
     | K_PROCEDURE
@@ -1584,6 +1699,7 @@ keywordAsId:
     | K_SAMPLE
     | K_SCALARS
     | K_SCN
+    | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
     | K_SEED
@@ -1610,6 +1726,7 @@ keywordAsId:
     | K_TIES
     | K_TIME
     | K_TIMESTAMP
+    | K_TIMEZONE
     | K_TO
     | K_TRUE
     | K_TRUNCATE
