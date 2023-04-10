@@ -952,6 +952,7 @@ specialFunctionExpression:
     | jsonScalar
     | jsonSerialize
     | jsonTable
+    | jsonTransform
     | jsonExistsCondition
 ;
 
@@ -1033,6 +1034,17 @@ jsonReturningClause:
             | K_JSON
         )
 ;
+
+jsonTransformReturningClause:
+    K_RETURNING
+        (
+              K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
+            | K_CLOB
+            | K_BLOB
+            | K_JSON
+        ) (K_ALLOW|K_DISALLOW)?
+;
+
 
 jsonQueryReturnType:
       K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
@@ -1229,6 +1241,64 @@ jsonRelativeObjectAccess:
 
 ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
+;
+
+jsonTransform:
+    K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
+    jsonTransformReturningClause? jsonPassingClause? RPAR
+;
+
+operation:
+      removeOp
+    | insertOp
+    | replaceOp
+    | appendOp
+    | setOp
+    | renameOp
+    | keepOp
+;
+
+removeOp:
+    K_REMOVE pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+;
+
+// works only if there is no space before INSERT as long as the INSERT statement is not supported fully
+insertOp:
+    K_INSERT pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
+    ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
+;
+
+replaceOp:
+    K_REPLACE pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
+;
+
+appendOp:
+    K_APPEND pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+;
+
+setOp:
+    K_SET pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
+    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+;
+
+renameOp:
+    K_RENAME pathExpr=expression K_WITH renamed=expression
+    ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+;
+
+keepOp:
+    K_KEEP items+=keepOpItem (COMMA items+=keepOpItem)*
+;
+
+keepOpItem:
+    pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
 ;
 
 jsonExistsCondition:
@@ -1478,6 +1548,7 @@ keywordAsId:
     | K_ANALYTIC
     | K_AND
     | K_ANY
+    | K_APPEND
     | K_APPLY
     | K_ARRAY
     | K_AS
@@ -1513,6 +1584,7 @@ keywordAsId:
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
     | K_CONVERSION
+    | K_CREATE
     | K_CROSS
     | K_CURRENT
     | K_CURSOR
@@ -1544,6 +1616,7 @@ keywordAsId:
     | K_EXCEPT
     | K_EXCLUDE
     | K_EXCLUSIVE
+    | K_EXISTING
     | K_EXISTS
     | K_EXTERNAL
     | K_EXTRA
@@ -1576,6 +1649,7 @@ keywordAsId:
     | K_INDICATOR
     | K_INFINITE
     | K_INNER
+    | K_INSERT
     | K_INT
     | K_INTEGER
     | K_INTERSECT
@@ -1596,6 +1670,7 @@ keywordAsId:
     | K_JSON_SCALAR
     | K_JSON_SERIALIZE
     | K_JSON_TABLE
+    | K_JSON_TRANSFORM
     | K_KEEP
     | K_KEY
     | K_KEYS
@@ -1687,6 +1762,9 @@ keywordAsId:
     | K_REAL
     | K_REFERENCE
     | K_REJECT
+    | K_REMOVE
+    | K_RENAME
+    | K_REPLACE
     | K_RESPECT
     | K_RETURN
     | K_RETURNING
