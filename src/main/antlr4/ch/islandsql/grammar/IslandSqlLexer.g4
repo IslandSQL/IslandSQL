@@ -207,6 +207,7 @@ K_JSON_VALUE: 'json_value';
 K_KEEP: 'keep';
 K_KEY: 'key';
 K_KEYS: 'keys';
+K_LAG: 'lag';
 K_LAST: 'last';
 K_LATERAL: 'lateral';
 K_LAX: 'lax';

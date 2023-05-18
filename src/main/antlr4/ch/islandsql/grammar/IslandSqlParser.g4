@@ -1687,6 +1687,7 @@ keywordAsId:
     | K_KEEP
     | K_KEY
     | K_KEYS
+    | K_LAG
     | K_LAST
     | K_LATERAL
     | K_LAX
