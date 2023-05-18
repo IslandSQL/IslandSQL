@@ -1624,6 +1624,7 @@ keywordAsId:
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
     | K_CONVERSION
+    | K_COUNT
     | K_CREATE
     | K_CROSS
     | K_CURRENT
@@ -1727,6 +1728,7 @@ keywordAsId:
     | K_LIKE
     | K_LIKEC
     | K_LIMIT
+    | K_LISTAGG
     | K_LOCAL
     | K_LOCATION
     | K_LOCK
@@ -1782,6 +1784,7 @@ keywordAsId:
     | K_OTHERS
     | K_OUTER
     | K_OVER
+    | K_OVERFLOW
     | K_PARAMETERS
     | K_PARTITION
     | K_PASSING
