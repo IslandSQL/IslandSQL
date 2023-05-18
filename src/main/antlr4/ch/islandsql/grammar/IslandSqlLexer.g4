@@ -209,6 +209,7 @@ K_KEY: 'key';
 K_KEYS: 'keys';
 K_LAG: 'lag';
 K_LAST: 'last';
+K_LAST_VALUE: 'last_value';
 K_LATERAL: 'lateral';
 K_LAX: 'lax';
 K_LEFT: 'left';

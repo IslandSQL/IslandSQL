@@ -1698,6 +1698,7 @@ keywordAsId:
     | K_KEYS
     | K_LAG
     | K_LAST
+    | K_LAST_VALUE
     | K_LATERAL
     | K_LAX
     | K_LEFT
