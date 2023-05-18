@@ -955,6 +955,7 @@ specialFunctionExpression:
     | jsonTransform
     | jsonValue
     | jsonExistsCondition
+    | lag
 ;
 
 cast:
@@ -1320,6 +1321,14 @@ jsonExistsCondition:
         jsonPassingClause? jsonExistsOnErrorClause?
         jsonExistsOnEmptyClause?
     RPAR
+;
+
+lag:
+    K_LAG
+        (
+              LPAR expr=expression (COMMA offset=expression (COMMA default=expression)?)? RPAR respectIgnoreNullsClause?
+            | LPAR expr=expression respectIgnoreNullsClause (COMMA offset=expression (COMMA default=expression)?)? RPAR
+        ) overClause
 ;
 
 functionExpression:
