@@ -212,6 +212,7 @@ K_LAST: 'last';
 K_LAST_VALUE: 'last_value';
 K_LATERAL: 'lateral';
 K_LAX: 'lax';
+K_LEAD: 'lead';
 K_LEFT: 'left';
 K_LIKE2: 'like2';
 K_LIKE4: 'like4';

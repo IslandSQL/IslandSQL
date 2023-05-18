@@ -1711,6 +1711,7 @@ keywordAsId:
     | K_LAST_VALUE
     | K_LATERAL
     | K_LAX
+    | K_LEAD
     | K_LEFT
     | K_LIKE2
     | K_LIKE4
