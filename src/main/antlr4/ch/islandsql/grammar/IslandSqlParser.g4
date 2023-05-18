@@ -958,6 +958,7 @@ specialFunctionExpression:
     | lag
     | lastValue
     | lead
+    | listagg
 ;
 
 cast:
@@ -1348,6 +1349,16 @@ lead:
               LPAR expr=expression (COMMA offset=expression (COMMA default=expression)?)? RPAR respectIgnoreNullsClause?
             | LPAR expr=expression respectIgnoreNullsClause (COMMA offset=expression (COMMA default=expression)?)? RPAR
         ) overClause
+;
+
+listagg:
+    K_LISTAGG LPAR (K_ALL|K_DISTINCT)? expr=expression (COMMA delimiter=expression)? listaggOverflowClause? RPAR
+        (K_WITHIN K_GROUP LPAR orderByClause RPAR)? (K_OVER LPAR queryPartitionClause? RPAR)?
+;
+
+listaggOverflowClause:
+      K_ON K_OVERFLOW K_ERROR
+    | K_ON K_OVERFLOW K_TRUNCATE truncateIndicator=expression? ((K_WITH|K_WITHOUT) K_COUNT)?
 ;
 
 functionExpression:
