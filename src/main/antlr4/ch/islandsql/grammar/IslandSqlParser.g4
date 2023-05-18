@@ -957,6 +957,7 @@ specialFunctionExpression:
     | jsonExistsCondition
     | lag
     | lastValue
+    | lead
 ;
 
 cast:
@@ -1338,6 +1339,14 @@ lastValue:
               LPAR expr=expression RPAR
             | LPAR expr=expression RPAR respectIgnoreNullsClause
             | LPAR expr=expression respectIgnoreNullsClause RPAR
+        ) overClause
+;
+
+lead:
+    K_LEAD
+        (
+              LPAR expr=expression (COMMA offset=expression (COMMA default=expression)?)? RPAR respectIgnoreNullsClause?
+            | LPAR expr=expression respectIgnoreNullsClause (COMMA offset=expression (COMMA default=expression)?)? RPAR
         ) overClause
 ;
 
