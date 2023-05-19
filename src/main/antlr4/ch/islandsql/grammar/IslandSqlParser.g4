@@ -254,8 +254,8 @@ hierarchicalQueryClause:
 ;
 
 groupByClause:
-      K_GROUP K_BY items+=groupByItem (K_HAVING cond=condition)?
-    | K_HAVING cond=condition K_GROUP K_BY items+=groupByItem       // undocumented, but allowed
+      K_GROUP K_BY items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
+    | K_HAVING cond=condition K_GROUP K_BY items+=groupByItem (COMMA items+=groupByItem)* // undocumented, but allowed
 ;
 
 // rollupCubeClause treated as expression
