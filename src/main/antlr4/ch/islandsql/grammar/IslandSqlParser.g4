@@ -960,6 +960,7 @@ specialFunctionExpression:
     | lead
     | listagg
     | nthValue
+    | prediction
 ;
 
 cast:
@@ -1362,6 +1363,31 @@ nthValue:
         (K_FROM (K_FIRST|K_LAST))?
         ((K_RESPECT|K_IGNORE) K_NULLS)?
         overClause
+;
+
+prediction:
+    K_PREDICTION
+        {unhideFirstHint();} LPAR hint?
+        (
+             K_OF K_ANOMALY
+           | K_FOR expr=expression
+           | expr=expression
+        )
+        costMatrixClause? miningAttributeClause RPAR
+        (K_OVER LPAR miningAnalyticClause RPAR)?
+;
+
+costMatrixClause:
+    K_COST
+    (
+          K_MODEL K_AUTO?
+        | LPAR classValues+=expression (COMMA classValues+=expression)*
+          RPAR K_VALUES LPAR costValues+=expression (COMMA costValues+=expression)* RPAR
+    )
+;
+
+miningAnalyticClause:
+    queryPartitionClause? orderByClause?
 ;
 
 listaggOverflowClause:
