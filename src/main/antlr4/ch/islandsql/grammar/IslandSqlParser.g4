@@ -1371,7 +1371,7 @@ prediction:
         (
              K_OF K_ANOMALY
            | K_FOR expr=expression
-           | expr=expression
+           | (schema=sqlName PERIOD)? model=sqlName
         )
         costMatrixClause? miningAttributeClause RPAR
         (K_OVER LPAR miningAnalyticClause RPAR)?
