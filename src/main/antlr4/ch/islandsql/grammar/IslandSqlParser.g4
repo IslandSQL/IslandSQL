@@ -1749,12 +1749,9 @@ keywordAsId:
     | K_KEEP
     | K_KEY
     | K_KEYS
-    | K_LAG
     | K_LAST
-    | K_LAST_VALUE
     | K_LATERAL
     | K_LAX
-    | K_LEAD
     | K_LEFT
     | K_LIKE2
     | K_LIKE4
