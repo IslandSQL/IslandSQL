@@ -295,6 +295,7 @@ K_PIVOT: 'pivot';
 K_PRECEDING: 'preceding';
 K_PRECISION: 'precision';
 K_PREDICTION: 'prediction';
+K_PREDICTION_COST: 'prediction_cost';
 K_PRESENT: 'present';
 K_PRESERVE: 'preserve';
 K_PRETTY: 'pretty';

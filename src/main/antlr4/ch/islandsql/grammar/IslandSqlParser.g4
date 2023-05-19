@@ -1848,6 +1848,7 @@ keywordAsId:
     | K_PRECEDING
     | K_PRECISION
     | K_PREDICTION
+    | K_PREDICTION_COST
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
