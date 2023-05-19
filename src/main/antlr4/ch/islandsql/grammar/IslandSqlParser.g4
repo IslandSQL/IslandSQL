@@ -1676,7 +1676,6 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
-    | K_FIRST_VALUE
     | K_FLOAT
     | K_FOLLOWING
     | K_FOR

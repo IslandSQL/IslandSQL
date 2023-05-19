@@ -163,7 +163,6 @@ K_FETCH: 'fetch';
 K_FILTER: 'filter';
 K_FINAL: 'final';
 K_FIRST: 'first';
-K_FIRST_VALUE: 'first_value';
 K_FLOAT: 'float';
 K_FOLLOWING: 'following';
 K_FOR: 'for';
