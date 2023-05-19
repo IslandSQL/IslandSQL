@@ -960,9 +960,6 @@ specialFunctionExpression:
     | lead
     | listagg
     | nthValue
-    | prediction
-    | predictionCost
-    | predictionDetails
 ;
 
 cast:
@@ -1367,18 +1364,6 @@ nthValue:
         overClause
 ;
 
-prediction:
-    K_PREDICTION
-        {unhideFirstHint();} LPAR hint?
-        (
-             K_OF K_ANOMALY
-           | K_FOR expr=expression
-           | (schema=sqlName PERIOD)? model=sqlName
-        )
-        costMatrixClause? miningAttributeClause RPAR
-        (K_OVER LPAR miningAnalyticClause RPAR)?
-;
-
 costMatrixClause:
     K_COST
     (
@@ -1386,33 +1371,6 @@ costMatrixClause:
         | LPAR classValues+=expression (COMMA classValues+=expression)*
           RPAR K_VALUES LPAR costValues+=expression (COMMA costValues+=expression)* RPAR
     )
-;
-
-miningAnalyticClause:
-    queryPartitionClause? orderByClause?
-;
-
-predictionCost:
-    K_PREDICTION_COST LPAR
-        (
-             K_OF K_ANOMALY
-           | K_FOR expr=expression
-           | (schema=sqlName PERIOD)? model=sqlName
-        )
-        (COMMA classValue=expression)? costMatrixClause miningAttributeClause RPAR
-        (K_OVER LPAR miningAnalyticClause RPAR)?
-;
-
-predictionDetails:
-    K_PREDICTION_DETAILS LPAR
-        (
-             K_OF K_ANOMALY
-           | K_FOR expr=expression
-           | (schema=sqlName PERIOD)? model=sqlName
-        )
-        (COMMA classValue=expression (COMMA topN=expression)?)?
-        weightOrderClause? miningAttributeClause RPAR
-        (K_OVER LPAR miningAnalyticClause RPAR)?
 ;
 
 listaggOverflowClause:
@@ -1436,6 +1394,8 @@ functionParameterPrefix:
     | K_ALL             // e.g. in any_value
     | K_UNIQUE          // e.g. bit_and_agg
     | K_INTO            // e.g. cluster_details
+    | K_OF              // e.g. prediction_details
+    | K_FOR             // e.g. prediction_details
 ;
 
 functionParameterSuffix:
@@ -1447,6 +1407,7 @@ functionParameterSuffix:
     | orderByClause                                 // e.g. approx_rank
     | weightOrderClause miningAttributeClause       // e.g. cluster_details
     | weightOrderClause                             // e.g. cluster_details
+    | costMatrixClause miningAttributeClause        // e.g. prediction
     | miningAttributeClause                         // e.g. cluster_details
 ;
 
