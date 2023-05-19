@@ -1606,6 +1606,7 @@ keywordAsId:
     | K_ALLOW
     | K_ANALYTIC
     | K_AND
+    | K_ANOMALY
     | K_ANY
     | K_APPEND
     | K_APPLY
@@ -1614,6 +1615,7 @@ keywordAsId:
     | K_ASC
     | K_ASCII
     | K_AT
+    | K_AUTO
     | K_AUTOMATIC
     | K_BADFILE
     | K_BETWEEN
@@ -1643,6 +1645,7 @@ keywordAsId:
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
     | K_CONVERSION
+    | K_COST
     | K_COUNT
     | K_CREATE
     | K_CROSS
@@ -1784,6 +1787,7 @@ keywordAsId:
     | K_NOCYCLE
     | K_NOT
     | K_NOWAIT
+    | K_NTH_VALUE
     | K_NULL
     | K_NULLS
     | K_NUMBER
@@ -1817,6 +1821,7 @@ keywordAsId:
     | K_PIVOT
     | K_PRECEDING
     | K_PRECISION
+    | K_PREDICTION
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
@@ -1888,6 +1893,7 @@ keywordAsId:
     | K_UROWID
     | K_USING
     | K_VALUE
+    | K_VALUES
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
@@ -1905,7 +1911,6 @@ keywordAsId:
     | K_XML
     | K_YEAR
     | K_ZONE
-    | K_NTH_VALUE
 ;
 
 unquotedId:
