@@ -961,6 +961,7 @@ specialFunctionExpression:
     | listagg
     | nthValue
     | prediction
+    | predictionCost
 ;
 
 cast:
@@ -1388,6 +1389,17 @@ costMatrixClause:
 
 miningAnalyticClause:
     queryPartitionClause? orderByClause?
+;
+
+predictionCost:
+    K_PREDICTION_COST LPAR
+        (
+             K_OF K_ANOMALY
+           | K_FOR expr=expression
+           | (schema=sqlName PERIOD)? model=sqlName
+        )
+        (COMMA classValue=expression)? costMatrixClause miningAttributeClause RPAR
+        (K_OVER LPAR miningAnalyticClause RPAR)?
 ;
 
 listaggOverflowClause:
