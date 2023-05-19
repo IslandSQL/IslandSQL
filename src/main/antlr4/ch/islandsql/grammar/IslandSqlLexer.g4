@@ -79,7 +79,6 @@ K_ALL: 'all';
 K_ALLOW: 'allow';
 K_ANALYTIC: 'analytic';
 K_AND: 'and';
-K_ANOMALY: 'anomaly';
 K_ANY: 'any';
 K_APPEND: 'append';
 K_APPLY: 'apply';

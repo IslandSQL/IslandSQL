@@ -1657,7 +1657,6 @@ keywordAsId:
     | K_ALLOW
     | K_ANALYTIC
     | K_AND
-    | K_ANOMALY
     | K_ANY
     | K_APPEND
     | K_APPLY
