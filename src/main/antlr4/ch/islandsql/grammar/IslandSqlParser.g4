@@ -959,6 +959,7 @@ specialFunctionExpression:
     | lastValue
     | lead
     | listagg
+    | nthValue
 ;
 
 cast:
@@ -1354,6 +1355,13 @@ lead:
 listagg:
     K_LISTAGG LPAR (K_ALL|K_DISTINCT)? expr=expression (COMMA delimiter=expression)? listaggOverflowClause? RPAR
         (K_WITHIN K_GROUP LPAR orderByClause RPAR)? (K_OVER LPAR queryPartitionClause? RPAR)?
+;
+
+nthValue:
+    K_NTH_VALUE LPAR expr=expression COMMA n=expression RPAR
+        (K_FROM (K_FIRST|K_LAST))?
+        ((K_RESPECT|K_IGNORE) K_NULLS)?
+        overClause
 ;
 
 listaggOverflowClause:
