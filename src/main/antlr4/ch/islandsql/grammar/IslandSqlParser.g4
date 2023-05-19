@@ -962,6 +962,7 @@ specialFunctionExpression:
     | nthValue
     | prediction
     | predictionCost
+    | predictionDetails
 ;
 
 cast:
@@ -1399,6 +1400,18 @@ predictionCost:
            | (schema=sqlName PERIOD)? model=sqlName
         )
         (COMMA classValue=expression)? costMatrixClause miningAttributeClause RPAR
+        (K_OVER LPAR miningAnalyticClause RPAR)?
+;
+
+predictionDetails:
+    K_PREDICTION_DETAILS LPAR
+        (
+             K_OF K_ANOMALY
+           | K_FOR expr=expression
+           | (schema=sqlName PERIOD)? model=sqlName
+        )
+        (COMMA classValue=expression (COMMA topN=expression)?)?
+        weightOrderClause? miningAttributeClause RPAR
         (K_OVER LPAR miningAnalyticClause RPAR)?
 ;
 
