@@ -942,7 +942,6 @@ specialFunctionExpression:
       cast
     | extract
     | featureCompare
-    | firstValue
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -979,15 +978,6 @@ extract:
 featureCompare:
     K_FEATURE_COMPARE LPAR (schema=sqlName PERIOD)? model=sqlName
     miningAttributeClause1=miningAttributeClause K_AND miningAttributeClause2=miningAttributeClause RPAR
-;
-
-firstValue:
-    K_FIRST_VALUE
-        (
-              LPAR expr=expression RPAR
-            | LPAR expr=expression RPAR respectIgnoreNullsClause
-            | LPAR expr=expression respectIgnoreNullsClause RPAR
-        ) overClause
 ;
 
 respectIgnoreNullsClause:
