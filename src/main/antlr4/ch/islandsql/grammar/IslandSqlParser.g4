@@ -955,9 +955,6 @@ specialFunctionExpression:
     | jsonTransform
     | jsonValue
     | jsonExistsCondition
-    | lag
-    | lastValue
-    | lead
     | listagg
     | nthValue
 ;
@@ -1327,31 +1324,6 @@ jsonExistsCondition:
     RPAR
 ;
 
-lag:
-    K_LAG
-        (
-              LPAR expr=expression (COMMA offset=expression (COMMA default=expression)?)? RPAR respectIgnoreNullsClause?
-            | LPAR expr=expression respectIgnoreNullsClause (COMMA offset=expression (COMMA default=expression)?)? RPAR
-        ) overClause
-;
-
-lastValue:
-    K_LAST_VALUE
-        (
-              LPAR expr=expression RPAR
-            | LPAR expr=expression RPAR respectIgnoreNullsClause
-            | LPAR expr=expression respectIgnoreNullsClause RPAR
-        ) overClause
-;
-
-lead:
-    K_LEAD
-        (
-              LPAR expr=expression (COMMA offset=expression (COMMA default=expression)?)? RPAR respectIgnoreNullsClause?
-            | LPAR expr=expression respectIgnoreNullsClause (COMMA offset=expression (COMMA default=expression)?)? RPAR
-        ) overClause
-;
-
 listagg:
     K_LISTAGG LPAR (K_ALL|K_DISTINCT)? expr=expression (COMMA delimiter=expression)? listaggOverflowClause? RPAR
         (K_WITHIN K_GROUP LPAR orderByClause RPAR)? (K_OVER LPAR queryPartitionClause? RPAR)?
@@ -1380,9 +1352,10 @@ listaggOverflowClause:
 
 functionExpression:
     name=sqlName LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
-    withinClause?   // e.g. approx_percentile
-    keepClause?     // e.g. first, last
-    overClause?     // e.g. avg
+    withinClause?               // e.g. approx_percentile
+    keepClause?                 // e.g. first, last
+    respectIgnoreNullsClause?   // e.g. lag
+    overClause?                 // e.g. avg
 ;
 
 functionParameter:
@@ -1390,12 +1363,12 @@ functionParameter:
 ;
 
 functionParameterPrefix:
-      K_DISTINCT        // e.g. in any_value
-    | K_ALL             // e.g. in any_value
-    | K_UNIQUE          // e.g. bit_and_agg
-    | K_INTO            // e.g. cluster_details
-    | K_OF              // e.g. prediction_details
-    | K_FOR             // e.g. prediction_details
+      K_DISTINCT                // e.g. in any_value
+    | K_ALL                     // e.g. in any_value
+    | K_UNIQUE                  // e.g. bit_and_agg
+    | K_INTO                    // e.g. cluster_details
+    | K_OF                      // e.g. prediction_details
+    | K_FOR                     // e.g. prediction_details
 ;
 
 functionParameterSuffix:
@@ -1409,6 +1382,7 @@ functionParameterSuffix:
     | weightOrderClause                             // e.g. cluster_details
     | costMatrixClause miningAttributeClause        // e.g. prediction
     | miningAttributeClause                         // e.g. cluster_details
+    | respectIgnoreNullsClause                      // e.g. lag
 ;
 
 placeholderExpression:
