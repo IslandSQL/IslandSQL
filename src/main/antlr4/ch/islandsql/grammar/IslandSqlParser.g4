@@ -1897,6 +1897,7 @@ keywordAsId:
     | K_XML
     | K_YEAR
     | K_ZONE
+    | K_NTH_VALUE
 ;
 
 unquotedId:

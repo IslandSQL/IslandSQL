@@ -378,6 +378,7 @@ K_WRAPPER: 'wrapper';
 K_XML: 'xml';
 K_YEAR: 'year';
 K_ZONE: 'zone';
+K_NTH_VALUE: 'nth_value';
 
 /*----------------------------------------------------------------------------*/
 // Special characters - naming according HTML entity name
