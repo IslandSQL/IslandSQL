@@ -1332,7 +1332,7 @@ listagg:
 nthValue:
     K_NTH_VALUE LPAR expr=expression COMMA n=expression RPAR
         (K_FROM (K_FIRST|K_LAST))?
-        ((K_RESPECT|K_IGNORE) K_NULLS)?
+        respectIgnoreNullsClause?
         overClause
 ;
 
