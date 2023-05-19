@@ -1471,7 +1471,7 @@ miningAttributeClause:
 
 // undocumented: optionality of "as"
 miningAttribute:
-      (schema=expression PERIOD) table=expression PERIOD AST
+      (schema=sqlName PERIOD)? table=sqlName PERIOD AST
     | expr=expression (K_AS? alias=sqlName)?
 ;
 
