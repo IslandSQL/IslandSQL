@@ -346,6 +346,7 @@ K_SMALLINT: 'smallint';
 K_SOME: 'some';
 K_SORT: 'sort';
 K_SQL: 'sql';
+K_STANDALONE: 'standalone';
 K_START: 'start';
 K_STRICT: 'strict';
 K_SUBMULTISET: 'submultiset';
@@ -382,6 +383,7 @@ K_VALUES: 'values';
 K_VARCHAR2: 'varchar2';
 K_VARCHAR: 'varchar';
 K_VARYING: 'varying';
+K_VERSION: 'version';
 K_VERSIONS: 'versions';
 K_VIEW: 'view';
 K_VISIBLE: 'visible';
@@ -404,7 +406,9 @@ K_XMLFOREST: 'xmlforest';
 K_XMLPARSE: 'xmlparse';
 K_XMLPI: 'xmlpi';
 K_XMLQUERY: 'xmlquery';
+K_XMLROOT: 'xmlroot';
 K_YEAR: 'year';
+K_YES: 'yes';
 K_ZONE: 'zone';
 
 /*----------------------------------------------------------------------------*/

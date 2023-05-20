@@ -1965,6 +1965,7 @@ keywordAsId:
     | K_SOME
     | K_SORT
     | K_SQL
+    | K_STANDALONE
     | K_START
     | K_STRICT
     | K_SUBMULTISET
@@ -2001,6 +2002,7 @@ keywordAsId:
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
+    | K_VERSION
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
@@ -2023,7 +2025,9 @@ keywordAsId:
     | K_XMLPARSE
     | K_XMLPI
     | K_XMLQUERY
+    | K_XMLROOT
     | K_YEAR
+    | K_YES
     | K_ZONE
 ;
 
