@@ -961,6 +961,7 @@ specialFunctionExpression:
     | validateConversion
     | xmlcast
     | xmlcolattval
+    | xmlelement
 ;
 
 cast:
@@ -1379,11 +1380,39 @@ xmlcast:
 ;
 
 xmlcolattval:
-    K_XMLCOLATTVAL LPAR items+=xmlcolattvalItem (COMMA items+=xmlcolattvalItem)* RPAR
+    K_XMLCOLATTVAL LPAR items+=xmlAttributeItem (COMMA items+=xmlAttributeItem)* RPAR
 ;
 
-xmlcolattvalItem:
-    expr=expression (K_AS K_EVALNAME? alias=expression)?
+xmlelement:
+    K_XMLELEMENT LPAR
+        (K_ENTITYESCAPING|K_NOENTITYESCAPING)?
+        (
+              K_EVALNAME identifier=expression
+            | K_NAME? identifier=expression
+        )
+        (COMMA xmlAttributesClause)?
+        values+=xmlelementValue*
+    RPAR
+;
+
+xmlAttributesClause:
+    K_XMLATTRIBUTES LPAR
+         (K_ENTITYESCAPING|K_NOENTITYESCAPING)?
+         (K_SCHEMACHECK|K_NOSCHEMACHECK)?
+         items+=xmlAttributeItem (COMMA items+=xmlAttributeItem)*
+    RPAR
+;
+
+xmlAttributeItem:
+    expr=expression
+        (
+              K_AS K_EVALNAME identifier=expression
+            | K_AS? K_NAME? identifier=expression
+        )?
+;
+
+xmlelementValue:
+    COMMA expr=expression (K_AS? alias=expression)?
 ;
 
 functionExpression:
