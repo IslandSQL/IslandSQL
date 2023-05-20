@@ -386,6 +386,7 @@ K_WITHIN: 'within';
 K_WITHOUT: 'without';
 K_WRAPPER: 'wrapper';
 K_XML: 'xml';
+K_XMLCAST: 'xmlcast';
 K_YEAR: 'year';
 K_ZONE: 'zone';
 

@@ -1922,6 +1922,7 @@ keywordAsId:
     | K_WITHOUT
     | K_WRAPPER
     | K_XML
+    | K_XMLCAST
     | K_YEAR
     | K_ZONE
 ;
