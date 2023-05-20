@@ -1767,6 +1767,7 @@ keywordAsId:
     | K_DECIMAL
     | K_DECREMENT
     | K_DEFAULT
+    | K_DEFAULTS
     | K_DEFINE
     | K_DENSE_RANK
     | K_DEPTH
@@ -1781,6 +1782,7 @@ keywordAsId:
     | K_DOUBLE
     | K_ELSE
     | K_EMPTY
+    | K_ENCODING
     | K_END
     | K_ENTITYESCAPING
     | K_ERROR
@@ -1812,12 +1814,14 @@ keywordAsId:
     | K_GROUPING
     | K_GROUPS
     | K_HAVING
+    | K_HIDE
     | K_HIERARCHIES
     | K_HOUR
     | K_IGNORE
     | K_IN
     | K_INCLUDE
     | K_INCREMENT
+    | K_INDENT
     | K_INDICATOR
     | K_INFINITE
     | K_INNER
@@ -1972,8 +1976,10 @@ keywordAsId:
     | K_SET
     | K_SETS
     | K_SHARE
+    | K_SHOW
     | K_SIBLINGS
     | K_SINGLE
+    | K_SIZE
     | K_SKIP
     | K_SMALLINT
     | K_SOME
@@ -2040,6 +2046,7 @@ keywordAsId:
     | K_XMLPI
     | K_XMLQUERY
     | K_XMLROOT
+    | K_XMLSERIALIZE
     | K_YEAR
     | K_YES
     | K_ZONE
