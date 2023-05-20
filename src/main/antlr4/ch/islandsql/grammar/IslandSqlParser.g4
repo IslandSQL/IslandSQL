@@ -956,6 +956,7 @@ specialFunctionExpression:
     | jsonExistsCondition
     | listagg
     | nthValue
+    | treat
 ;
 
 cast:
@@ -1341,6 +1342,15 @@ costMatrixClause:
 listaggOverflowClause:
       K_ON K_OVERFLOW K_ERROR
     | K_ON K_OVERFLOW K_TRUNCATE truncateIndicator=expression? ((K_WITH|K_WITHOUT) K_COUNT)?
+;
+
+treat:
+    K_TREAT LPAR expr=expression K_AS
+        (
+              K_REF? (schema=sqlName PERIOD)? typeName=dataType
+            | K_JSON
+        )
+    RPAR
 ;
 
 functionExpression:
