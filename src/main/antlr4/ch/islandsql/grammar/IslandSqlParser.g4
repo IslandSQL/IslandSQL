@@ -959,6 +959,7 @@ specialFunctionExpression:
     | treat
     | trim
     | validateConversion
+    | xmlcast
 ;
 
 cast:
@@ -1370,6 +1371,10 @@ trim:
 validateConversion:
     K_VALIDATE_CONVERSION LPAR expr=expression K_AS typeName=dataType
         (COMMA fmt=expression (COMMA nlsparam=expression)?)? RPAR
+;
+
+xmlcast:
+    K_XMLCAST LPAR expr=expression K_AS typeName=dataType RPAR
 ;
 
 functionExpression:
