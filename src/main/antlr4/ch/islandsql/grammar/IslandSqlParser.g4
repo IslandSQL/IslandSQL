@@ -1376,6 +1376,7 @@ functionParameterSuffix:
     | costMatrixClause miningAttributeClause        // e.g. prediction
     | miningAttributeClause                         // e.g. cluster_details
     | respectIgnoreNullsClause                      // e.g. lag
+    | defaultOnConversionError                      // e.g. to_binary_double
 ;
 
 placeholderExpression:
