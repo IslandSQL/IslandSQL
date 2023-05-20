@@ -966,6 +966,7 @@ specialFunctionExpression:
     | xmlforest
     | xmlparse
     | xmlpi
+    | xmlquery
 ;
 
 cast:
@@ -1445,6 +1446,12 @@ xmlpi:
               K_EVALNAME identifierExpr=expression
             | K_NAME? identifierName=sqlName
         ) (COMMA valueExpr=expression)?
+    RPAR
+;
+
+xmlquery:
+    K_XMLQUERY LPAR
+        expr=expression xmlPassingClause? K_RETURNING K_CONTENT (K_NULL K_ON K_EMPTY)?
     RPAR
 ;
 
