@@ -1898,6 +1898,7 @@ keywordAsId:
     | K_UPSERT
     | K_UROWID
     | K_USING
+    | K_VALIDATE_CONVERSION
     | K_VALUE
     | K_VALUES
     | K_VARCHAR2

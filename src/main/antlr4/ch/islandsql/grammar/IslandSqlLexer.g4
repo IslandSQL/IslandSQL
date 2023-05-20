@@ -368,6 +368,7 @@ K_UPDATED: 'updated';
 K_UPSERT: 'upsert';
 K_UROWID: 'urowid';
 K_USING: 'using';
+K_VALIDATE_CONVERSION: 'validate_conversion';
 K_VALUE: 'value';
 K_VALUES: 'values';
 K_VARCHAR2: 'varchar2';
