@@ -969,6 +969,7 @@ specialFunctionExpression:
     | xmlquery
     | xmlroot
     | xmlserialize
+    | xmltable
 ;
 
 cast:
@@ -1478,6 +1479,34 @@ xmlserialize:
         (K_NO K_INDENT|K_INDENT (K_SIZE EQUALS indent=expression)?)?
         ((K_HIDE|K_SHOW) K_DEFAULTS)?
     RPAR
+;
+
+xmltable:
+    K_XMLTABLE LPAR (xmlNamespaceClause COMMA)? expr=expression xmltableOptions RPAR
+;
+
+xmlNamespaceClause:
+    K_XMLNAMESPACES LPAR items+=xmlNamespaceItem (COMMA items+=xmlNamespaceItem)* RPAR
+;
+
+xmlNamespaceItem:
+      expr=expression K_AS identifier=sqlName
+    | K_DEFAULT defaultName=expression
+;
+
+xmltableOptions:
+    xmlPassingClause?
+    (K_RETURNING K_SEQUENCE K_BY K_REF)?
+    (K_COLUMNS columns+=xmlTableColumn (COMMA columns+=xmlTableColumn)*)?
+;
+
+xmlTableColumn:
+    column=sqlName
+    (
+          K_FOR K_ORDINALITY
+        | (typeName=dataType|K_XMLTYPE (LPAR K_SEQUENCE RPAR K_BY K_REF)?)
+          (K_PATH path=expression)? (K_DEFAULT defaultValue=expression)?
+    )
 ;
 
 functionExpression:
