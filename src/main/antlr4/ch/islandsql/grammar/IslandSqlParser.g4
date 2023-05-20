@@ -1989,6 +1989,7 @@ keywordAsId:
     | K_XMLCOLATTVAL
     | K_XMLELEMENT
     | K_XMLEXISTS
+    | K_XMLFOREST
     | K_YEAR
     | K_ZONE
 ;

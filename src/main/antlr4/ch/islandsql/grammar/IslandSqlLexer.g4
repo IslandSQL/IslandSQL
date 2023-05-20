@@ -397,6 +397,7 @@ K_XMLCAST: 'xmlcast';
 K_XMLCOLATTVAL: 'xmlcolattval';
 K_XMLELEMENT: 'xmlelement';
 K_XMLEXISTS: 'xmlexists';
+K_XMLFOREST: 'xmlforest';
 K_YEAR: 'year';
 K_ZONE: 'zone';
 
