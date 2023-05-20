@@ -963,6 +963,7 @@ specialFunctionExpression:
     | xmlcolattval
     | xmlelement
     | xmlexists
+    | xmlforest
 ;
 
 cast:
@@ -1426,6 +1427,10 @@ xmlPassingClause:
 
 xmlPassingItem:
     expr=expression (K_AS identifier=sqlName)?
+;
+
+xmlforest:
+    K_XMLFOREST LPAR items+=xmlAttributeItem (COMMA items+=xmlAttributeItem)* RPAR
 ;
 
 functionExpression:
