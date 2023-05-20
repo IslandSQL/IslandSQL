@@ -958,6 +958,7 @@ specialFunctionExpression:
     | nthValue
     | treat
     | trim
+    | validateConversion
 ;
 
 cast:
@@ -1364,6 +1365,11 @@ trim:
         )?
         trimSource=expression
     RPAR
+;
+
+validateConversion:
+    K_VALIDATE_CONVERSION LPAR expr=expression K_AS typeName=dataType
+        (COMMA fmt=expression (COMMA nlsparam=expression)?)? RPAR
 ;
 
 functionExpression:
