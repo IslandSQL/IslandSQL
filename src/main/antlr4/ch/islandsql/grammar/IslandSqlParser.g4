@@ -964,6 +964,7 @@ specialFunctionExpression:
     | xmlelement
     | xmlexists
     | xmlforest
+    | xmlparse
 ;
 
 cast:
@@ -1431,6 +1432,10 @@ xmlPassingItem:
 
 xmlforest:
     K_XMLFOREST LPAR items+=xmlAttributeItem (COMMA items+=xmlAttributeItem)* RPAR
+;
+
+xmlparse:
+    K_XMLPARSE LPAR (K_DOCUMENT|K_CONTENT) expr=expression K_WELLFORMED? RPAR
 ;
 
 functionExpression:
