@@ -149,6 +149,7 @@ K_EMPTY: 'empty';
 K_END: 'end';
 K_ERROR: 'error';
 K_ESCAPE: 'escape';
+K_EVALNAME: 'evalname';
 K_EXCEPT: 'except';
 K_EXCLUDE: 'exclude';
 K_EXCLUSIVE: 'exclusive';
@@ -387,6 +388,7 @@ K_WITHOUT: 'without';
 K_WRAPPER: 'wrapper';
 K_XML: 'xml';
 K_XMLCAST: 'xmlcast';
+K_XMLCOLATTVAL: 'xmlcolattval';
 K_YEAR: 'year';
 K_ZONE: 'zone';
 

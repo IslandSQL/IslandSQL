@@ -1690,6 +1690,7 @@ keywordAsId:
     | K_END
     | K_ERROR
     | K_ESCAPE
+    | K_EVALNAME
     | K_EXCEPT
     | K_EXCLUDE
     | K_EXCLUSIVE
@@ -1928,6 +1929,7 @@ keywordAsId:
     | K_WRAPPER
     | K_XML
     | K_XMLCAST
+    | K_XMLCOLATTVAL
     | K_YEAR
     | K_ZONE
 ;
