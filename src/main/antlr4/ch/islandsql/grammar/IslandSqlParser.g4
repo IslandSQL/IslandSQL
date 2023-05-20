@@ -968,6 +968,7 @@ specialFunctionExpression:
     | xmlpi
     | xmlquery
     | xmlroot
+    | xmlserialize
 ;
 
 cast:
@@ -1467,6 +1468,16 @@ xmlrootStandalone:
       K_YES         # xmlrootStandaloneYes
     | K_NO          # xmlrootStandaloneNo
     | K_NO K_VALUE  # xmlrootStandaloneNoValue
+;
+
+xmlserialize:
+    K_XMLSERIALIZE LPAR
+        (K_DOCUMENT|K_CONTENT) expr=expression (K_AS typeName=dataType)?
+        (K_ENCODING encoding=expression)?
+        (K_VERSION version=expression)?
+        (K_NO K_INDENT|K_INDENT (K_SIZE EQUALS indent=expression)?)?
+        ((K_HIDE|K_SHOW) K_DEFAULTS)?
+    RPAR
 ;
 
 functionExpression:
