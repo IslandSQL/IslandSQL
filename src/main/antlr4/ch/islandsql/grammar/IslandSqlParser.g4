@@ -1714,6 +1714,7 @@ keywordAsId:
     | K_CONNECT
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
+    | K_CONTENT
     | K_CONVERSION
     | K_COST
     | K_COUNT
@@ -1740,6 +1741,7 @@ keywordAsId:
     | K_DISALLOW
     | K_DISCARD
     | K_DISTINCT
+    | K_DOCUMENT
     | K_DOUBLE
     | K_ELSE
     | K_EMPTY
@@ -1981,6 +1983,7 @@ keywordAsId:
     | K_VIEW
     | K_VISIBLE
     | K_WAIT
+    | K_WELLFORMED
     | K_WHEN
     | K_WHERE
     | K_WINDOW
@@ -1995,6 +1998,7 @@ keywordAsId:
     | K_XMLELEMENT
     | K_XMLEXISTS
     | K_XMLFOREST
+    | K_XMLPARSE
     | K_YEAR
     | K_ZONE
 ;
