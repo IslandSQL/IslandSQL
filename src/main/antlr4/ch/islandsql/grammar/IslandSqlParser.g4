@@ -965,6 +965,7 @@ specialFunctionExpression:
     | xmlexists
     | xmlforest
     | xmlparse
+    | xmlpi
 ;
 
 cast:
@@ -1436,6 +1437,15 @@ xmlforest:
 
 xmlparse:
     K_XMLPARSE LPAR (K_DOCUMENT|K_CONTENT) expr=expression K_WELLFORMED? RPAR
+;
+
+xmlpi:
+    K_XMLPI LPAR
+        (
+              K_EVALNAME identifierExpr=expression
+            | K_NAME? identifierName=sqlName
+        ) (COMMA valueExpr=expression)?
+    RPAR
 ;
 
 functionExpression:
