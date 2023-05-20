@@ -962,6 +962,7 @@ specialFunctionExpression:
     | xmlcast
     | xmlcolattval
     | xmlelement
+    | xmlexists
 ;
 
 cast:
@@ -1387,8 +1388,8 @@ xmlelement:
     K_XMLELEMENT LPAR
         (K_ENTITYESCAPING|K_NOENTITYESCAPING)?
         (
-              K_EVALNAME identifier=expression
-            | K_NAME? identifier=expression
+              K_EVALNAME identifierExpr=expression
+            | K_NAME? identifierName=sqlName
         )
         (COMMA xmlAttributesClause)?
         values+=xmlelementValue*
@@ -1406,13 +1407,25 @@ xmlAttributesClause:
 xmlAttributeItem:
     expr=expression
         (
-              K_AS K_EVALNAME identifier=expression
-            | K_AS? K_NAME? identifier=expression
+              K_AS K_EVALNAME identifierExpr=expression
+            | K_AS? K_NAME? identifierName=sqlName
         )?
 ;
 
 xmlelementValue:
-    COMMA expr=expression (K_AS? alias=expression)?
+    COMMA expr=expression (K_AS? alias=sqlName)?
+;
+
+xmlexists:
+    K_XMLEXISTS LPAR expr=expression xmlPassingClause? RPAR
+;
+
+xmlPassingClause:
+    K_PASSING (K_BY K_VALUE)? items+=xmlPassingItem (COMMA items+=xmlPassingItem)*
+;
+
+xmlPassingItem:
+    expr=expression (K_AS identifier=sqlName)?
 ;
 
 functionExpression:
