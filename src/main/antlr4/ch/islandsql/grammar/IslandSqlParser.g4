@@ -1982,6 +1982,7 @@ keywordAsId:
     | K_SECOND
     | K_SEED
     | K_SELECT
+    | K_SEQUENCE
     | K_SEQUENTIAL
     | K_SESSIONTIMEZONE
     | K_SET
@@ -2053,11 +2054,14 @@ keywordAsId:
     | K_XMLELEMENT
     | K_XMLEXISTS
     | K_XMLFOREST
+    | K_XMLNAMESPACES
     | K_XMLPARSE
     | K_XMLPI
     | K_XMLQUERY
     | K_XMLROOT
     | K_XMLSERIALIZE
+    | K_XMLTABLE
+    | K_XMLTYPE
     | K_YEAR
     | K_YES
     | K_ZONE
