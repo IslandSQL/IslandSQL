@@ -1808,6 +1808,7 @@ keywordAsId:
     | K_RAW
     | K_READ
     | K_REAL
+    | K_REF
     | K_REFERENCE
     | K_REJECT
     | K_REMOVE
@@ -1854,6 +1855,7 @@ keywordAsId:
     | K_TIMESTAMP
     | K_TIMEZONE
     | K_TO
+    | K_TREAT
     | K_TRUE
     | K_TRUNCATE
     | K_TYPE
