@@ -2004,6 +2004,7 @@ keywordAsId:
     | K_XMLEXISTS
     | K_XMLFOREST
     | K_XMLPARSE
+    | K_XMLPI
     | K_YEAR
     | K_ZONE
 ;
