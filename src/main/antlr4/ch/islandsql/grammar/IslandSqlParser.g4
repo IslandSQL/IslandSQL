@@ -1975,6 +1975,7 @@ keywordAsId:
     | K_XMLCAST
     | K_XMLCOLATTVAL
     | K_XMLELEMENT
+    | K_XMLEXISTS
     | K_YEAR
     | K_ZONE
 ;
