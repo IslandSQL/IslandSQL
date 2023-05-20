@@ -2015,6 +2015,7 @@ keywordAsId:
     | K_XMLFOREST
     | K_XMLPARSE
     | K_XMLPI
+    | K_XMLQUERY
     | K_YEAR
     | K_ZONE
 ;

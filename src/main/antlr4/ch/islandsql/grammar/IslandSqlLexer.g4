@@ -403,6 +403,7 @@ K_XMLEXISTS: 'xmlexists';
 K_XMLFOREST: 'xmlforest';
 K_XMLPARSE: 'xmlparse';
 K_XMLPI: 'xmlpi';
+K_XMLQUERY: 'xmlquery';
 K_YEAR: 'year';
 K_ZONE: 'zone';
 
