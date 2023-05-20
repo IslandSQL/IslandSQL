@@ -957,6 +957,7 @@ specialFunctionExpression:
     | listagg
     | nthValue
     | treat
+    | trim
 ;
 
 cast:
@@ -1350,6 +1351,18 @@ treat:
               K_REF? (schema=sqlName PERIOD)? typeName=dataType
             | K_JSON
         )
+    RPAR
+;
+
+trim:
+    K_TRIM LPAR
+        (
+            (
+                  (K_LEADING|K_TRAILING|K_BOTH) trimCharacter=expression?
+                | trimCharacter=expression
+            ) K_FROM
+        )?
+        trimSource=expression
     RPAR
 ;
 
