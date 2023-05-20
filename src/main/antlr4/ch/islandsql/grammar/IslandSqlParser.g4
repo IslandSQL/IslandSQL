@@ -1614,6 +1614,7 @@ keywordAsId:
     | K_BLOB
     | K_BLOCK
     | K_BOOLEAN
+    | K_BOTH
     | K_BREADTH
     | K_BULK
     | K_BY
@@ -1729,6 +1730,7 @@ keywordAsId:
     | K_LAST
     | K_LATERAL
     | K_LAX
+    | K_LEADING
     | K_LEFT
     | K_LIKE2
     | K_LIKE4
@@ -1865,7 +1867,9 @@ keywordAsId:
     | K_TIMESTAMP
     | K_TIMEZONE
     | K_TO
+    | K_TRAILING
     | K_TREAT
+    | K_TRIM
     | K_TRUE
     | K_TRUNCATE
     | K_TYPE
