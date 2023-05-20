@@ -967,6 +967,7 @@ specialFunctionExpression:
     | xmlparse
     | xmlpi
     | xmlquery
+    | xmlroot
 ;
 
 cast:
@@ -1453,6 +1454,19 @@ xmlquery:
     K_XMLQUERY LPAR
         expr=expression xmlPassingClause? K_RETURNING K_CONTENT (K_NULL K_ON K_EMPTY)?
     RPAR
+;
+
+xmlroot:
+    K_XMLROOT LPAR expr=expression
+        COMMA K_VERSION (version=expression|K_NO K_VALUE)
+        (COMMA K_STANDALONE xmlrootStandalone)?
+    RPAR
+;
+
+xmlrootStandalone:
+      K_YES         # xmlrootStandaloneYes
+    | K_NO          # xmlrootStandaloneNo
+    | K_NO K_VALUE  # xmlrootStandaloneNoValue
 ;
 
 functionExpression:
