@@ -965,12 +965,15 @@ cast:
             | K_MULTISET LPAR subquery RPAR
         )
         K_AS typeName=dataType
-        (K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR)?
+        defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
 ;
 
-// extract (datetime)
+defaultOnConversionError:
+    K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR
+;
+
 extract:
     K_EXTRACT LPAR what=sqlName K_FROM expr=expression RPAR
 ;
