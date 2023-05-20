@@ -960,6 +960,7 @@ specialFunctionExpression:
     | trim
     | validateConversion
     | xmlcast
+    | xmlcolattval
 ;
 
 cast:
@@ -1375,6 +1376,14 @@ validateConversion:
 
 xmlcast:
     K_XMLCAST LPAR expr=expression K_AS typeName=dataType RPAR
+;
+
+xmlcolattval:
+    K_XMLCOLATTVAL LPAR items+=xmlcolattvalItem (COMMA items+=xmlcolattvalItem)* RPAR
+;
+
+xmlcolattvalItem:
+    expr=expression (K_AS K_EVALNAME? alias=expression)?
 ;
 
 functionExpression:
