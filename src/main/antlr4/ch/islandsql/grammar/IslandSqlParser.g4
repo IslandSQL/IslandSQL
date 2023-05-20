@@ -1697,6 +1697,7 @@ keywordAsId:
     | K_ELSE
     | K_EMPTY
     | K_END
+    | K_ENTITYESCAPING
     | K_ERROR
     | K_ESCAPE
     | K_EVALNAME
@@ -1794,6 +1795,7 @@ keywordAsId:
     | K_MODIFY
     | K_MONTH
     | K_MULTISET
+    | K_NAME
     | K_NAN
     | K_NATIONAL
     | K_NATURAL
@@ -1806,6 +1808,8 @@ keywordAsId:
     | K_NEXT
     | K_NO
     | K_NOCYCLE
+    | K_NOENTITYESCAPING
+    | K_NOSCHEMACHECK
     | K_NOT
     | K_NOWAIT
     | K_NTH_VALUE
@@ -1871,6 +1875,7 @@ keywordAsId:
     | K_RUNNING
     | K_SAMPLE
     | K_SCALARS
+    | K_SCHEMACHECK
     | K_SCN
     | K_SDO_GEOMETRY
     | K_SEARCH
@@ -1937,8 +1942,10 @@ keywordAsId:
     | K_WITHOUT
     | K_WRAPPER
     | K_XML
+    | K_XMLATTRIBUTES
     | K_XMLCAST
     | K_XMLCOLATTVAL
+    | K_XMLELEMENT
     | K_YEAR
     | K_ZONE
 ;
