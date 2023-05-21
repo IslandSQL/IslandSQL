@@ -496,7 +496,7 @@ nativeOpaqueFormatSpec:
 // minimal clause for use in inlineExternalTable; the following is missing:
 // default clause, identity_clause, encryption_spec, inline_constraint, inline_ref_constraint
 columnDefinition:
-    column=sqlName datatype=sqlName // TODO: complete datatype with expressions (cast)
+    column=sqlName typeName=dataType
     (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
 ;
 
