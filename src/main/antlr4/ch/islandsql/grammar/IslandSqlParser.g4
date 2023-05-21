@@ -425,7 +425,7 @@ queryTableExpression:
         (
               modifiedExternalTable
             | partitionExtensionClause
-            | AST dblink=qualifiedName
+            | COMMAT dblink=qualifiedName
             | hierarchiesClause
         )? sampleClause?
     | inlineExternalTable sampleClause?
