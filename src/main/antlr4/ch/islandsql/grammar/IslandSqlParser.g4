@@ -476,7 +476,6 @@ inlineExternalTableProperties:
 // is driver specific, e.g. ORACLE_DATAPUMP, ORACLE_HDFS, ORACLE_HIVE. The grammer is
 // only documented in Oracle Database Utilities. See
 // https://docs.oracle.com/en/database/oracle/oracle-database/21/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
-// TODO: document as permantent limitation
 externalTableDataProps:
       K_DEFAULT K_DIRECTORY directory=sqlName               # defaultDirectoryExternalTableDataProperty
     | K_ACCESS K_PARAMETERS
