@@ -832,6 +832,7 @@ expression:
       right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
     | left=expression operator=PERIOD right=expression          # binaryExpression
+    | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
     | left=expression K_AT
         (
               K_LOCAL
