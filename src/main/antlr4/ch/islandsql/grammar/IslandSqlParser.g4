@@ -194,11 +194,7 @@ subAvClause:
 ;
 
 hierarchiesClause:
-    K_HIERARCHIES LPAR (items+=hierarchyItem (COMMA items+=hierarchyItem)*)? RPAR
-;
-
-hierarchyItem:
-    (attrDimAlias=sqlName PERIOD)? hierAlias=sqlName
+    K_HIERARCHIES LPAR (items+=hierarchyRef (COMMA items+=hierarchyRef)*)? RPAR
 ;
 
 filterClauses:
@@ -211,20 +207,25 @@ filterClause:
 ;
 
 hierId:
-      K_MEASURES                                    # hierIdMeasures
-    | dimAlias=sqlName PERIOD hierAlias=sqlName     # hierIdDim
+      K_MEASURES    # hierIdMeasures
+    | hierarchyRef  # hierIdDim
 ;
 
 addMeasClause:
     K_ADD K_MEASURES LPAR measures+=cubeMeas (COMMA measures+=cubeMeas)* RPAR
 ;
 
+// commented out duplicate measName (also defined in calcMeasClause)
 cubeMeas:
-    measName=sqlName (baseMeasClause|calcMeasClause)
+    /*measName=sqlName*/ (baseMeasClause|calcMeasClause)
 ;
 
+// have not found a single example using this clause
+// asked also in https://forums.oracle.com/ords/apexds/post/inline-analytic-view-missing-example-for-base-meas-clause-9465
+// added measName here (from cubeMeas)
+// TODO: verify syntax based on working example
 baseMeasClause:
-    K_FACT K_FOR K_MEASURE baseMeas=sqlName measAggregateClause
+    measName=sqlName K_FACT K_FOR K_MEASURE baseMeas=sqlName measAggregateClause
 ;
 
 measAggregateClause:
@@ -692,7 +693,7 @@ nestedClause:
 ;
 
 inlineAnalyticView:
-    K_ANALYTIC K_VIEW
+    K_ANALYTIC K_VIEW subAvClause (K_AS? alias=sqlName)?
 ;
 
 // ensure that at least one alternative is not optional
@@ -937,7 +938,8 @@ modelExpression:
 // Functions and function-like conditions that have a syntax that
 // cannot be handled by the generic functionExpression.
 specialFunctionExpression:
-      cast
+      avExpression
+    | cast
     | extract
     | featureCompare
     | jsonArray
@@ -968,6 +970,180 @@ specialFunctionExpression:
     | xmlroot
     | xmlserialize
     | xmltable
+;
+
+avExpression:
+      avMeasExpression
+    | avHierExpression
+;
+
+avMeasExpression:
+      leadLagExpression
+    | avWindowExpression
+    | rankExpression
+    | shareOfExpression
+    | qdrExpression
+;
+
+leadLagExpression:
+    leadLagFunctionName LPAR expr=expression RPAR K_OVER LPAR leadLagClause RPAR
+;
+
+leadLagFunctionName:
+      K_LAG
+    | K_LAG_DIFF
+    | K_LAG_DIFF_PERCENT
+    | K_LEAD
+    | K_LEAD_DIFF
+    | K_LEAD_DIFF_PERCENT
+;
+
+leadLagClause:
+    K_HIERARCHY hierarchyRef K_OFFSET offset=expression
+    (
+          K_WITHIN (K_LEVEL|K_PARENT)
+        | K_ACROSS K_ANCESTOR K_AT K_LEVEL levelRef=sqlName (K_POSITION K_FROM (K_BEGINNING|K_END))?
+    )?
+;
+
+avWindowExpression:
+    aggregateFunction=sqlName K_OVER LPAR avWindowClause RPAR
+;
+
+avWindowClause:
+    K_HIERARCHY hierarchyRef K_BETWEEN (precedingBoundary|followingBoundary) (K_WITHIN avLevelRef)?
+;
+
+// artifical clause to reduce reduncancy
+avLevelRef:
+      K_LEVEL                                   # avLevelRefLevel
+    | K_PARENT                                  # avLevelRefParent
+    | K_ANCESTOR K_AT K_LEVEL levelRef=sqlName  # avLevelRefAncestor
+;
+
+precedingBoundary:
+    (
+        fromUnboundedPreceding=K_UNBOUNDED K_PRECEDING
+      | fromOffsetPreceding=expression K_PRECEDING
+    )
+    K_AND
+    (
+        toCurrentMember=K_CURRENT K_MEMBER
+      | toOffsetPreceding=expression K_PRECEDING
+      | toOffsetFollowing=expression K_FOLLOWING
+      | toUnboundedFollowing=K_UNBOUNDED K_FOLLOWING
+    )
+;
+
+followingBoundary:
+    (
+        fromCurrentMember=K_CURRENT K_MEMBER
+      | fromOffsetFollowing=expression K_FOLLOWING
+    )
+    K_AND
+    (
+        toOffsetFollowing=expression K_FOLLOWING
+      | toUnboundedFollowing=K_UNBOUNDED K_FOLLOWING
+    )
+;
+
+hierarchyRef:
+    (dimAlias=sqlName PERIOD)? hierAlias=sqlName
+;
+
+rankExpression:
+    functionName=rankFunctionName LPAR RPAR K_OVER LPAR rankClause RPAR
+;
+
+rankFunctionName:
+      K_RANK
+    | K_DENSE_RANK
+    | K_AVERAGE_RANK
+    | K_ROW_NUMBER
+;
+
+// real orderByClause is just a subset, simplified gammar
+rankClause:
+    K_HIERARCHY hierarchyRef orderByClause (K_WITHIN avLevelRef)?
+;
+
+shareOfExpression:
+    K_SHARE_OF LPAR expr=expression shareClause RPAR
+;
+
+shareClause:
+    K_HIERARCHY hierarchyRef avLevelRef
+;
+
+qdrExpression:
+    K_QUALIFY LPAR expr=expression COMMA qualifier RPAR
+;
+
+qualifier:
+    hierarchyRef EQUALS memberExpression
+;
+
+memberExpression:
+      levelMemberLiteral            # memberExprLevelMember
+    | hierNavigationExpression      # memberExprHierNavigation
+    | K_CURRENT K_MEMBER            # memberExprCurrentMember
+    | K_NULL                        # memberExprNull
+    | K_ALL                         # memberExprAll
+;
+
+levelMemberLiteral:
+    levelRef=sqlName (posMemberKeys|namedMemberKeys)
+;
+
+posMemberKeys:
+    LSQB keys+=expression (keys+=expression)* RSQB
+;
+
+namedMemberKeys:
+    LSQB keys+=namedMemberKeysItem (keys+=namedMemberKeysItem)* RSQB
+;
+
+namedMemberKeysItem:
+    attrName=sqlName EQUALS key=expression
+;
+
+hierNavigationExpression:
+      hierAncestorExpression    # hierNavigationExprAncestor
+    | hierParentExpression      # hierNavigationExprParent
+    | hierLeadLagExpression     # hierNavigationExprLeadLag
+;
+
+hierAncestorExpression:
+    K_HIER_ANCESTOR LPAR expr=expression K_AT (K_LEVEL levelRef=sqlName|K_DEPTH depthExpr=expression) RPAR
+;
+
+hierParentExpression:
+    K_HIER_PARENT LPAR expr=expression RPAR
+;
+
+hierLeadLagExpression:
+    (K_HIER_LEAD|K_HIER_LAG) LPAR hierLeadLagClause RPAR
+;
+
+hierLeadLagClause:
+    memberExpr=memberExpression K_OFFSET offsetExpr=expression (K_WITHIN avLevelRef)?
+;
+
+avHierExpression:
+    functionName=hierFunctionName
+        LPAR memberExpr=memberExpression K_WITHIN K_HIERARCHY hierarchyRef RPAR
+;
+
+hierFunctionName:
+      K_HIER_CAPTION
+    | K_HIER_DEPTH
+    | K_HIER_DESCRIPTION
+    | K_HIER_LEVEL
+    | K_HIER_MEMBER_NAME
+    | K_HIER_MEMBER_UNIQUE_NAME
+    | K_HIER_PARENT_LEVEL
+    | K_HIER_PARENT_UNIQUE_NAME
+    | K_HIER_CHILD_COUNT
 ;
 
 cast:
