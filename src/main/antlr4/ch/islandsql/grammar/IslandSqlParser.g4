@@ -1743,12 +1743,14 @@ keywordAsId:
     | K_ABS
     | K_ABSENT
     | K_ACCESS
+    | K_ACROSS
     | K_ADD
     | K_AFTER
     | K_AGGREGATE
     | K_ALL
     | K_ALLOW
     | K_ANALYTIC
+    | K_ANCESTOR
     | K_AND
     | K_ANY
     | K_APPEND
@@ -1760,7 +1762,9 @@ keywordAsId:
     | K_AT
     | K_AUTO
     | K_AUTOMATIC
+    | K_AVERAGE_RANK
     | K_BADFILE
+    | K_BEGINNING
     | K_BETWEEN
     | K_BFILE
     | K_BINARY_DOUBLE
@@ -1854,6 +1858,20 @@ keywordAsId:
     | K_HAVING
     | K_HIDE
     | K_HIERARCHIES
+    | K_HIERARCHY
+    | K_HIER_ANCESTOR
+    | K_HIER_CAPTION
+    | K_HIER_CHILD_COUNT
+    | K_HIER_DEPTH
+    | K_HIER_DESCRIPTION
+    | K_HIER_LAG
+    | K_HIER_LEAD
+    | K_HIER_LEVEL
+    | K_HIER_MEMBER_NAME
+    | K_HIER_MEMBER_UNIQUE_NAME
+    | K_HIER_PARENT
+    | K_HIER_PARENT_LEVEL
+    | K_HIER_PARENT_UNIQUE_NAME
     | K_HOUR
     | K_IGNORE
     | K_IN
@@ -1889,11 +1907,18 @@ keywordAsId:
     | K_KEEP
     | K_KEY
     | K_KEYS
+    | K_LAG
+    | K_LAG_DIFF
+    | K_LAG_DIFF_PERCENT
     | K_LAST
     | K_LATERAL
     | K_LAX
+    | K_LEAD
     | K_LEADING
+    | K_LEAD_DIFF
+    | K_LEAD_DIFF_PERCENT
     | K_LEFT
+    | K_LEVEL
     | K_LIKE2
     | K_LIKE4
     | K_LIKE
@@ -1961,6 +1986,7 @@ keywordAsId:
     | K_OVER
     | K_OVERFLOW
     | K_PARAMETERS
+    | K_PARENT
     | K_PARTITION
     | K_PASSING
     | K_PAST
@@ -1971,6 +1997,7 @@ keywordAsId:
     | K_PERIOD
     | K_PERMUTE
     | K_PIVOT
+    | K_POSITION
     | K_PRECEDING
     | K_PRECISION
     | K_PREDICTION
@@ -1981,7 +2008,9 @@ keywordAsId:
     | K_PRETTY
     | K_PRIOR
     | K_PROCEDURE
+    | K_QUALIFY
     | K_RANGE
+    | K_RANK
     | K_RAW
     | K_READ
     | K_REAL
@@ -1998,6 +2027,7 @@ keywordAsId:
     | K_ROW
     | K_ROWID
     | K_ROWS
+    | K_ROW_NUMBER
     | K_RULES
     | K_RUNNING
     | K_SAMPLE
@@ -2015,6 +2045,7 @@ keywordAsId:
     | K_SET
     | K_SETS
     | K_SHARE
+    | K_SHARE_OF
     | K_SHOW
     | K_SIBLINGS
     | K_SINGLE
