@@ -71,7 +71,7 @@ public class DotRuleListener implements ParseTreeListener {
         sb.append('"');
         sb.append(" [shape=box label=");
         sb.append('"');
-        sb.append(node.getText()); // human-readable representation
+        sb.append(node.getText().replace("\"","\\\"")); // human-readable representation
         sb.append('"');
         sb.append(" style=filled fillcolor=");
         sb.append('"');
