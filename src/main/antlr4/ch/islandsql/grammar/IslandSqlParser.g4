@@ -215,17 +215,19 @@ addMeasClause:
     K_ADD K_MEASURES LPAR measures+=cubeMeas (COMMA measures+=cubeMeas)* RPAR
 ;
 
-// commented out duplicate measName (also defined in calcMeasClause)
+// removed duplicate measName (defined in calcMeasClause, documentation bug)
 cubeMeas:
-    /*measName=sqlName*/ (baseMeasClause|calcMeasClause)
+      baseMeasClause
+    | calcMeasClause
 ;
 
-// have not found a single example using this clause
-// asked also in https://forums.oracle.com/ords/apexds/post/inline-analytic-view-missing-example-for-base-meas-clause-9465
 // added measName here (from cubeMeas)
-// TODO: verify syntax based on working example
+// verified syntax in livesql.oracle.com with create analyitc view statements (documentation bug)
+// clause is not applicable for an inline anlalytic view (addMeasClause) since it's based
+// on an existing analytic view and facts cannot be added afterwards.
+// see also https://forums.oracle.com/ords/apexds/post/inline-analytic-view-missing-example-for-base-meas-clause-9465
 baseMeasClause:
-    measName=sqlName K_FACT K_FOR K_MEASURE baseMeas=sqlName measAggregateClause
+    measName=sqlName (K_FACT baseMeas=sqlName)? measAggregateClause?
 ;
 
 measAggregateClause:
