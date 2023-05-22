@@ -264,7 +264,6 @@ K_MAIN: 'main';
 K_MAPPING: 'mapping';
 K_MATCH: 'match';
 K_MATCH_RECOGNIZE: 'match_recognize';
-K_MEASURE: 'measure';
 K_MEASURES: 'measures';
 K_MEMBER: 'member';
 K_MINUS: 'minus';

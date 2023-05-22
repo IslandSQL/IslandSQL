@@ -2112,7 +2112,6 @@ keywordAsId:
     | K_MAPPING
     | K_MATCH
     | K_MATCH_RECOGNIZE
-    | K_MEASURE
     | K_MEASURES
     | K_MEMBER
     | K_MINUS
