@@ -224,7 +224,7 @@ cubeMeas:
 
 // added measName here (from cubeMeas)
 // verified syntax in livesql.oracle.com with create analyitc view statements (documentation bug)
-// clause is not applicable for an inline anlalytic view (addMeasClause) since it's based
+// clause is not applicable for an inline analytic view (addMeasClause) since it's based
 // on an existing analytic view and facts cannot be added afterwards.
 // see also https://forums.oracle.com/ords/apexds/post/inline-analytic-view-missing-example-for-base-meas-clause-9465
 baseMeasClause:
