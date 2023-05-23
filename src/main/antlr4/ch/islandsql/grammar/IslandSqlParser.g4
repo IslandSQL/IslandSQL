@@ -140,16 +140,17 @@ plsqlDeclarations:
     | procedureDeclaration
 ;
 
-// TODO: complete with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
+// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
 functionDeclaration:
     K_FUNCTION plsqlCode K_END sqlName? SEMI
 ;
 
-// TODO: complete with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
+// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
 procedureDeclaration:
     K_PROCEDURE plsqlCode K_END sqlName? SEMI
 ;
 
+// TODO: replace with complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
 plsqlCode:
     .+?
 ;
