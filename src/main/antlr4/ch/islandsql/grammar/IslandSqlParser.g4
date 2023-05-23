@@ -476,10 +476,6 @@ inlineExternalTableProperties:
     (K_REJECT K_LIMIT limit=expression)?
 ;
 
-// We do not fully parse the unquoted opaque_format_spec. The reason is that the grammar
-// is driver specific, e.g. ORACLE_DATAPUMP, ORACLE_HDFS, ORACLE_HIVE. The grammer is
-// only documented in Oracle Database Utilities. See
-// https://docs.oracle.com/en/database/oracle/oracle-database/21/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
 externalTableDataProps:
       K_DEFAULT K_DIRECTORY directory=sqlName               # defaultDirectoryExternalTableDataProperty
     | K_ACCESS K_PARAMETERS
@@ -492,6 +488,11 @@ externalTableDataProps:
         (COMMA locations+=externalFileLocation)* RPAR       # locationExternalTableDataProperty
 ;
 
+// We do not fully parse the unquoted opaque_format_spec. The reason is that the grammar
+// is driver specific, e.g. ORACLE_DATAPUMP, ORACLE_HDFS, ORACLE_HIVE. The grammer is
+// only documented in Oracle Database Utilities. See
+// https://docs.oracle.com/en/database/oracle/oracle-database/21/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
+// providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
     .+?
 ;
