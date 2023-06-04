@@ -1101,11 +1101,11 @@ levelMemberLiteral:
 ;
 
 posMemberKeys:
-    LSQB keys+=expression (keys+=expression)* RSQB
+    LSQB keys+=expression (COMMA keys+=expression)* RSQB
 ;
 
 namedMemberKeys:
-    LSQB keys+=namedMemberKeysItem (keys+=namedMemberKeysItem)* RSQB
+    LSQB keys+=namedMemberKeysItem (COMMA keys+=namedMemberKeysItem)* RSQB
 ;
 
 namedMemberKeysItem:
