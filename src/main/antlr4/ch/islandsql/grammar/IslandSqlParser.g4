@@ -1021,9 +1021,11 @@ avWindowClause:
 
 // artifical clause to reduce reduncancy
 avLevelRef:
-      K_LEVEL                                   # avLevelRefLevel
-    | K_PARENT                                  # avLevelRefParent
-    | K_ANCESTOR K_AT K_LEVEL levelRef=sqlName  # avLevelRefAncestor
+      K_LEVEL levelRef=sqlName?                             # avLevelRefLevel
+    | K_PARENT                                              # avLevelRefParent
+    | K_ACROSS? K_ANCESTOR K_AT K_LEVEL levelRef=sqlName
+       (K_POSITION K_FROM (K_BEGINNING|K_END)?)?            # avLevelRefAncestor
+    | K_MEMBER expr=memberExpression                        # avLevelRefMember
 ;
 
 precedingBoundary:
