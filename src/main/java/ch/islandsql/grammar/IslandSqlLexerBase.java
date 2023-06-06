@@ -37,7 +37,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if text is the next character sequencein the character stream.
+     * Determines if text is the next character sequence in the character stream.
      *
      * @return Returns true if text is the next character sequence in the character stream.
      */
