@@ -112,7 +112,9 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * A SQL statement starts after a semicolon or slash or a new line.
      * A SQL statement can start at begin-of-file.
      * A SQL statement can start after a comment, this might lead to false positives.
-     * A cursor definition is handled as start of statement. TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+     * Temporary solution to identify start of statement: TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
+     * - a cursor definition
+     * - an open cursor startement
      *
      * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
@@ -120,7 +122,8 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean isBeginOfStatement(String beforeString) {
         if (getToken() != null) {
             String text = getToken().getText().toLowerCase();
-            if (text.startsWith("--") || text.startsWith("/*") || text.startsWith("cursor")) {
+            if (text.startsWith("--") || text.startsWith("/*")
+                    || text.startsWith("cursor") || text.startsWith("open")) {
                 return true;
             }
         }
