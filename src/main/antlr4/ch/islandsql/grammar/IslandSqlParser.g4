@@ -100,6 +100,7 @@ selectStatement:
 
 select:
    subquery forUpdateClause?
+   subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
 subquery:
