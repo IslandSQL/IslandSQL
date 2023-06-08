@@ -84,7 +84,7 @@ REVOKE:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_FOR_LOOP_START:
-    'for' COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
+    'for' {isBeginOfStatement("for")}? COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
     -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
 ;
 
