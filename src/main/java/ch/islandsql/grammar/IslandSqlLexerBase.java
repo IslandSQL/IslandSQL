@@ -109,15 +109,29 @@ public abstract class IslandSqlLexerBase extends Lexer {
 
     /**
      * Determines if the position beforeString is valid for a SQL statement.
-     * A SQL statement starts after a whitespace or a semicolon.
-     * In other words multiple SQL statements on a single line are allowed.
+     * A SQL statement starts after a semicolon or slash or a new line.
      * A SQL statement can start at begin-of-file.
+     * A SQL statement can start after a comment, this might lead to false positives.
+     * A cursor definition is handled as start of statement. TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
      *
-     * @param beforeString String used to determine start of command.
+     * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
     public boolean isBeginOfStatement(String beforeString) {
-        return isCharOneOf(" \t\r\n;", _input.index() - beforeString.length() -1);
+        if (getToken() != null) {
+            String text = getToken().getText().toLowerCase();
+            if (text.startsWith("--") || text.startsWith("/*") || text.startsWith("cursor")) {
+                return true;
+            }
+        }
+        int i = _input.index() - beforeString.length() - 1;
+        while (isCharOneOf(";/ \t\r\n", i)) {
+            if (i < 0 || isCharOneOf(";/\r\n", i)) {
+                return true;
+            }
+            i--;
+        }
+        return false;
     }
 
     /**
