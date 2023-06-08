@@ -801,8 +801,6 @@ userDefinedType:
 // Expression
 /*----------------------------------------------------------------------------*/
 
-// TODO: complete according https://github.com/IslandSQL/IslandSQL/issues/23
-// TODO: Analytic View Expressions
 expression:
       expr=STRING                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
