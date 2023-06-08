@@ -416,11 +416,12 @@ fromItem:
 ;
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
+// undocumented: use of optional AS in json_table (query_table_expression)
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
         (pivotClause|unpivotClause|rowPatternClause)? tAlias=sqlName?
     | qte=queryTableExpression flashbackQueryClause?
-        (pivotClause|unpivotClause|rowPatternClause)? tAlias=sqlName?
+        (pivotClause|unpivotClause|rowPatternClause)? (K_AS? tAlias=sqlName)?
 ;
 
 // using table for query_name, table, view, mview, hierarchy
