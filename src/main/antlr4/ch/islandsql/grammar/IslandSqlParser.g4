@@ -104,10 +104,11 @@ select:
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
+// undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
 subquery:
-      withClause? queryBlock orderByClause? rowLimitingClause?          # subqueryQueryBlock
-    | left=subquery setOperator right=subquery                          # subquerySet
-    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause?  # subqueryParen
+      withClause? queryBlock forUpdateClause? orderByClause? rowLimitingClause?         # subqueryQueryBlock
+    | left=subquery setOperator right=subquery                                          # subquerySet
+    | withClause? LPAR subquery RPAR forUpdateClause? orderByClause? rowLimitingClause? # subqueryParen
 ;
 
 queryBlock:
