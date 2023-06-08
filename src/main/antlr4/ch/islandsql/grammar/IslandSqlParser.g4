@@ -661,19 +661,21 @@ joinVariant:
     | nestedClause
 ;
 
+// undocumented: forItem instead of tableReference
 innerCrossJoinClause:
-      K_INNER? K_JOIN tableReference
+      K_INNER? K_JOIN fromItem
       (
             K_ON cond=condition
           | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
       )
-    | K_CROSS K_JOIN  tableReference
-    | K_NATURAL K_INNER? K_JOIN tableReference
+    | K_CROSS K_JOIN fromItem
+    | K_NATURAL K_INNER? K_JOIN fromItem
 ;
 
+// undocumented: forItem instead of tableReference
 outerJoinClause:
     left=queryPartitionClause? K_NATURAL? outerJoinType K_JOIN
-    tableReference right=queryPartitionClause?
+    fromItem right=queryPartitionClause?
     (
           K_ON cond=condition
         | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
