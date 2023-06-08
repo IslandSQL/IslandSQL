@@ -121,6 +121,8 @@ K_CONDITIONAL: 'conditional';
 K_CONNECT: 'connect';
 K_CONNECT_BY_ROOT: 'connect_by_root';
 K_CONSTRAINT: 'constraint';
+K_CONTAINERS_DEFAULT: 'containers_default';
+K_CONTAINER_MAP: 'container_map';
 K_CONTENT: 'content';
 K_CONVERSION: 'conversion';
 K_COST: 'cost';
