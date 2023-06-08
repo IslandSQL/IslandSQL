@@ -89,6 +89,16 @@ CURSOR_FOR_LOOP_START:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Cursor definition
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+CURSOR_START:
+    'cursor' COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
+    -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
