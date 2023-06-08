@@ -94,7 +94,17 @@ CURSOR_FOR_LOOP_START:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_START:
-    'cursor' COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
+    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
+    -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
+// Open cursor for
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+OPEN_CURSOR_FOR_START:
+    'open' {isBeginOfStatement("open")}? .+? 'for' COMMENT_OR_WS*
     -> channel(HIDDEN)
 ;
 
