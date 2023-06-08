@@ -99,18 +99,18 @@ selectStatement:
 ;
 
 select:
-   subquery forUpdateClause?
-   subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
+    subquery forUpdateClause?
+    subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
+// moved with_clause from query_block to support main query in parenthesis (works, undocumented)
 subquery:
-      queryBlock orderByClause? rowLimitingClause?          # subqueryQueryBlock
-    | left=subquery setOperator right=subquery              # subquerySet
-    | LPAR subquery RPAR orderByClause? rowLimitingClause?  # subqueryParen
+      withClause? queryBlock orderByClause? rowLimitingClause?          # subqueryQueryBlock
+    | left=subquery setOperator right=subquery                          # subquerySet
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause?  # subqueryParen
 ;
 
 queryBlock:
-    withClause?
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
     selectList
