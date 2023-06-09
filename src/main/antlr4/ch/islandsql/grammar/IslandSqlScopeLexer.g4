@@ -215,5 +215,5 @@ CFL_SELECT:
 ;
 
 CFL_END_OF_SELECT:
-    'loop' -> channel(HIDDEN), popMode
+    'loop' -> type(ID), channel(HIDDEN), popMode
 ;
