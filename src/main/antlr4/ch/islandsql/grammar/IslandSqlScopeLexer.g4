@@ -87,7 +87,7 @@ STRING:
 
 ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
 
-CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
+LABEL: '<<' ID '>>' -> channel(HIDDEN);
 
 GRANT:
     'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
