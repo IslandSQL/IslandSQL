@@ -435,7 +435,7 @@ queryTableExpression:
             | hierarchiesClause
         )? sampleClause?
     | inlineExternalTable sampleClause?
-    | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions
+    | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
 ;
 
@@ -964,6 +964,7 @@ specialFunctionExpression:
     | jsonExistsCondition
     | listagg
     | nthValue
+    | tableFunction
     | treat
     | trim
     | validateConversion
@@ -1539,6 +1540,10 @@ costMatrixClause:
 listaggOverflowClause:
       K_ON K_OVERFLOW K_ERROR
     | K_ON K_OVERFLOW K_TRUNCATE truncateIndicator=expression? ((K_WITH|K_WITHOUT) K_COUNT)?
+;
+
+tableFunction:
+    (K_TABLE|K_THE) LPAR (query=subquery|expr=expression) RPAR
 ;
 
 treat:
