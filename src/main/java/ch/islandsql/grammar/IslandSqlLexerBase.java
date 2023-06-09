@@ -26,7 +26,8 @@ import org.antlr.v4.runtime.misc.Interval;
  * Used to provide methods to be used as semantic predicates in the lexer grammar.
  */
 public abstract class IslandSqlLexerBase extends Lexer {
-    private Token lastToken; // last emitted token, excluding WS and comments
+    private final boolean scopeLexer;
+    private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
 
     /**
@@ -36,13 +37,15 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     public IslandSqlLexerBase(CharStream input) {
         super(input);
+        this.scopeLexer = this.getClass().getCanonicalName().equals("ch.islandsql.grammar.IslandSqlScopeLexer");
     }
 
     @Override
     public void emit(Token token) {
         super.emit(token);
-        if (token.getType() > 3) {
-            // token that is not a WS (1), ML_COMMENT (2), SL_COMMENT (3) according IslandSqlScopeLexer
+        if (token.getType() > 8) {
+            // token that is not a WS (1), ML_HINT (2), ML_COMMENT (3), SL_HINT(4), SL_COMMENT (5),
+            // REMARK_COMMAND (6), PROMPT_COMMAND (7), CONDITIONAL_COMPILATION_DIRECTIVE (8)
             this.lastToken = token;
         }
     }
@@ -120,31 +123,45 @@ public abstract class IslandSqlLexerBase extends Lexer {
 
     /**
      * Determines if the position beforeString is valid for a SQL statement.
-     * A SQL statement starts after a semicolon or slash or a new line.
+     * A SQL statement starts after a semicolon or slash.
      * A SQL statement can start at begin-of-file.
-     * A SQL statement can start after the keywords AS, IS, DECLARE, BEGIN, THEN, ELSIF, ELSE.
-     * Temporary solution to identify start of statement: TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
-     * - a cursor definition
-     * - an open cursor statement
-     *
+     * A SQL statement can start after the keywords AS, IS, DECLARE, BEGIN, THEN, ELSIF, ELSE, LOOP.
+     * Temporary solution to identify start of statement:
+     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
+     *     - a cursor definition
+     *     - an open cursor statement
+     *     - a new line
+     *     - a label
      * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
     public boolean isBeginOfStatement(String beforeString) {
-        if (lastToken != null) {
-            String text = lastToken.getText().toLowerCase();
-            if (text.equals("as") || text.equals("is") || text.equals("declare") || text.equals("begin")
-                    || text.equals("then") || text.equals("elsif") || text.equals("else")
-                    || text.startsWith("cursor") || text.startsWith("open")) {
+        if (lastToken == null) {
+            // no previous token, hence begin of file
+            return true;
+        } else {
+            if (scopeLexer && lastToken.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL) {
+                // visible token in scope lexer, hence a statement
                 return true;
+            } else {
+                // decide according previous token if it is a statement
+                String text = lastToken.getText().toLowerCase().trim();
+                if (text.endsWith(";") || text.endsWith("/") || text.equals("as")
+                        || text.equals("is") || text.equals("declare") || text.equals("begin")
+                        || text.equals("then") || text.equals("elsif") || text.equals("else") || text.equals("loop")
+                        || text.startsWith("cursor") || text.startsWith("open") || text.startsWith("<<")) {
+                    return true;
+                }
             }
         }
-        int i = _input.index() - beforeString.length() - 1;
-        while (isCharOneOf(";/ \t\r\n", i)) {
-            if (i < 0 || isCharOneOf(";/\r\n", i)) {
-                return true;
+        if (!scopeLexer) {
+            int i = _input.index() - beforeString.length() - 1;
+            while (isCharOneOf(";/ \t\r\n", i)) {
+                if (i < 0 || isCharOneOf(";/\r\n", i)) {
+                    return true;
+                }
+                i--;
             }
-            i--;
         }
         return false;
     }
