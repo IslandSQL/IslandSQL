@@ -78,6 +78,11 @@ REVOKE:
     'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+CREATE_AUDIT_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 /*----------------------------------------------------------------------------*/
 // Cursor for loop
 // TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
