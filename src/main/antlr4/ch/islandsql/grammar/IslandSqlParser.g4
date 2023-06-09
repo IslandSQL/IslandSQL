@@ -2249,6 +2249,7 @@ keywordAsId:
     | K_SUBPARTITION
     | K_SUBSET
     | K_TABLE
+    | K_THE
     | K_THEN
     | K_TIES
     | K_TIME

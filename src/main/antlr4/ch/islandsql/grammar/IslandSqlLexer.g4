@@ -392,6 +392,7 @@ K_SUBMULTISET: 'submultiset';
 K_SUBPARTITION: 'subpartition';
 K_SUBSET: 'subset';
 K_TABLE: 'table';
+K_THE: 'the';
 K_THEN: 'then';
 K_TIES: 'ties';
 K_TIME: 'time';
