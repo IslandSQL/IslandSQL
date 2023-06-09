@@ -171,11 +171,11 @@ subqueryFactoringClause:
 
 searchClause:
     K_SEARCH (K_DEPTH|K_BREADTH) K_FIRST K_BY
-    columns+=searchColumn (COMMA columns+=searchColumn)*
+    columns+=searchColumn (COMMA columns+=searchColumn)* K_SET orderingColumn=sqlName
 ;
 
 searchColumn:
-    calias=sqlName (K_ASC|K_DESC)? (K_NULL (K_FIRST|K_LAST))?
+    calias=sqlName (K_ASC|K_DESC)? (K_NULLS (K_FIRST|K_LAST))?
 ;
 
 cycleClause:
