@@ -1699,7 +1699,7 @@ xmlTableColumn:
 ;
 
 functionExpression:
-    name=sqlName LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
+    name=sqlName (COMMAT dblink=qualifiedName)? LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
     withinClause?               // e.g. approx_percentile
     keepClause?                 // e.g. first, last
     respectIgnoreNullsClause?   // e.g. lag
