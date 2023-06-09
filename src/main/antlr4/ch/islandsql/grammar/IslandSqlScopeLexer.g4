@@ -104,7 +104,7 @@ CURSOR_START:
 /*----------------------------------------------------------------------------*/
 
 OPEN_CURSOR_FOR_START:
-    'open' {isBeginOfStatement("open")}? .+? 'for' COMMENT_OR_WS*
+    'open' {isBeginOfStatement("open")}? ~[;]+ COMMENT_OR_WS+ 'for' (COMMENT_OR_WS+|{isText("(")}?)
     -> channel(HIDDEN)
 ;
 
