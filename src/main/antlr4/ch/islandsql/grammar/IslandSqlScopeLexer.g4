@@ -74,6 +74,8 @@ STRING:
     ) -> channel(HIDDEN)
 ;
 
+ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
+
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 GRANT:
