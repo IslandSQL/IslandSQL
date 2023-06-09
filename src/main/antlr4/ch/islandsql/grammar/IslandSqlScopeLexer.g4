@@ -87,7 +87,7 @@ STRING:
 
 ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
 
-LABEL: '<<' ID '>>' -> channel(HIDDEN);
+LABEL: '<<' WS* ID WS* '>>' -> channel(HIDDEN);
 
 GRANT:
     'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
