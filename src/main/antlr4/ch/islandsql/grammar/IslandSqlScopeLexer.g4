@@ -133,6 +133,22 @@ OPEN_CURSOR_FOR_START:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Forall statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+FORALL_START:
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+?
+    (
+          {isText("insert")}?
+        | {isText("update")}?
+        | {isText("delete")}?
+        | {isText("merge")}?
+    )
+    -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
