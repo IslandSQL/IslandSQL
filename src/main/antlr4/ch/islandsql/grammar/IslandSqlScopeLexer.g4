@@ -40,17 +40,18 @@ fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 
 /*----------------------------------------------------------------------------*/
-// Whitespace
+// Whitespace, comments and hints
 /*----------------------------------------------------------------------------*/
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Comments and alike to be ignored
-/*----------------------------------------------------------------------------*/
-
+ML_HINT: '/*+' .*? '*/' -> channel(HIDDEN);
 ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// Hidden SQL*Plus commands
+/*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
@@ -58,9 +59,19 @@ REMARK_COMMAND:
 ;
 
 PROMPT_COMMAND:
-    'pro' {isBeginOfCommand("pro")}?  ('m' ('p' 't'?)?)?
+    'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
+
+/*----------------------------------------------------------------------------*/
+// Conditional compilation directives
+/*----------------------------------------------------------------------------*/
+
+CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// Other hidden tokens to be ignored
+/*----------------------------------------------------------------------------*/
 
 STRING:
     'n'?

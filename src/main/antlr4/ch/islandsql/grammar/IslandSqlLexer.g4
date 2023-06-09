@@ -40,6 +40,16 @@ fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment INT: [0-9]+;
 
 /*----------------------------------------------------------------------------*/
+// Whitespace, comments and hints
+/*----------------------------------------------------------------------------*/
+
+WS: [ \t\r\n]+ -> channel(HIDDEN);
+ML_HINT: '/*+' .*? '*/' -> channel(HIDDEN);
+ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
+SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
 // Hidden SQL*Plus commands
 /*----------------------------------------------------------------------------*/
 
@@ -54,14 +64,9 @@ PROMPT_COMMAND:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Other hidden tokens
+// Conditional compilation directives
 /*----------------------------------------------------------------------------*/
 
-WS: [ \t\r\n]+ -> channel(HIDDEN);
-ML_HINT: '/*+' .*? '*/' -> channel(HIDDEN);
-SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
-ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
-SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
