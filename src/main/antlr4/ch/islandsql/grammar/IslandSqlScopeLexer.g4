@@ -27,8 +27,6 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
-fragment NG_ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/';
-fragment NG_COMMENT_OR_WS: NG_ML_COMMENT|SL_COMMENT|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: [ \t]* SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
@@ -47,7 +45,7 @@ fragment SQLPLUS_END: EOF|SINGLE_NL;
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
 ML_HINT: '/*+' .*? '*/' -> channel(HIDDEN);
-ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
+ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN);
 SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
@@ -180,7 +178,7 @@ MERGE:
 
 SELECT:
     (
-        ('with' {isBeginOfStatement("with")}? NG_COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
       | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('(' COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
