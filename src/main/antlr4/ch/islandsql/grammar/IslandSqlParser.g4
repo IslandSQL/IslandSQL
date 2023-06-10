@@ -412,8 +412,8 @@ fromClause:
 fromItem:
       tableReference            # tableReferenceFromItem
     | joinClause                # joinClauseFromItem
-    | LPAR joinClause RPAR      # parenJoinClauseFromItem
     | inlineAnalyticView        # lineAnalyticviewFromItem
+    | LPAR fromItem RPAR        # parenFromItem
 ;
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
