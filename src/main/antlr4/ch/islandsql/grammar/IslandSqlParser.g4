@@ -350,6 +350,7 @@ singleColumnForLoopLiteral:
       STRING
     | NUMBER
     | sqlName
+    | expression // undocumented
 ;
 
 singleColumnForLoopPattern:
