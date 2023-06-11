@@ -42,7 +42,7 @@ SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Hidden SQL*Plus commands
+// Hidden SQL*Plus commands (as single tokens, similar to comments)
 /*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
@@ -56,7 +56,7 @@ PROMPT_COMMAND:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Conditional compilation directives
+// Conditional compilation directives (to be ignored by the parser)
 /*----------------------------------------------------------------------------*/
 
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
