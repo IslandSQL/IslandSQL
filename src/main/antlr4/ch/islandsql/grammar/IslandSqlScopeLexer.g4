@@ -224,16 +224,14 @@ ANY_OTHER: . -> channel(HIDDEN);
 
 mode CURSOR_FOR_LOOP;
 
-fragment CFL_SINGLE_NL: '\r'? '\n';
-fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|(CFL_SL_COMMENT CFL_SINGLE_NL)|CFL_WS;
-CFL_ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN), type(ML_COMMENT);
-CFL_SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN), type(SL_COMMENT);
-CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
+CFL_ML_COMMENT: ML_COMMENT -> channel(HIDDEN), type(ML_COMMENT);
+CFL_SL_COMMENT: SL_COMMENT -> channel(HIDDEN), type(SL_COMMENT);
+CFL_WS: WS -> channel(HIDDEN), type(WS);
 CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
 CFL_SELECT:
-    ('(' CFL_COMMENT_OR_WS*)+
-    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
+    ('(' COMMENT_OR_WS*)+
+    ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
 ;
 
 CFL_END_OF_SELECT:
