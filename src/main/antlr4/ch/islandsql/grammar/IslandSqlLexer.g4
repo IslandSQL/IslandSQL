@@ -28,7 +28,7 @@ options {
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT SINGLE_NL)|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|CONDITIONAL_COMPILATION_DIRECTIVE|.;
-fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
+fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment SQL_END:
       EOF
     | ';' [ \t]* SINGLE_NL?
