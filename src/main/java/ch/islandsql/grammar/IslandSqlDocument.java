@@ -36,20 +36,22 @@ public class IslandSqlDocument {
     private final IslandSqlParser.FileContext file;
     private final List<SyntaxErrorEntry> syntaxErrors;
 
-
     /**
      * Constructor. Private to allow future optimization such as caching.
      *
      * @param sql SQL-script as string.
+     * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
      */
-    private IslandSqlDocument(String sql) {
+    private IslandSqlDocument(String sql, boolean hideOutOfScopeTokens) {
         CodePointCharStream charStream = CharStreams.fromString(sql);
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
         SyntaxErrorListener errorListener = new SyntaxErrorListener();
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         this.tokenStream = new CommonTokenStream(lexer);
-        TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
+        if (hideOutOfScopeTokens) {
+            TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
+        }
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
@@ -64,7 +66,18 @@ public class IslandSqlDocument {
      * @return Constructed IslandSqlDocument.
      */
     public static IslandSqlDocument parse(String sql) {
-        return new IslandSqlDocument(sql);
+        return parse(sql, true);
+    }
+
+    /**
+     * Factory to construct an IslandSqlDocument.
+     *
+     * @param sql SQL-script as string.
+     * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
+     * @return Constructed IslandSqlDocument.
+     */
+    public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens) {
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens);
     }
 
     /**
