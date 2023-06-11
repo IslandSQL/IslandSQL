@@ -75,7 +75,7 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 STRING:
     'n'?
     (
-          (['] .*? ['])+
+          (['] ~[']* ['])+
         | ('q' ['] '[' .*? ']' ['])
         | ('q' ['] '(' .*? ')' ['])
         | ('q' ['] '{' .*? '}' ['])
