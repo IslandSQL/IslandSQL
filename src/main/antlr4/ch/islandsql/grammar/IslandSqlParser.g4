@@ -1969,6 +1969,7 @@ keywordAsId:
     | K_BULK
     | K_BY
     | K_BYTE
+    | K_CALL
     | K_CASE
     | K_CASE_SENSITIVE
     | K_CAST
@@ -2005,6 +2006,7 @@ keywordAsId:
     | K_DEFAULT
     | K_DEFAULTS
     | K_DEFINE
+    | K_DELETE
     | K_DENSE_RANK
     | K_DEPTH
     | K_DESC
@@ -2029,6 +2031,7 @@ keywordAsId:
     | K_EXCLUSIVE
     | K_EXISTING
     | K_EXISTS
+    | K_EXPLAIN
     | K_EXTERNAL
     | K_EXTRA
     | K_EXTRACT
@@ -2131,6 +2134,7 @@ keywordAsId:
     | K_MATCH_RECOGNIZE
     | K_MEASURES
     | K_MEMBER
+    | K_MERGE
     | K_MINUS
     | K_MINUTE
     | K_MISMATCH
@@ -2190,6 +2194,7 @@ keywordAsId:
     | K_PERIOD
     | K_PERMUTE
     | K_PIVOT
+    | K_PLAN
     | K_POSITION
     | K_PRECEDING
     | K_PRECISION
