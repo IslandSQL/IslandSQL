@@ -42,7 +42,7 @@ SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Hidden SQL*Plus commands (as single tokens, similar to comments)
+// SQL*Plus commands (similar to comments)
 /*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
