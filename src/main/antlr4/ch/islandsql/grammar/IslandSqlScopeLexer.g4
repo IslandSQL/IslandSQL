@@ -181,7 +181,7 @@ SELECT:
         ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
       | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | ('(' COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('(' COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? ')' COMMENT_OR_WS* SQL_END)
     )
 ;
 
