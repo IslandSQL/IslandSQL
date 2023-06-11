@@ -176,6 +176,7 @@ MERGE:
     'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
+// TODO: remove select in parenthesis with https://github.com/IslandSQL/IslandSQL/issues/29 to avoid identifying out-of-scope subqueries
 SELECT:
     (
         ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
