@@ -26,7 +26,7 @@ options {
 /*----------------------------------------------------------------------------*/
 
 fragment SINGLE_NL: '\r'? '\n';
-fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT '\r'? '\n')|WS;
+fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT SINGLE_NL)|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: [ \t]* SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
@@ -204,7 +204,7 @@ ANY_OTHER: . -> channel(HIDDEN);
 mode CURSOR_FOR_LOOP;
 
 fragment CFL_SINGLE_NL: '\r'? '\n';
-fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|(CFL_SL_COMMENT '\r'? '\n')|CFL_WS;
+fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|(CFL_SL_COMMENT CFL_SINGLE_NL)|CFL_WS;
 CFL_ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN), type(ML_COMMENT);
 CFL_SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN), type(SL_COMMENT);
 CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
