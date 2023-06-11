@@ -49,7 +49,7 @@ ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Hidden SQL*Plus commands
+// SQL*Plus commands (as single tokens, similar to comments)
 /*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
@@ -69,7 +69,33 @@ PROMPT_COMMAND:
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Other hidden tokens to be ignored
+// SQL statements with keywords conflicting with islands of interest
+/*----------------------------------------------------------------------------*/
+
+// hide keywords: select, insert, update, delete
+GRANT:
+    'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+REVOKE:
+    'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_AUDIT_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_MATERIALIZED_VIEW_LOG:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
+        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
+// Data types
 /*----------------------------------------------------------------------------*/
 
 STRING:
@@ -84,22 +110,18 @@ STRING:
     ) -> channel(HIDDEN)
 ;
 
+/*----------------------------------------------------------------------------*/
+// Identifier
+/*----------------------------------------------------------------------------*/
+
 ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
 
+/*----------------------------------------------------------------------------*/
+// Label statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
 LABEL: '<<' WS* ID WS* '>>' -> channel(HIDDEN);
-
-GRANT:
-    'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-REVOKE:
-    'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-CREATE_AUDIT_POLICY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
 
 /*----------------------------------------------------------------------------*/
 // Cursor for loop
