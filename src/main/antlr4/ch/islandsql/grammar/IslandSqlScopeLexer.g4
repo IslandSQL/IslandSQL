@@ -239,3 +239,22 @@ CFL_SELECT:
 CFL_END_OF_SELECT:
     'loop' -> type(ID), channel(HIDDEN), popMode
 ;
+
+/*----------------------------------------------------------------------------*/
+// Subquery mode to identify select statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+mode SUBQUERY;
+
+SQ_END: ';' -> channel(HIDDEN), type(ANY_OTHER), popMode;
+SQ_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
+
+SQ_SELECT:
+    ('('|COMMENT_OR_WS)*
+    (
+          'select' {isBeginOfWord("select")}?
+        | 'with' {isBeginOfWord("with")}?
+    )
+    COMMENT_OR_WS+ SQL_TEXT+? ';' SINGLE_NL? -> type(SELECT), popMode
+;
