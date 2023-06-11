@@ -41,13 +41,11 @@ fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 
 /*----------------------------------------------------------------------------*/
-// Whitespace, comments and hints
+// Whitespace and comments
 /*----------------------------------------------------------------------------*/
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
-ML_HINT: '/*+' .*? '*/' -> channel(HIDDEN);
 ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN);
-SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
