@@ -112,7 +112,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * allowed. In other words a command can start in any column.
      * A command can start at begin-of-file.
      *
-     * @param beforeString String used to determine start of command.
+     * @param beforeString String used to determine start of a command.
      * @return Returns true if the current position is valid for a command.
      */
     public boolean isBeginOfCommand(String beforeString) {
