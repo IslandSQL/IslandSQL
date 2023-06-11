@@ -130,6 +130,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
      *     - a cursor definition
      *     - an open cursor statement
+     *     - a forall statement
      *     - a new line
      *     - a label
      * @param beforeString String used to determine start of the statement.
@@ -149,7 +150,8 @@ public abstract class IslandSqlLexerBase extends Lexer {
                 if (text.endsWith(";") || text.endsWith("/") || text.equals("as")
                         || text.equals("is") || text.equals("declare") || text.equals("begin")
                         || text.equals("then") || text.equals("elsif") || text.equals("else") || text.equals("loop")
-                        || text.startsWith("cursor") || text.startsWith("open") || text.startsWith("<<")) {
+                        || text.startsWith("cursor") || text.startsWith("open") || text.startsWith("forall")
+                        || text.startsWith("<<")) {
                     return true;
                 }
             }
