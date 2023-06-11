@@ -271,7 +271,7 @@ groupByItem:
 ;
 
 groupingSetsClause:
-    K_GROUPING K_SETS LPAR groupingSets+=expression (COMMA groupingSets+=expression) RPAR
+    K_GROUPING K_SETS LPAR groupingSets+=expression (COMMA groupingSets+=expression)* RPAR
 ;
 
 modelClause:
