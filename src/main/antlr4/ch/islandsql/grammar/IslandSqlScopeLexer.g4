@@ -27,7 +27,8 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT SINGLE_NL)|WS;
-fragment SQL_TEXT: COMMENT_OR_WS|STRING|.;
+fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
+fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment SQL_END:
@@ -179,7 +180,7 @@ MERGE:
 // TODO: remove select in parenthesis with https://github.com/IslandSQL/IslandSQL/issues/29 to avoid identifying out-of-scope subqueries
 SELECT:
     (
-        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT_WITH_PLSQL+? PLSQL_DECLARATION_END)
       | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('(' COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? ')' COMMENT_OR_WS* SQL_END)
