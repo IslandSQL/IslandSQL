@@ -40,12 +40,17 @@ public abstract class IslandSqlLexerBase extends Lexer {
         this.scopeLexer = this.getClass().getCanonicalName().equals("ch.islandsql.grammar.IslandSqlScopeLexer");
     }
 
+    /**
+     * Emits token and saves last token for use in isBeginOfStatement.
+     *
+     * @param token Token to be emitted
+     */
     @Override
     public void emit(Token token) {
         super.emit(token);
-        if (token.getType() > 8) {
-            // token that is not a WS (1), ML_HINT (2), ML_COMMENT (3), SL_HINT(4), SL_COMMENT (5),
-            // REMARK_COMMAND (6), PROMPT_COMMAND (7), CONDITIONAL_COMPILATION_DIRECTIVE (8)
+        if (scopeLexer && token.getType() > 6) {
+            // token that is not a WS (1),  ML_COMMENT (2), SL_COMMENT (3),
+            // REMARK_COMMAND (4), PROMPT_COMMAND (5), CONDITIONAL_COMPILATION_DIRECTIVE (6)
             this.lastToken = token;
         }
     }
@@ -137,11 +142,12 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * @return Returns true if the current position is valid for a SQL statement.
      */
     public boolean isBeginOfStatement(String beforeString) {
+        assert scopeLexer : "isBeginOfStatement requires IslandSqlScopeLexer.";
         if (lastToken == null) {
             // no previous token, hence begin of file
             return true;
         } else {
-            if (scopeLexer && lastToken.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL) {
+            if (lastToken.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL) {
                 // visible token in scope lexer, hence a statement
                 return true;
             } else {
@@ -156,14 +162,13 @@ public abstract class IslandSqlLexerBase extends Lexer {
                 }
             }
         }
-        if (!scopeLexer) {
-            int i = _input.index() - beforeString.length() - 1;
-            while (isCharOneOf(";/ \t\r\n", i)) {
-                if (i < 0 || isCharOneOf(";/\r\n", i)) {
-                    return true;
-                }
-                i--;
+        // handle commands that are not handled in the lexer and tokens that have be consumed
+        int i = _input.index() - beforeString.length() - 1;
+        while (isCharOneOf(";/ \t\r\n", i)) {
+            if (i < 0 || isCharOneOf(";/\r\n", i)) {
+                return true;
             }
+            i--;
         }
         return false;
     }
