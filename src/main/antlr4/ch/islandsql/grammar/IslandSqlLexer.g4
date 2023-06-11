@@ -531,34 +531,6 @@ QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
 ID: [\p{Alpha}] [_$#0-9\p{Alpha}]*;
 
 /*----------------------------------------------------------------------------*/
-// Islands of interest as single tokens
-/*----------------------------------------------------------------------------*/
-
-CALL:
-    'call' {isBeginOfStatement("call")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-DELETE:
-    'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-EXPLAIN_PLAN:
-    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-INSERT:
-    'insert' {isBeginOfStatement("insert")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-MERGE:
-    'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
-;
-
-UPDATE:
-    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' (COMMENT_OR_WS|'(')+ SQL_TEXT+? SQL_END
-;
-
-/*----------------------------------------------------------------------------*/
 // Any other token
 /*----------------------------------------------------------------------------*/
 
