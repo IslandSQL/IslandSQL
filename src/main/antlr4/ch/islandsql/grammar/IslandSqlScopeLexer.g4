@@ -139,8 +139,8 @@ CURSOR_FOR_LOOP_START:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_START:
-    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
-    -> channel(HIDDEN)
+    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ SQL_TEXT+? COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
+    -> channel(HIDDEN), pushMode(SUBQUERY)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -150,7 +150,7 @@ CURSOR_START:
 
 OPEN_CURSOR_FOR_START:
     'open' {isBeginOfStatement("open")}? ~[;]+ COMMENT_OR_WS+ 'for' (COMMENT_OR_WS+|{isText("(")}?)
-    -> channel(HIDDEN)
+    -> channel(HIDDEN), pushMode(SUBQUERY)
 ;
 
 /*----------------------------------------------------------------------------*/
