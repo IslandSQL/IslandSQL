@@ -106,17 +106,6 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if the position beforeString is the start of a word.
-     *
-     * @param beforeString String used to determine start of a word.
-     * @return Returns true if the position beforeString is the start of a word.
-     */
-    public boolean isBeginOfWord(String beforeString) {
-        int i = _input.index() - beforeString.length() - 1;
-        return i < 0 || isCharOneOf(" \t\r\n(", i);
-    }
-
-    /**
      * Determines if the position beforeString is valid for a command.
      * A command must start on a new line. Between the new line and
      * the start of command an unbounded number of whitespace is
