@@ -246,13 +246,11 @@ CFL_END_OF_SELECT:
 mode SUBQUERY;
 
 SQ_END: ';' -> channel(HIDDEN), type(ANY_OTHER), popMode;
+SQ_ID: ID -> channel(HIDDEN), type(ID);
+SQ_STRING: STRING  -> channel(HIDDEN), type(STRING);
 SQ_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
 SQ_SELECT:
     ('('|COMMENT_OR_WS)*
-    (
-          'select' {isBeginOfWord("select")}?
-        | 'with' {isBeginOfWord("with")}?
-    )
-    COMMENT_OR_WS+ SQL_TEXT+? ';' SINGLE_NL? -> type(SELECT), popMode
+    ('select'|'with') COMMENT_OR_WS+ SQL_TEXT+? ';' SINGLE_NL? -> type(SELECT), popMode
 ;
