@@ -54,12 +54,12 @@ SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
-        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
     'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
-       (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+       ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
