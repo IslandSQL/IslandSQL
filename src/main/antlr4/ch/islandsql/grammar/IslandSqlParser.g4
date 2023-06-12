@@ -1748,7 +1748,7 @@ functionExpression:
 ;
 
 functionParameter:
-    (name=sqlName EQUALS GT)? functionParameterPrefix? expr=expression functionParameterSuffix?
+    (name=sqlName EQUALS GT)? functionParameterPrefix? expr=condition functionParameterSuffix?
 ;
 
 functionParameterPrefix:
