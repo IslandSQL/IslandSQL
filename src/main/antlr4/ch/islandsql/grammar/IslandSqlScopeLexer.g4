@@ -158,6 +158,10 @@ OPEN_CURSOR_FOR_START:
 // TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
 /*----------------------------------------------------------------------------*/
 
+FORALL_IGNORE:
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+?
+        'execute' .+? SQL_END -> channel(HIDDEN);
+
 FORALL_START:
     'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+?
     (
