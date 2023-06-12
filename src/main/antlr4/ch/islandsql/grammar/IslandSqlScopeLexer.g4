@@ -139,7 +139,7 @@ CURSOR_FOR_LOOP_START:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_START:
-    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ SQL_TEXT+? COMMENT_OR_WS+ 'is' COMMENT_OR_WS*
+    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ SQL_TEXT+? (COMMENT_OR_WS|')')+ 'is' COMMENT_OR_WS*
     -> channel(HIDDEN), pushMode(SUBQUERY)
 ;
 
