@@ -39,6 +39,7 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
+fragment ANY_EXCEPT_FOR: 'f' 'o' ~'r' | 'f' ~'o' | ~'f';
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -149,7 +150,7 @@ CURSOR_START:
 /*----------------------------------------------------------------------------*/
 
 OPEN_CURSOR_FOR_START:
-    'open' {isBeginOfStatement("open")}? ~[;]+ COMMENT_OR_WS+ 'for' (COMMENT_OR_WS+|{isText("(")}?)
+    'open' {isBeginOfStatement("open")}? COMMENT_OR_WS+ ANY_EXCEPT_FOR+? 'for' (COMMENT_OR_WS+|{isText("(")}?)
     -> channel(HIDDEN), pushMode(SUBQUERY)
 ;
 
