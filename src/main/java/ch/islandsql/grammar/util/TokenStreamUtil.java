@@ -21,6 +21,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
 import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 
 import java.util.ArrayList;
@@ -106,5 +107,23 @@ public class TokenStreamUtil {
             }
         }
         tokenStream.seek(0);
+    }
+
+    /**
+     * Produces a SQL script containing only the islands of interest.
+     * The original line numbers are preserved. However, the line lengths
+     * will differ when the original line contains tokens that are not of interest.
+     *
+     * @param tokenStream The tokensStream produced by islandSqlLexer to process.
+     * @return Returns a SQL script containing only the islands of interest.
+     */
+    public static String printScope(CommonTokenStream tokenStream) {
+        final StringBuilder sb = new StringBuilder();
+        for (Token token : tokenStream.getTokens()) {
+            if (token.getType() > 0 && (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 8)) {
+                sb.append(token.getText());
+            }
+        }
+        return sb.toString();
     }
 }
