@@ -858,7 +858,8 @@ expression:
     | expr=specialFunctionExpression                            # specialFunctionExpr
     | expr=functionExpression                                   # functionExpr
     | expr=placeholderExpression                                # placeholderExpr
-    | expr=modelExpression                                      # modelExpr
+    | expr=expression
+        LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression
     | expr=AST                                                  # allColumnWildcardExpression
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
@@ -973,11 +974,6 @@ searchedCaseExpressionWhenClause:
 
 elseClause:
     K_ELSE expr=expression
-;
-
-// analytic_function is handled in expression
-modelExpression:
-    column=sqlName LSQB (cellAssignmentList|multiColumnForLoop) RSQB
 ;
 
 // Functions and function-like conditions that have a syntax that
