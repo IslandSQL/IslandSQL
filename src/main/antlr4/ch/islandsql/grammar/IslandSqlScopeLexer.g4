@@ -161,11 +161,11 @@ OPEN_CURSOR_FOR_START:
 /*----------------------------------------------------------------------------*/
 
 FORALL_IGNORE:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+?
-        'execute' .+? SQL_END -> channel(HIDDEN);
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ SQL_TEXT+? WS
+        'execute' WS 'immediate' .+? SQL_END -> channel(HIDDEN);
 
 FORALL_START:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+? WS
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ SQL_TEXT+? WS
     (
           {isText("insert")}?
         | {isText("update")}?
