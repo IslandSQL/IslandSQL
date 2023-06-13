@@ -40,6 +40,14 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
+fragment ANY_EXCEPT_EXECUTE: ('e' 'x' 'c' 'e' 'c' 'u' 't' ~'e')
+    ('e' 'x' 'c' 'e' 'c' 'u' ~'t')
+    ('e' 'x' 'c' 'e' 'c' ~'u')
+    ('e' 'x' 'c' 'e' ~'c')
+    ('e' 'x' 'c' ~'e')
+    ('e' 'x' ~'c')
+    ('e' ~'x')
+    (~'e');
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -161,7 +169,7 @@ OPEN_CURSOR_FOR_START:
 /*----------------------------------------------------------------------------*/
 
 FORALL_IGNORE:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ SQL_TEXT+? WS
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ ANY_EXCEPT_EXECUTE+? WS
         'execute' WS 'immediate' .+? SQL_END -> channel(HIDDEN);
 
 FORALL_START:
