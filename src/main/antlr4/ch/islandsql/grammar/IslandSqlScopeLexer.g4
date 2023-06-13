@@ -165,7 +165,7 @@ FORALL_IGNORE:
         'execute' .+? SQL_END -> channel(HIDDEN);
 
 FORALL_START:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+?
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ .+? WS
     (
           {isText("insert")}?
         | {isText("update")}?
