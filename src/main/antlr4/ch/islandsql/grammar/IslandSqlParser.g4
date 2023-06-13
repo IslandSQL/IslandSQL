@@ -451,10 +451,10 @@ fromClause:
 ;
 
 fromItem:
-      tableReference            # tableReferenceFromItem
-    | joinClause                # joinClauseFromItem
-    | inlineAnalyticView        # lineAnalyticviewFromItem
-    | LPAR fromItem RPAR        # parenFromItem
+      tableReference               # tableReferenceFromItem
+    | fromItem joins+=joinVariant+ # joinClause
+    | inlineAnalyticView           # lineAnalyticviewFromItem
+    | LPAR fromItem RPAR           # parenFromItem
 ;
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
@@ -691,10 +691,6 @@ rowPatternDefinitionList:
 
 rowPatternDefinition:
     variableName=sqlName K_AS cond=condition
-;
-
-joinClause:
-    tableReference joins+=joinVariant+
 ;
 
 joinVariant:
