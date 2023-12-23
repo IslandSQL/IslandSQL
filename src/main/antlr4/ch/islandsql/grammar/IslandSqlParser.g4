@@ -582,7 +582,7 @@ pivotForClause:
 ;
 
 pivotInClause:
-    K_IN LPAR expr+=pivotInClauseExpression (COMMA expr+=pivotInClauseExpression)* RPAR
+    K_IN LPAR (query=subquery | (expr+=pivotInClauseExpression (COMMA expr+=pivotInClauseExpression)*)) RPAR
 ;
 
 pivotInClauseExpression:
