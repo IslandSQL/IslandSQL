@@ -718,7 +718,7 @@ outerJoinClause:
     (
           K_ON cond=condition
         | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
-    )
+    )?
 ;
 
 outerJoinType:
