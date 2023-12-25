@@ -354,8 +354,9 @@ modelRuleClause:
     LPAR modelRules+=modelRule (COMMA modelRules+=modelRule)* RPAR
 ;
 
+// undocumented: parenthesis around condition are documented, but not necessary
 modelIterateClause:
-    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL LPAR cond=condition RPAR)?
+    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL cond=condition)?
 ;
 
 modelRule:
