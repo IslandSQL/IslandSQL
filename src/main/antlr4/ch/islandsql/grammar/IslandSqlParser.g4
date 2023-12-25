@@ -350,7 +350,7 @@ mainModel:
     modelRuleClause?
 ;
 modelRuleClause:
-    (K_RULES (K_UPDATE|K_UPSERT K_ALL?)? ((K_AUTOMATIC|K_SEQUENTIAL) K_ORDER)? modelIterateClause?)?
+    K_RULES? (K_UPDATE|K_UPSERT K_ALL?)? ((K_AUTOMATIC|K_SEQUENTIAL) K_ORDER)? modelIterateClause?
     LPAR modelRules+=modelRule (COMMA modelRules+=modelRule)* RPAR
 ;
 
