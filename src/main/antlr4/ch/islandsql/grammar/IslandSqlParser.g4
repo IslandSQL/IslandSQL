@@ -413,8 +413,9 @@ windowClause:
     K_WINDOW selectWindows+=selectWindow (COMMA selectWindows+=selectWindow)*
 ;
 
+// wrong documentation, missing required parentheses around windowSpecification
 selectWindow:
-    windowName=sqlName K_AS windowSpecification
+    windowName=sqlName K_AS LPAR windowSpecification RPAR
 ;
 
 windowSpecification:
