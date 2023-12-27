@@ -648,7 +648,7 @@ rowPatternSkipTo:
     K_AFTER K_MATCH K_SKIP
     (
           (K_TO K_NEXT|K_PAST K_LAST) K_ROW
-        | K_TO (K_FIRST|K_LAST) variableName=sqlName
+        | K_TO (K_FIRST|K_LAST)? variableName=sqlName
     )
 ;
 
