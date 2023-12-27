@@ -661,8 +661,8 @@ rowPatternTerm:
         variableName=sqlName rowPatternQuantifier?
       | DOLLAR rowPatternQuantifier?
       | HAT rowPatternQuantifier?
-      | LPAR rowPatternTerm? RPAR rowPatternQuantifier?
-      | LCUB MINUS rowPatternTerm MINUS RCUB rowPatternQuantifier?
+      | LPAR rowPattern? RPAR rowPatternQuantifier?
+      | LCUB MINUS rowPattern MINUS RCUB rowPatternQuantifier?
       | left=rowPatternTerm VERBAR right=rowPatternTerm rowPatternQuantifier?
       | rowPatternPermute rowPatternQuantifier?
 ;
