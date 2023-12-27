@@ -18,6 +18,7 @@ package ch.islandsql.grammar;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
 /**
@@ -25,6 +26,8 @@ import org.antlr.v4.runtime.misc.Interval;
  * Used to provide methods to be used as semantic predicates in the lexer grammar.
  */
 public abstract class IslandSqlLexerBase extends Lexer {
+    private final boolean scopeLexer;
+    private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
 
     /**
@@ -34,10 +37,26 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     public IslandSqlLexerBase(CharStream input) {
         super(input);
+        this.scopeLexer = this.getClass().getCanonicalName().equals("ch.islandsql.grammar.IslandSqlScopeLexer");
     }
 
     /**
-     * Determines if text is the next character sequencein the character stream.
+     * Emits token and saves last token for use in isBeginOfStatement.
+     *
+     * @param token Token to be emitted
+     */
+    @Override
+    public void emit(Token token) {
+        super.emit(token);
+        if (scopeLexer && token.getType() > 6) {
+            // token that is not a WS (1),  ML_COMMENT (2), SL_COMMENT (3),
+            // REMARK_COMMAND (4), PROMPT_COMMAND (5), CONDITIONAL_COMPILATION_DIRECTIVE (6)
+            this.lastToken = token;
+        }
+    }
+
+    /**
+     * Determines if text is the next character sequence in the character stream.
      *
      * @return Returns true if text is the next character sequence in the character stream.
      */
@@ -93,7 +112,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * allowed. In other words a command can start in any column.
      * A command can start at begin-of-file.
      *
-     * @param beforeString String used to determine start of command.
+     * @param beforeString String used to determine start of a command.
      * @return Returns true if the current position is valid for a command.
      */
     public boolean isBeginOfCommand(String beforeString) {
@@ -109,15 +128,46 @@ public abstract class IslandSqlLexerBase extends Lexer {
 
     /**
      * Determines if the position beforeString is valid for a SQL statement.
-     * A SQL statement starts after a whitespace or a semicolon.
-     * In other words multiple SQL statements on a single line are allowed.
+     * A SQL statement starts after a semicolon or slash.
      * A SQL statement can start at begin-of-file.
-     *
-     * @param beforeString String used to determine start of command.
+     * Temporary solution to identify start of statement:
+     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
+     *     - after the keywords AS, IS, DECLARE, BEGIN, THEN, ELSIF, ELSE, LOOP
+     *     - after a forall statement
+     *     - after a new line
+     *     - after a label
+     * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
     public boolean isBeginOfStatement(String beforeString) {
-        return isCharOneOf(" \t\r\n;", _input.index() - beforeString.length() -1);
+        assert scopeLexer : "isBeginOfStatement requires IslandSqlScopeLexer.";
+        if (lastToken == null) {
+            // no previous token, hence begin of file
+            return true;
+        } else {
+            if (lastToken.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL) {
+                // visible token in scope lexer, hence a statement
+                return true;
+            } else {
+                // decide according previous token if it is a statement
+                String text = lastToken.getText().toLowerCase().trim();
+                if (text.endsWith(";") || text.endsWith("/") || text.equals("as")
+                        || text.equals("is") || text.equals("declare") || text.equals("begin")
+                        || text.equals("then") || text.equals("elsif") || text.equals("else") || text.equals("loop")
+                        || text.startsWith("forall") || text.startsWith("<<")) {
+                    return true;
+                }
+            }
+        }
+        // handle commands that are not handled in the lexer and tokens that have be consumed
+        int i = _input.index() - beforeString.length() - 1;
+        while (isCharOneOf(";/ \t\r\n", i)) {
+            if (i < 0 || isCharOneOf(";/\r\n", i)) {
+                return true;
+            }
+            i--;
+        }
+        return false;
     }
 
     /**

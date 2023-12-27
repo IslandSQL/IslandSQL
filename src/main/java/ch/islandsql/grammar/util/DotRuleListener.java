@@ -18,9 +18,9 @@ package ch.islandsql.grammar.util;
 
 import ch.islandsql.grammar.IslandSqlParser;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Vocabulary;
 import org.antlr.v4.runtime.misc.Utils;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.Trees;
@@ -29,39 +29,60 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Listener to be used to produce a hierarchical representation of the parse tree.
+ * Listener to be used to produce a DOT representation of the parse tree.
+ * The output can be used to produce a graphical representation of the parse tree
+ * via online tools such as
+ * <ul>
+ * <li> <a href="https://dreampuf.github.io/GraphvizOnline/">GraphvizOnline</a>
+ * <li> <a href="https://edotor.net/">Edotor</a>
+ * <li> <a href="http://viz-js.com/">Viz.js</a>
+ * <li> <a href="http://www.webgraphviz.com/">WebGraphviz</a>
+ * </ul>
+ * See also <a href="https://www.graphviz.org">Graphviz</a>.
  */
-public class PrintRuleListener implements ParseTreeListener {
+@SuppressWarnings("FieldCanBeLocal")
+public class DotRuleListener implements ParseTreeListener {
     private final String NL = System.getProperty("line.separator");
     private final StringBuilder sb = new StringBuilder();
     private final List<String> parserRuleNames;
-    private final Vocabulary vocabulary;
+    private final String BG_COLOR="transparent";
+    private final String CTX_FILL_COLOR="#bfe6ff";
+    private final String TERMINAL_FILL_COLOR="#fadabd";
+    private final String FONT_NAME="Helvetica"; // default: Times, others: Helvetica-bold, Times-bold, Times-italic
     private int level = 0;
 
     /**
      * Constructor.
      */
-    public PrintRuleListener() {
+    public DotRuleListener() {
         this.parserRuleNames = Arrays.asList(IslandSqlParser.ruleNames);
-        this.vocabulary = IslandSqlParser.VOCABULARY;
     }
 
     /**
      * Add TerminalNode to the result.
-     * Emits the type name of a symbol, followed by colon, followed by the value
      *
      * @param node TerminalNode.
      */
     @Override
     public void visitTerminal(TerminalNode node) {
-        printNewLineAndIndent();
-        int type = node.getSymbol().getType();
-        if (type >= 0) {
-            // all symbols except EOF
-            sb.append(vocabulary.getSymbolicName(node.getSymbol().getType()));
-            sb.append(":");
-        }
-        sb.append(Utils.escapeWhitespace(Trees.getNodeText(node, parserRuleNames), false));
+        sb.append("  ");
+        sb.append('"');
+        sb.append(node.hashCode()); // internal instance representation
+        sb.append('"');
+        sb.append(" [shape=box label=");
+        sb.append('"');
+        sb.append(node.getText().replace("\"","\\\"")); // human-readable representation
+        sb.append('"');
+        sb.append(" style=filled fillcolor=");
+        sb.append('"');
+        sb.append(TERMINAL_FILL_COLOR);
+        sb.append('"');
+        sb.append(" fontname=");
+        sb.append('"');
+        sb.append(FONT_NAME);
+        sb.append('"');
+        sb.append("]");
+        sb.append(NL);
     }
 
     /**
@@ -84,16 +105,50 @@ public class PrintRuleListener implements ParseTreeListener {
      */
     @Override
     public void enterEveryRule(ParserRuleContext ctx) {
-        printNewLineAndIndent();
+        if (level == 0) {
+            sb.append("digraph islandSQL {");
+            sb.append(NL);
+            sb.append("  bgcolor=");
+            sb.append('"');
+            sb.append(BG_COLOR);
+            sb.append('"');
+            sb.append(NL);
+        }
+        level++;
+        sb.append("  ");
+        sb.append('"');
+        sb.append(ctx.hashCode()); // internal instance representation
+        sb.append('"');
+        sb.append(" [shape=ellipse label=");
+        sb.append('"');
         String labelName = ParseTreeUtil.getLabelName(ctx);
         if (labelName == null) {
             sb.append(Utils.escapeWhitespace(Trees.getNodeText(ctx, parserRuleNames), false));
         } else {
-            sb.append(parserRuleNames.get(ctx.getRuleIndex()));
-            sb.append(":");
             sb.append(labelName);
         }
-        level++;
+        sb.append('"');
+        sb.append(" style=filled fillcolor=");
+        sb.append('"');
+        sb.append(CTX_FILL_COLOR);
+        sb.append('"');
+        sb.append(" fontname=");
+        sb.append('"');
+        sb.append(FONT_NAME);
+        sb.append('"');
+        sb.append("]");
+        sb.append(NL);
+        for (ParseTree parseTree: ctx.children) {
+            sb.append("  ");
+            sb.append('"');
+            sb.append(ctx.hashCode());
+            sb.append('"');
+            sb.append(" -> ");
+            sb.append('"');
+            sb.append(parseTree.hashCode());
+            sb.append('"');
+            sb.append(NL);
+        }
     }
 
     /**
@@ -105,6 +160,7 @@ public class PrintRuleListener implements ParseTreeListener {
     public void exitEveryRule(ParserRuleContext ctx) {
         level--;
         if (level == 0) {
+            sb.append("}");
             sb.append(NL);
         }
     }
@@ -116,17 +172,5 @@ public class PrintRuleListener implements ParseTreeListener {
      */
     public String getResult() {
         return sb.toString();
-    }
-
-    /**
-     * Adds a new line and two characters per indentation level.
-     */
-    private void printNewLineAndIndent() {
-        if (level > 0) {
-            sb.append(NL);
-        }
-        for (int i=0; i<level; i++) {
-            sb.append("  ");
-        }
     }
 }

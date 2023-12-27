@@ -26,9 +26,10 @@ options {
 /*----------------------------------------------------------------------------*/
 
 fragment SINGLE_NL: '\r'? '\n';
-fragment COMMENT_OR_WS: ML_COMMENT|SL_COMMENT|WS;
-fragment SQL_TEXT: ML_COMMENT|SL_COMMENT|STRING|.;
-fragment SLASH_END: SINGLE_NL WS* '/' [ \t]* (EOF|SINGLE_NL);
+fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT SINGLE_NL)|WS;
+fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
+fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
+fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment SQL_END:
       EOF
@@ -38,28 +39,78 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
+fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
+fragment ANY_EXCEPT_EXECUTE: ('e' 'x' 'c' 'e' 'c' 'u' 't' ~'e')
+    ('e' 'x' 'c' 'e' 'c' 'u' ~'t')
+    ('e' 'x' 'c' 'e' 'c' ~'u')
+    ('e' 'x' 'c' 'e' ~'c')
+    ('e' 'x' 'c' ~'e')
+    ('e' 'x' ~'c')
+    ('e' ~'x')
+    (~'e');
 
 /*----------------------------------------------------------------------------*/
-// Comments and alike to be ignored
+// Whitespace and comments
 /*----------------------------------------------------------------------------*/
 
-ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN);
-SL_COMMENT: '--' (~[\r\n])* (EOF|SINGLE_NL) -> channel(HIDDEN);
+WS: [ \t\r\n]+ -> channel(HIDDEN);
+ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN);
+SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// SQL*Plus commands (as single tokens, similar to comments)
+/*----------------------------------------------------------------------------*/
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
-        (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
-    'pro' {isBeginOfCommand("pro")}?  ('m' ('p' 't'?)?)?
-       (WS SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+    'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
+       ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
+
+/*----------------------------------------------------------------------------*/
+// Conditional compilation directives
+/*----------------------------------------------------------------------------*/
+
+CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// SQL statements with keywords conflicting with islands of interest
+/*----------------------------------------------------------------------------*/
+
+// hide keywords: select, insert, update, delete
+GRANT:
+    'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+REVOKE:
+    'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_AUDIT_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_MATERIALIZED_VIEW_LOG:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
+        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
+// Data types
+/*----------------------------------------------------------------------------*/
 
 STRING:
     'n'?
     (
-          (['] .*? ['])+
+          (['] ~[']* ['])+
         | ('q' ['] '[' .*? ']' ['])
         | ('q' ['] '(' .*? ')' ['])
         | ('q' ['] '{' .*? '}' ['])
@@ -68,15 +119,18 @@ STRING:
     ) -> channel(HIDDEN)
 ;
 
-CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
+/*----------------------------------------------------------------------------*/
+// Identifier
+/*----------------------------------------------------------------------------*/
 
-GRANT:
-    'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
+ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
 
-REVOKE:
-    'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
+/*----------------------------------------------------------------------------*/
+// Label statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+LABEL: '<<' WS* ID WS* '>>' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
 // Cursor for loop
@@ -84,8 +138,49 @@ REVOKE:
 /*----------------------------------------------------------------------------*/
 
 CURSOR_FOR_LOOP_START:
-    'for' COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
+    'for' {isBeginOfStatement("for")}? COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
     -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
+;
+
+/*----------------------------------------------------------------------------*/
+// Cursor definition
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+CURSOR_START:
+    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ SQL_TEXT+? (COMMENT_OR_WS|')')+ 'is' COMMENT_OR_WS*
+    -> channel(HIDDEN), pushMode(SUBQUERY)
+;
+
+/*----------------------------------------------------------------------------*/
+// Open cursor for
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+OPEN_CURSOR_FOR_START:
+    'open' {isBeginOfStatement("open")}? COMMENT_OR_WS+
+    ANY_EXCEPT_FOR_AND_SEMI 'for' (COMMENT_OR_WS+|{isText("(")}?)
+    -> channel(HIDDEN), pushMode(SUBQUERY)
+;
+
+/*----------------------------------------------------------------------------*/
+// Forall statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+FORALL_IGNORE:
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ ANY_EXCEPT_EXECUTE+? WS
+        'execute' WS 'immediate' .+? SQL_END -> channel(HIDDEN);
+
+FORALL_START:
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ SQL_TEXT+? WS
+    (
+          {isText("insert")}?
+        | {isText("update")}?
+        | {isText("delete")}?
+        | {isText("merge")}?
+    )
+    -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -116,24 +211,22 @@ MERGE:
     'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
+// TODO: remove select in parenthesis to avoid identifying out-of-scope subqueries after implementing:
+// - https://github.com/IslandSQL/IslandSQL/issues/29
+// - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
     (
-        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT+? PLSQL_DECLARATION_END)
+        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT_WITH_PLSQL+? PLSQL_DECLARATION_END)
       | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | ('(' {isBeginOfStatement("(")}? COMMENT_OR_WS? ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+      | ('(' COMMENT_OR_WS* ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? ')'
+            COMMENT_OR_WS* ('with' SQL_TEXT+?)? SQL_END)
     )
 ;
 
 UPDATE:
-    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' (COMMENT_OR_WS|'(')+ SQL_TEXT+? SQL_END
 ;
-
-/*----------------------------------------------------------------------------*/
-// Whitespace
-/*----------------------------------------------------------------------------*/
-
-WS: [ \t\r\n]+ -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
 // Any other token
@@ -148,18 +241,33 @@ ANY_OTHER: . -> channel(HIDDEN);
 
 mode CURSOR_FOR_LOOP;
 
-fragment CFL_SINGLE_NL: '\r'? '\n';
-fragment CFL_COMMENT_OR_WS: CFL_ML_COMMENT|CFL_SL_COMMENT|CFL_WS;
-CFL_ML_COMMENT: '/*' .*? '*/' -> channel(HIDDEN), type(ML_COMMENT);
-CFL_SL_COMMENT: '--' .*? (EOF|CFL_SINGLE_NL) -> channel(HIDDEN), type(SL_COMMENT);
-CFL_WS: [ \t\r\n]+ -> channel(HIDDEN), type(WS);
+CFL_ML_COMMENT: ML_COMMENT -> channel(HIDDEN), type(ML_COMMENT);
+CFL_SL_COMMENT: SL_COMMENT -> channel(HIDDEN), type(SL_COMMENT);
+CFL_WS: WS -> channel(HIDDEN), type(WS);
 CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
 
 CFL_SELECT:
-    ('(' CFL_COMMENT_OR_WS*)+
-    ('select'|'with') .*? (')' CFL_COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
+    ('(' COMMENT_OR_WS*)+
+    ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
 ;
 
 CFL_END_OF_SELECT:
-    'loop' -> channel(HIDDEN), popMode
+    'loop' -> type(ID), channel(HIDDEN), popMode
+;
+
+/*----------------------------------------------------------------------------*/
+// Subquery mode to identify select statement
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
+/*----------------------------------------------------------------------------*/
+
+mode SUBQUERY;
+
+SQ_END: ';' -> channel(HIDDEN), type(ANY_OTHER), popMode;
+SQ_ID: ID -> channel(HIDDEN), type(ID);
+SQ_STRING: STRING  -> channel(HIDDEN), type(STRING);
+SQ_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
+
+SQ_SELECT:
+    ('('|COMMENT_OR_WS)*
+    ('select'|'with') COMMENT_OR_WS+ SQL_TEXT+? ';' SINGLE_NL? -> type(SELECT), popMode
 ;

@@ -213,6 +213,25 @@ public class ParseTreeUtil {
     }
 
     /**
+     * Gets the label name of an alternative.
+     * If an alternative is labeld with "#someLabel" in the grammar, then
+     * a subclass named "IslandSqlParser$SomeLabelContext" of another
+     * rule class (not ParserRuleContext) is created.
+     *
+     * @param ctx ParserRuleContext to get the alternative label name from.
+     * @return Returns the label name or null, if no label is defined.
+     */
+    public static String getLabelName(ParserRuleContext ctx) {
+        if (ctx.getClass().getSuperclass().getSimpleName().equals("ParserRuleContext")) {
+            return null;
+        } else {
+            String className = ctx.getClass().getName();
+            String labelName = className.substring(className.indexOf("$") + 1, className.lastIndexOf("Context"));
+            return Character.toLowerCase(labelName.charAt(0)) + labelName.substring(1);
+        }
+    }
+
+    /**
      * Produces a hierarchical parse tree as string.
      *
      * @param root The start node.
@@ -220,6 +239,19 @@ public class ParseTreeUtil {
      */
     public static String printParseTree(ParseTree root) {
         PrintRuleListener listener = new PrintRuleListener();
+        ParseTreeWalker walker = new ParseTreeWalker();
+        walker.walk(listener, root);
+        return listener.getResult();
+    }
+
+    /**
+     * Produces a parse tree as string in DOT format.
+     *
+     * @param root The start node.
+     * @return Returns a parse tree as string in DOT format.
+     */
+    public static String dotParseTree(ParseTree root) {
+        DotRuleListener listener = new DotRuleListener();
         ParseTreeWalker walker = new ParseTreeWalker();
         walker.walk(listener, root);
         return listener.getResult();
