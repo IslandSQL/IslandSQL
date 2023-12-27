@@ -668,7 +668,7 @@ rowPatternTerm:
 ;
 
 rowPatternPermute:
-    K_PERMUTE LPAR rowPatternTerm (COMMA rowPatternTerm)* RPAR
+    K_PERMUTE LPAR rowPattern (COMMA rowPattern)* RPAR
 ;
 
 rowPatternQuantifier:
