@@ -204,9 +204,19 @@ factoringClause:
 
 subqueryFactoringClause:
     queryName=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
-    K_AS LPAR subquery RPAR
+    K_AS ((LPAR subquery RPAR) | valuesClause)
     searchClause?
     cycleClause?
+;
+
+valuesClause:
+    LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
+    // caliases must be specified in subquery_factoring_clause after queryName, next line is valid in other contexts (table_reference)
+    (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
+;
+
+valuesRow:
+    LPAR expr+=expression (COMMA expr+=expression)* RPAR
 ;
 
 searchClause:
@@ -480,6 +490,7 @@ queryTableExpression:
     | inlineExternalTable sampleClause?
     | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
+    | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
 
 // grammar definition in SQL Language Reference 19c/21c is wrong, added LPAR/RPAR
