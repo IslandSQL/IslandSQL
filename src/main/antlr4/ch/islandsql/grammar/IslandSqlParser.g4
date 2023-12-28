@@ -1006,6 +1006,7 @@ specialFunctionExpression:
     | cast
     | extract
     | featureCompare
+    | fuzzyMatch
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -1240,6 +1241,23 @@ featureCompare:
 
 respectIgnoreNullsClause:
     (K_RESPECT | K_IGNORE) K_NULLS
+;
+
+fuzzyMatch:
+    K_FUZZY_MATCH LPAR
+        algorithm=(
+            K_LEVENSHTEIN
+          | K_DAMERAU_LEVENSHTEIN
+          | K_JARO_WINKLER
+          | K_BIGRAM
+          | K_TRIGRAM
+          | K_WHOLE_WORD_MATCH
+          | K_LONGEST_COMMON_SUBSTRING
+        )
+        COMMA str1=expression
+        COMMA str2=expression
+        (COMMA option=(K_UNSCALED|K_RELATE_TO_SHORTER|K_EDIT_TOLERANCE) tolerance=expression?)?
+    RPAR
 ;
 
 jsonArray:
@@ -2014,6 +2032,7 @@ keywordAsId:
     | K_BEGINNING
     | K_BETWEEN
     | K_BFILE
+    | K_BIGRAM
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BLOB
@@ -2051,6 +2070,7 @@ keywordAsId:
     | K_CURRENT
     | K_CURSOR
     | K_CYCLE
+    | K_DAMERAU_LEVENSHTEIN
     | K_DATA
     | K_DATE
     | K_DAY
@@ -2073,6 +2093,7 @@ keywordAsId:
     | K_DISTINCT
     | K_DOCUMENT
     | K_DOUBLE
+    | K_EDIT_TOLERANCE
     | K_ELSE
     | K_EMPTY
     | K_ENCODING
@@ -2104,6 +2125,7 @@ keywordAsId:
     | K_FROM
     | K_FULL
     | K_FUNCTION
+    | K_FUZZY_MATCH
     | K_GROUP
     | K_GROUPING
     | K_GROUPS
@@ -2142,6 +2164,7 @@ keywordAsId:
     | K_INVISIBLE
     | K_IS
     | K_ITERATE
+    | K_JARO_WINKLER
     | K_JOIN
     | K_JSON
     | K_JSON_ARRAY
@@ -2171,6 +2194,7 @@ keywordAsId:
     | K_LEAD_DIFF_PERCENT
     | K_LEFT
     | K_LEVEL
+    | K_LEVENSHTEIN
     | K_LIKE2
     | K_LIKE4
     | K_LIKE
@@ -2183,6 +2207,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOGFILE
     | K_LONG
+    | K_LONGEST_COMMON_SUBSTRING
     | K_MAIN
     | K_MAPPING
     | K_MATCH
@@ -2270,6 +2295,7 @@ keywordAsId:
     | K_REF
     | K_REFERENCE
     | K_REJECT
+    | K_RELATE_TO_SHORTER
     | K_REMOVE
     | K_RENAME
     | K_REPLACE
@@ -2324,6 +2350,7 @@ keywordAsId:
     | K_TO
     | K_TRAILING
     | K_TREAT
+    | K_TRIGRAM
     | K_TRIM
     | K_TRUE
     | K_TRUNCATE
@@ -2334,6 +2361,7 @@ keywordAsId:
     | K_UNION
     | K_UNIQUE
     | K_UNPIVOT
+    | K_UNSCALED
     | K_UNTIL
     | K_UPDATE
     | K_UPDATED
@@ -2354,6 +2382,7 @@ keywordAsId:
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
+    | K_WHOLE_WORD_MATCH
     | K_WINDOW
     | K_WITH
     | K_WITHIN
