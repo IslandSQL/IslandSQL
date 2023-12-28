@@ -794,6 +794,8 @@ oracleBuiltInDatatype:
     | datetimeDatatype
     | largeObjectDatatype
     | rowidDatatype
+    | jsonDatatype
+    | booleanDatatype
 ;
 
 characterDatatype:
@@ -833,6 +835,14 @@ largeObjectDatatype:
 rowidDatatype:
       K_ROWID
     | K_UROWID (LPAR size=expression RPAR)?
+;
+
+jsonDatatype:
+    K_JSON
+;
+
+booleanDatatype:
+    K_BOOLEAN
 ;
 
 ansiSupportedDatatype:
