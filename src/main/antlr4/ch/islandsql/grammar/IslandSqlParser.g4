@@ -1007,6 +1007,7 @@ specialFunctionExpression:
     | extract
     | featureCompare
     | fuzzyMatch
+    | graphTable
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -1258,6 +1259,111 @@ fuzzyMatch:
         COMMA str2=expression
         (COMMA option=(K_UNSCALED|K_RELATE_TO_SHORTER|K_EDIT_TOLERANCE) tolerance=expression?)?
     RPAR
+;
+
+// simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
+// graph_table_shape, graph_table_columns_clause
+graphTable:
+    K_GRAPH_TABLE LPAR
+    (schema=sqlName PERIOD)?
+    graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
+    (K_WHERE cond=condition)?
+    K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
+    RPAR
+;
+
+graphTableColumnDefinition:
+    expr=expression (K_AS column=sqlName)?
+;
+
+// simplified, includes path_pattern, path_pattern_expression, path_concatenation (to handle left-recursion)
+pathTerm:
+      pathFactor
+    | pathTerm pathFactor
+;
+
+pathFactor:
+      pathPrimary
+    | quantifiedPathPrimary
+;
+
+pathPrimary:
+      elementPattern
+    | parenthesizedPathPatternExpression
+;
+
+quantifiedPathPrimary:
+    pathPrimary graphPatternQuantifier
+;
+
+graphPatternQuantifier:
+      fixedQuantifier
+    | generalQuantifier
+;
+
+fixedQuantifier:
+    LCUB value=expression RCUB
+;
+
+// simplified, includes lower_bound, upper_bound
+generalQuantifier:
+    LCUB lowerBound=expression? COMMA upperBound=expression RCUB
+;
+
+elementPattern:
+      vertexPattern
+    | edgePattern
+;
+
+// simplified, includes parenthesized_path_pattern_where_clause
+parenthesizedPathPatternExpression:
+    LPAR expr=pathTerm (K_WHERE cond=condition)? RPAR
+;
+
+vertexPattern:
+    LPAR elementPatternFiller RPAR
+;
+
+// simplified, includes: element_variable_declaration, element_variable, isLabelExpression,
+// element_pattern_where_clause, is_label_declaration
+elementPatternFiller:
+    var=sqlName? (K_IS label=labelExpression)? (K_WHERE cond=condition)?
+;
+
+// simplified, includes: label, label_disjunction
+labelExpression:
+    labels+=sqlName (VERBAR labels+=sqlName)*
+;
+
+edgePattern:
+      fullEdgePattern
+    | abbreviatedEdgePattern
+;
+
+fullEdgePattern:
+      fullEdgePointingRight
+    | fullEdgePointingLeft
+    | fullEdgeAnyDirection
+;
+
+abbreviatedEdgePattern:
+      MINUS GT      # abbreviatedEdgePatternPointingRight
+    | LT MINUS      # abbreviatedEdgePatternPointingLeft
+    | MINUS         # abbreviatedEdgePatternAnyDirection
+    | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
+;
+
+fullEdgePointingRight:
+    MINUS LSQB elementPatternFiller RSQB MINUS GT
+;
+
+fullEdgePointingLeft:
+    LT MINUS LSQB elementPatternFiller RSQB MINUS
+;
+
+fullEdgeAnyDirection:
+      MINUS LSQB elementPatternFiller RSQB MINUS
+    | LT MINUS LSQB elementPatternFiller RSQB MINUS GT
 ;
 
 jsonArray:
@@ -2126,6 +2232,7 @@ keywordAsId:
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
+    | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
     | K_GROUPS
