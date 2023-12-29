@@ -187,6 +187,7 @@ K_FROM: 'from';
 K_FULL: 'full';
 K_FUNCTION: 'function';
 K_FUZZY_MATCH: 'fuzzy_match';
+K_GRAPH_TABLE: 'graph_table';
 K_GROUP: 'group';
 K_GROUPING: 'grouping';
 K_GROUPS: 'groups';
