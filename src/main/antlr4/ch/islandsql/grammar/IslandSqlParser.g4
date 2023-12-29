@@ -1324,7 +1324,7 @@ vertexPattern:
     LPAR elementPatternFiller RPAR
 ;
 
-// simplified, includes: element_variable_declaration, element_variable, isLabelExpression,
+// simplified, includes: element_variable_declaration, element_variable, isLabelExpression/isLabelDeclaration,
 // element_pattern_where_clause, is_label_declaration
 elementPatternFiller:
     var=sqlName? (K_IS label=labelExpression)? (K_WHERE cond=condition)?
