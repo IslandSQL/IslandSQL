@@ -1398,7 +1398,7 @@ jsonQuery:
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
 ;
 
-// in SQL ins just a string
+// in SQL it is just a string
 jsonBasicPathExpression:
     expr=expression
 ;
