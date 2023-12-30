@@ -985,7 +985,12 @@ simpleCaseExpression:
 ;
 
 simpleCaseExpressionWhenClause:
-    K_WHEN compExpr=expression K_THEN expr=expression
+    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN expr=expression
+;
+
+whenClauseValue:
+      expression            # selectorValue
+    | danglingCondition     # danglingPredicate
 ;
 
 searchedCaseExpression:
@@ -2060,6 +2065,43 @@ condition:
     | expr=expression K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeCondition
+;
+
+// based on condition, considering only those conditions with a leading expression predicate
+// that can be ommitted in a dangling_predicate of a case expression and case statement
+danglingCondition:
+      operator=K_AND right=condition                    # logicalConditionDangling
+    | operator=K_OR right=condition                     # logicalConditionDangling
+    | operator=simpleComparisionOperator
+        groupOperator=(K_ANY|K_SOME|K_ALL)
+        right=expression                                # groupComparisionConditionDangling
+    | operator=simpleComparisionOperator
+        right=expression                                # simpleComparisionConditionDangling
+    | operator=K_IS K_NOT? (K_NAN|K_INFINITE)           # floatingPointConditionDangling
+    | operator=K_IS K_ANY                               # isAnyConditionDangling // "any" only is handled as sqlName
+    | operator=K_IS K_PRESENT                           # isPresentConditionDangling
+    | operator=K_IS K_NOT? K_A K_SET                    # isASetConditionDangling
+    | operator=K_IS K_NOT? K_EMPTY                      # isEmptyConditionDangling
+    | operator=K_IS K_NOT? K_NULL                       # isNullConditionDangling
+    | operator=K_IS K_NOT? K_JSON formatClause?
+        (
+            LPAR (options+=jsonConditionOption+) RPAR
+          | options+=jsonConditionOption*
+        )                                               # isJsonConditionDangling
+    | K_NOT? operator=K_MEMBER
+        K_OF? right=expression                          # memberConditionDangling
+    | K_NOT? operator=K_SUBMULTISET
+        K_OF? right=expression                          # submultisetConditionDangling
+    | K_NOT? operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        right=expression
+        (K_ESCAPE escChar=expression)?                  # likeConditionDangling
+    | K_NOT? operator=K_BETWEEN
+        expr2=expression K_AND expr3=expression         # betweenConditionDangling
+    | K_NOT? operator=K_IN
+        right=expression                                # inConditionDangling
+    | K_IS K_NOT? K_OF K_TYPE?
+        LPAR types+=isOfTypeConditionItem
+        (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeConditionDangling
 ;
 
 jsonPassingClause:
