@@ -873,7 +873,7 @@ expression:
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpr
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
-    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
+    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpr
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpr
@@ -912,6 +912,48 @@ expression:
                 )
         )                                                       # datetimeExpression
     | expr=sqlName                                              # simpleExpressionName
+    // starting with 23c a condition is treated as a synonym to an expression
+    | operator=K_NOT cond=expression                            # notCondition
+    | left=expression operator=K_AND right=expression           # logicalCondition
+    | left=expression operator=K_OR right=expression            # logicalCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        groupOperator=(K_ANY|K_SOME|K_ALL)
+        right=expression                                        # groupComparisionCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        right=expression                                        # simpleComparisionCondition
+    | expr=expression
+        operator=K_IS K_NOT? (K_NAN|K_INFINITE)                 # floatingPointCondition
+    | expr=expression operator=K_IS K_ANY                       # isAnyCondition // "any" only is handled as sqlName
+    | expr=expression operator=K_IS K_PRESENT                   # isPresentCondition
+    | expr=expression operator=K_IS K_NOT? K_A K_SET            # isASetCondition
+    | expr=expression operator=K_IS K_NOT? K_EMPTY              # isEmptyCondition
+    | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
+    | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
+    | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
+    | expr=expression
+        operator=K_IS K_NOT? K_JSON formatClause?
+        (
+            LPAR (options+=jsonConditionOption+) RPAR
+          | options+=jsonConditionOption*
+        )                                                       # isJsonCondition
+    | left=expression K_NOT? operator=K_MEMBER
+        K_OF? right=expression                                  # memberCondition
+    | left=expression K_NOT? operator=K_SUBMULTISET
+        K_OF? right=expression                                  # submultisetCondition
+    | left=expression K_NOT?
+        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        right=expression
+        (K_ESCAPE escChar=expression)?                          # likeCondition
+    | expr1=expression K_NOT? operator=K_BETWEEN
+        expr2=expression K_AND expr3=expression                 # betweenCondition
+    | K_EXISTS LPAR subquery RPAR                               # existsCondition
+    | left=expression K_NOT? operator=K_IN
+        right=expression                                        # inCondition
+    | expr=expression K_IS K_NOT? K_OF K_TYPE?
+        LPAR types+=isOfTypeConditionItem
+        (COMMA types+=isOfTypeConditionItem)* RPAR              # isOfTypeCondition
 ;
 
 intervalExpression:
@@ -2023,55 +2065,17 @@ unaryOperator:
 // Condition
 /*----------------------------------------------------------------------------*/
 
+// starting with 23c a condition is treated as a synonym to an expression
+// therefore condition is implementend in expression
 condition:
       cond=expression                                   # booleanCondition
-    | operator=K_NOT cond=condition                     # notCondition
-    | LPAR cond=condition RPAR                          # parenthesisCondition
-    | left=condition operator=K_AND right=condition     # logicalCondition
-    | left=condition operator=K_OR right=condition      # logicalCondition
-    | left=expression
-        operator=simpleComparisionOperator
-        groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                # groupComparisionCondition
-    | left=expression
-        operator=simpleComparisionOperator
-        right=expression                                # simpleComparisionCondition
-    | expr=expression
-        operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
-    | expr=expression operator=K_IS K_ANY               # isAnyCondition // "any" only is handled as sqlName
-    | expr=expression operator=K_IS K_PRESENT           # isPresentCondition
-    | expr=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
-    | expr=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
-    | expr=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
-    | expr=expression
-        operator=K_IS K_NOT? K_JSON formatClause?
-        (
-            LPAR (options+=jsonConditionOption+) RPAR
-          | options+=jsonConditionOption*
-        )                                               # isJsonCondition
-    | left=expression K_NOT? operator=K_MEMBER
-        K_OF? right=expression                          # memberCondition
-    | left=expression K_NOT? operator=K_SUBMULTISET
-        K_OF? right=expression                          # submultisetCondition
-    | left=expression K_NOT?
-        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
-        right=expression
-        (K_ESCAPE escChar=expression)?                  # likeCondition
-    | expr1=expression K_NOT? operator=K_BETWEEN
-        expr2=expression K_AND expr3=expression         # betweenCondition
-    | K_EXISTS LPAR subquery RPAR                       # existsCondition
-    | left=expression K_NOT? operator=K_IN
-        right=expression                                # inCondition
-    | expr=expression K_IS K_NOT? K_OF K_TYPE?
-        LPAR types+=isOfTypeConditionItem
-        (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeCondition
 ;
 
 // based on condition, considering only those conditions with a leading expression predicate
 // that can be ommitted in a dangling_predicate of a case expression and case statement
 danglingCondition:
-      operator=K_AND right=condition                    # logicalConditionDangling
-    | operator=K_OR right=condition                     # logicalConditionDangling
+      operator=K_AND right=expression                   # logicalConditionDangling
+    | operator=K_OR right=expression                    # logicalConditionDangling
     | operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
         right=expression                                # groupComparisionConditionDangling
@@ -2083,6 +2087,8 @@ danglingCondition:
     | operator=K_IS K_NOT? K_A K_SET                    # isASetConditionDangling
     | operator=K_IS K_NOT? K_EMPTY                      # isEmptyConditionDangling
     | operator=K_IS K_NOT? K_NULL                       # isNullConditionDangling
+    | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
+    | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
     | operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
