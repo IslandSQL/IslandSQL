@@ -1066,6 +1066,7 @@ specialFunctionExpression:
     | jsonTable
     | jsonTransform
     | jsonValue
+    | jsonEqualCondition
     | jsonExistsCondition
     | listagg
     | nthValue
@@ -1734,6 +1735,16 @@ jsonValue:
     jsonValueOnEmptyClause? jsonValueOnMismatchClause? RPAR
 ;
 
+jsonEqualCondition:
+    K_JSON_EQUAL LPAR expr1=expression COMMA expr2=expression jsonEqualConditionOption? RPAR
+;
+
+jsonEqualConditionOption:
+      K_ERROR K_ON K_ERROR  # jsonEqualConditionErrorOnError
+    | K_FALSE K_ON K_ERROR  # jsonEqualConditionFalseOnError
+    | K_TRUE K_ON K_ERROR   # jsonEqualConditionTrueOnError
+;
+
 jsonExistsCondition:
     K_JSON_EXISTS LPAR
         expr=expression
@@ -2141,12 +2152,13 @@ simpleComparisionOperator:
 // it's possible but not documented that options can be used in an arbitrary order
 // it's also possible but not documented to place the options in parenthesis
 jsonConditionOption:
-      K_STRICT                  # jsonConditionOptionStrict
-    | K_LAX                     # jsonConditionOptionLax
-    | K_ALLOW K_SCALARS         # jsonConditionOptionAllowScalars
-    | K_DISALLOW K_SCALARS      # jsonConditionOptionDisallowSclars
-    | K_WITH K_UNIQUE K_KEYS    # jsonConditionOptionWithUniqueKeys
-    | K_WITHOUT K_UNIQUE K_KEYS # jsonConditionOptionWithoutUniqueKeys
+      K_STRICT                                      # jsonConditionOptionStrict
+    | K_LAX                                         # jsonConditionOptionLax
+    | K_ALLOW K_SCALARS                             # jsonConditionOptionAllowScalars
+    | K_DISALLOW K_SCALARS                          # jsonConditionOptionDisallowSclars
+    | K_WITH K_UNIQUE K_KEYS                        # jsonConditionOptionWithUniqueKeys
+    | K_WITHOUT K_UNIQUE K_KEYS                     # jsonConditionOptionWithoutUniqueKeys
+    | K_VALIDATE K_CAST? K_USING? schema=expression # jsonConditionOptionValidate
 ;
 
 isOfTypeConditionItem:
@@ -2324,6 +2336,7 @@ keywordAsId:
     | K_JSON
     | K_JSON_ARRAY
     | K_JSON_ARRAYAGG
+    | K_JSON_EQUAL
     | K_JSON_EXISTS
     | K_JSON_MERGEPATCH
     | K_JSON_OBJECT
@@ -2523,6 +2536,7 @@ keywordAsId:
     | K_UPSERT
     | K_UROWID
     | K_USING
+    | K_VALIDATE
     | K_VALIDATE_CONVERSION
     | K_VALUE
     | K_VALUES
