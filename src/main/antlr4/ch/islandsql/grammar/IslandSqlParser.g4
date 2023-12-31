@@ -215,8 +215,10 @@ valuesClause:
     (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
 ;
 
+// undocumented, first value in the first row does not need parentheses (in Oracle Database only)
 valuesRow:
-    LPAR expr+=expression (COMMA expr+=expression)* RPAR
+      LPAR expr+=expression (COMMA expr+=expression)* RPAR
+    | expr+=expression
 ;
 
 searchClause:
