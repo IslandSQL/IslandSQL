@@ -1558,7 +1558,7 @@ jsonObjectagg:
 ;
 
 jsonQuery:
-    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
+    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
     (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
 ;
