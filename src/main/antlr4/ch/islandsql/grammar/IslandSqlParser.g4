@@ -467,7 +467,7 @@ fromClause:
 fromItem:
       tableReference               # tableReferenceFromItem
     | fromItem joins+=joinVariant+ # joinClause
-    | inlineAnalyticView           # lineAnalyticviewFromItem
+    | inlineAnalyticView           # inlineAnalyticViewFromItem
     | LPAR fromItem RPAR           # parenFromItem
 ;
 
@@ -512,7 +512,7 @@ modifyExternalTableProperties:
               LPAR opaqueFormatSpec=expression RPAR // only as string and variable
             | LPAR nativeOpaqueFormatSpec RPAR // driver-specific grammar, cannot add to array field, accessible via children
         )                                                   # accessParameterModifyExternalTableProperty
-    | K_REJECT K_LIMIT rejectLimit=expression               # rejectLimitModifyExternalProperty
+    | K_REJECT K_LIMIT rejectLimit=expression               # rejectLimitModifyExternalTableProperty
 ;
 
 externalFileLocation:
@@ -873,16 +873,16 @@ expression:
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
     | K_DATE expr=STRING                                        # dateLiteral
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
-    | expr=intervalExpression                                   # intervalExpr
+    | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
-    | expr=caseExpression                                       # caseExpr
-    | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpr
+    | expr=caseExpression                                       # caseExpressionParent
+    | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
     | operator=unaryOperator expr=expression                    # unaryExpression
-    | expr=specialFunctionExpression                            # specialFunctionExpr
-    | expr=functionExpression                                   # functionExpr
-    | expr=placeholderExpression                                # placeholderExpr
+    | expr=specialFunctionExpression                            # specialFunctionExpressionParent
+    | expr=functionExpression                                   # functionExpressionParent
+    | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=expression
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression
     | expr=AST                                                  # allColumnWildcardExpression
