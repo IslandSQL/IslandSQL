@@ -2081,7 +2081,7 @@ unaryOperator:
 // starting with 23c a condition is treated as a synonym to an expression
 // therefore condition is implementend in expression
 condition:
-      cond=expression                                   # booleanCondition
+      cond=expression
 ;
 
 // based on condition, considering only those conditions with a leading expression predicate
