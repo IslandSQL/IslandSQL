@@ -1774,7 +1774,7 @@ nestedPathOp:
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
-    jsonValueReturningClause? jsonValueOnErrorClause?
+    jsonPassingClause? jsonValueReturningClause? jsonValueOnErrorClause?
     jsonValueOnEmptyClause? jsonValueOnMismatchClause? RPAR
 ;
 
