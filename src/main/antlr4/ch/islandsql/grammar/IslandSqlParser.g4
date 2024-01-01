@@ -1597,8 +1597,10 @@ jsonQueryOnMismatchClause:
     (K_ERROR|K_NULL) K_ON K_MISMATCH
 ;
 
+// wrong documentation, either "null on error" or "error on error" is allowed, but not both clauses
+// therefore we use here the json_table_on_error_clause
 jsonScalar:
-    K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? RPAR
+    K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? jsonTableOnErrorClause? RPAR
 ;
 
 jsonSerialize:
