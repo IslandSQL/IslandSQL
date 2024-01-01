@@ -1422,10 +1422,19 @@ jsonArray:
 ;
 
 jsonArrayContent:
+      jsonArrayEnumerationContent
+    | jsonArrayQueryContent
+;
+
+jsonArrayEnumerationContent:
     (element+=jsonArrayElement (COMMA element+=jsonArrayElement)*)?
         jsonOnNullClause?
         jsonReturningClause?
         options+=jsonOption*
+;
+
+jsonArrayQueryContent:
+    queryExpression=select jsonOnNullClause? jsonReturningClause? options+=jsonOption*
 ;
 
 // undocumented: pretty/ascii
