@@ -1688,14 +1688,20 @@ jsonTransform:
     jsonTransformReturningClause? jsonPassingClause? RPAR
 ;
 
+// TODO: implement undocumented grammar of operations rename, copy, minus, intersect, union, merge, case
+// prepend implemented according append
+// see https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__SECTION_M1H_LZW_TSB
 operation:
       removeOp
     | insertOp
     | replaceOp
     | appendOp
+    | prependOp
     | setOp
     | renameOp
     | keepOp
+    | sortOp
+    | nestedPathOp
 ;
 
 removeOp:
@@ -1703,26 +1709,37 @@ removeOp:
 ;
 
 // works only if there is no space before INSERT as long as the INSERT statement is not supported fully
+// not documented optional use of "path" keyword
 insertOp:
-    K_INSERT pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_INSERT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
     ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
 ;
 
+// not documented optional use of "path" keyword
 replaceOp:
-    K_REPLACE pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_REPLACE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
 ;
 
+// not documented optional use of "path" keyword
 appendOp:
-    K_APPEND pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_APPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
 ;
 
+// not documented, syntax according append
+prependOp:
+    K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+;
+
+// not documented optional use of "path" keyword
 setOp:
-    K_SET pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
@@ -1739,6 +1756,19 @@ keepOp:
 
 keepOpItem:
     pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+;
+
+sortOp:
+    K_SORT pathExpr=expression
+    (
+          orderByClause?
+        | (K_ASC | K_DESC) K_UNIQUE?
+        | K_UNIQUE
+    )
+;
+
+nestedPathOp:
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
 ;
 
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
@@ -2462,6 +2492,7 @@ keywordAsId:
     | K_PREDICTION
     | K_PREDICTION_COST
     | K_PREDICTION_DETAILS
+    | K_PREPEND
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
