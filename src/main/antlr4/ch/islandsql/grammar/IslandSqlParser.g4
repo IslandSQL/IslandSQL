@@ -1563,11 +1563,14 @@ jsonObjectagg:
     jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
-// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonQuery:
     K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
     (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
-    jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
+    jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? jsonTypeClause? RPAR
+;
+
+jsonTypeClause:
+    K_TYPE LPAR (K_STRICT|K_LAX) RPAR
 ;
 
 // in SQL it is just a string
@@ -1614,10 +1617,11 @@ jsonSerialize:
     K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
-// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
+// jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
+// see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTable:
     K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
-    jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
+    jsonTableOnErrorClause? jsonTypeClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
 ;
 
 jsonTableOnErrorClause:
@@ -1691,10 +1695,9 @@ ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
 ;
 
-// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTransform:
     K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
-    jsonTransformReturningClause? jsonPassingClause? RPAR
+    jsonTransformReturningClause? jsonTypeClause? jsonPassingClause? RPAR
 ;
 
 // TODO: implement undocumented grammar of operations case, copy, intersect, merge, minus, prepend, union, see https://github.com/IslandSQL/IslandSQL/issues/49
@@ -1779,12 +1782,11 @@ nestedPathOp:
     K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
 ;
 
-// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
     jsonPassingClause? jsonValueReturningClause? jsonValueOnErrorClause?
-    jsonValueOnEmptyClause? jsonValueOnMismatchClause? RPAR
+    jsonValueOnEmptyClause? jsonValueOnMismatchClause? jsonTypeClause? RPAR
 ;
 
 jsonEqualCondition:
