@@ -13,12 +13,14 @@ The parser provides chosen parts of grammars used in SQL files.
 
 The following table shows the DBMS and their grammar versions in scope:
 
-| DBMS   | Grammar  | Version | Reference                                                                                                    |
-|--------|----------|---------|--------------------------------------------------------------------------------------------------------------|
-| Oracle | SQL*Plus | 21c     | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/)           |
-|        | SQLcl    | 22.4    | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/22.4/sqcug/index.html) |
-|        | SQL      | 21c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/)                   |  
-|        | PL/SQL   | 21c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/21/lnpls/)                   |
+| DBMS   | Grammar  | Version | HTML Reference (live)                                                                                        | PDF Reference (snapshot)                           |
+|--------|----------|---------|--------------------------------------------------------------------------------------------------------------| -------------------------------------------------- |
+| Oracle | SQL*Plus | 23c     | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/)           | [PDF](docs/sqlplus-users-guide-and-reference.pdf)  |
+|        | SQLcl    | 23.3    | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/23.3/sqcug/index.html) | [PDF](docs/oracle-sqlcl-users-guide.pdf)           |
+|        | SQL      | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](docs/sql-language-reference.pdf)             | 
+|        | PL/SQL   | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](docs/database-pl-sql-language-reference.pdf) |
+
+The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format represents the version that was used to define the grammar.
 
 ### Statements
 
@@ -26,14 +28,16 @@ The current islands of interests are:
 
 | Statement      | Notes                                                       |
 |----------------|-------------------------------------------------------------|
-| `call`         | complete statement as a single token                        |
-| `delete`       | complete statement as a single token                        |
-| `explain plan` | complete statement as a single token                        |
-| `insert`       | complete statement as a single token                        |
+| `call`         | complete statement as list of tokens                        |
+| `delete`       | complete statement as list of tokens                        |
+| `explain plan` | complete statement as list of tokens                        |
+| `insert`       | complete statement as list of tokens                        |
 | `lock table`   | complete statement                                          |
-| `merge`        | complete statement as a single token                        |
+| `merge`        | complete statement as list of tokens                        |
 | `select`       | complete statement (embedded PL/SQL only as list of tokens) |
-| `update`       | complete statement as a single token                        |
+| `update`       | complete statement as list of tokens                        |
+
+Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
 
 ## Limitations
 
@@ -49,13 +53,13 @@ Code that has been wrapped with the [wrap](https://docs.oracle.com/en/database/o
 
 The following commands affect the grammar and are not interpreted by IslandSQL. The IslandSQL grammar is built on the default settings. As a result other values lead to errors.
 
-- [set blockterminator](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/SET-system-variable-summary.html#GUID-2967B311-24CB-43E0-95F2-BFC429CF033D)
-- [set cmdsep](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/SET-system-variable-summary.html#GUID-894E73DD-D2CF-4854-B918-AC57C4271C26)
-- [set sqlterminator](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/SET-system-variable-summary.html#GUID-5D91A9A9-13A2-4F62-B02A-AD2F3AFF8BB7)
+- [set blockterminator](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-2967B311-24CB-43E0-95F2-BFC429CF033D)
+- [set cmdsep](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-894E73DD-D2CF-4854-B918-AC57C4271C26)
+- [set sqlterminator](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-5D91A9A9-13A2-4F62-B02A-AD2F3AFF8BB7)
 
 ### SQL\*Plus Substitution Variables
 
-[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/21/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a `sqlName` is valid. This is basically everywhere you can use an expression.
+[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a `sqlName` is valid. This is basically everywhere you can use an expression.
 
 Here's an example of a supported usage:
 
