@@ -1557,6 +1557,7 @@ jsonObjectagg:
     jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonQuery:
     K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
     (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
@@ -1607,6 +1608,7 @@ jsonSerialize:
     K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTable:
     K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
     jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
@@ -1683,14 +1685,14 @@ ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTransform:
     K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
     jsonTransformReturningClause? jsonPassingClause? RPAR
 ;
 
-// TODO: implement undocumented grammar of operations rename, copy, minus, intersect, union, merge, case
-// prepend implemented according append
-// see https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__SECTION_M1H_LZW_TSB
+// TODO: implement undocumented grammar of operations case, copy, intersect, merge, minus, prepend, union, see https://github.com/IslandSQL/IslandSQL/issues/49
+// prepend is implemented according to append, this might need some amendments once the syntax for these operations is published.
 operation:
       removeOp
     | insertOp
@@ -1771,6 +1773,7 @@ nestedPathOp:
     K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
