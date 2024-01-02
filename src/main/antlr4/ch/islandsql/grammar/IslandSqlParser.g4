@@ -43,49 +43,55 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Call (as single token)
+// Call
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/9
 callStatement:
     K_CALL ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Delete (as single token)
+// Delete
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/24
 deleteStatement:
     K_DELETE ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Explain plan (as single token)
+// Explain plan
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/25
 explainPlanStatement:
     K_EXPLAIN K_PLAN ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Insert (as single token)
+// Insert
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/26
 insertStatement:
     K_INSERT ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Merge (as single token)
+// Merge
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
 mergeStatement:
     K_MERGE ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Update (as single token)
+// Update
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/28
 updateStatement:
     K_UPDATE ~SEMI+? K_SET ~SEMI+? sqlEnd
 ;
@@ -130,7 +136,7 @@ lockTableWaitOption:
 ;
 
 /*----------------------------------------------------------------------------*/
-// select
+// Select
 /*----------------------------------------------------------------------------*/
 
 selectStatement:
