@@ -112,7 +112,7 @@ public class IslandSqlDocument {
     }
 
     /**
-     * Gets a syntax error entries for the document.
+     * Gets all syntax error entries for the document.
      * The list is empty, if no syntax errors are found.
      *
      * @return Returns a list of syntax errors.

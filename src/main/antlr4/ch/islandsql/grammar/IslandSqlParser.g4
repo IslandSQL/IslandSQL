@@ -43,49 +43,55 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Call (as single token)
+// Call
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/9
 callStatement:
     K_CALL ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Delete (as single token)
+// Delete
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/24
 deleteStatement:
     K_DELETE ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Explain plan (as single token)
+// Explain plan
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/25
 explainPlanStatement:
     K_EXPLAIN K_PLAN ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Insert (as single token)
+// Insert
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/26
 insertStatement:
     K_INSERT ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Merge (as single token)
+// Merge
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
 mergeStatement:
     K_MERGE ~SEMI+? sqlEnd
 ;
 
 /*----------------------------------------------------------------------------*/
-// Update (as single token)
+// Update
 /*----------------------------------------------------------------------------*/
 
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/28
 updateStatement:
     K_UPDATE ~SEMI+? K_SET ~SEMI+? sqlEnd
 ;
@@ -130,7 +136,7 @@ lockTableWaitOption:
 ;
 
 /*----------------------------------------------------------------------------*/
-// select
+// Select
 /*----------------------------------------------------------------------------*/
 
 selectStatement:
@@ -204,9 +210,21 @@ factoringClause:
 
 subqueryFactoringClause:
     queryName=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
-    K_AS LPAR subquery RPAR
+    K_AS ((LPAR subquery RPAR) | valuesClause)
     searchClause?
     cycleClause?
+;
+
+valuesClause:
+    LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
+    // caliases must be specified in subquery_factoring_clause after queryName, next line is valid in other contexts (table_reference)
+    (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
+;
+
+// undocumented, first value in the first row does not need parentheses (in Oracle Database only)
+valuesRow:
+      LPAR expr+=expression (COMMA expr+=expression)* RPAR
+    | expr+=expression
 ;
 
 searchClause:
@@ -455,7 +473,7 @@ fromClause:
 fromItem:
       tableReference               # tableReferenceFromItem
     | fromItem joins+=joinVariant+ # joinClause
-    | inlineAnalyticView           # lineAnalyticviewFromItem
+    | inlineAnalyticView           # inlineAnalyticViewFromItem
     | LPAR fromItem RPAR           # parenFromItem
 ;
 
@@ -480,6 +498,7 @@ queryTableExpression:
     | inlineExternalTable sampleClause?
     | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
+    | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
 
 // grammar definition in SQL Language Reference 19c/21c is wrong, added LPAR/RPAR
@@ -499,7 +518,7 @@ modifyExternalTableProperties:
               LPAR opaqueFormatSpec=expression RPAR // only as string and variable
             | LPAR nativeOpaqueFormatSpec RPAR // driver-specific grammar, cannot add to array field, accessible via children
         )                                                   # accessParameterModifyExternalTableProperty
-    | K_REJECT K_LIMIT rejectLimit=expression               # rejectLimitModifyExternalProperty
+    | K_REJECT K_LIMIT rejectLimit=expression               # rejectLimitModifyExternalTableProperty
 ;
 
 externalFileLocation:
@@ -783,6 +802,8 @@ oracleBuiltInDatatype:
     | datetimeDatatype
     | largeObjectDatatype
     | rowidDatatype
+    | jsonDatatype
+    | booleanDatatype
 ;
 
 characterDatatype:
@@ -824,6 +845,14 @@ rowidDatatype:
     | K_UROWID (LPAR size=expression RPAR)?
 ;
 
+jsonDatatype:
+    K_JSON
+;
+
+booleanDatatype:
+    K_BOOLEAN
+;
+
 ansiSupportedDatatype:
       K_CHARACTER K_VARYING? LPAR size=expression RPAR
     | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression RPAR
@@ -850,16 +879,16 @@ expression:
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
     | K_DATE expr=STRING                                        # dateLiteral
     | K_TIMESTAMP expr=STRING                                   # timestampLiteral
-    | expr=intervalExpression                                   # intervalExpr
+    | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
-    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList
+    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
-    | expr=caseExpression                                       # caseExpr
-    | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpr
+    | expr=caseExpression                                       # caseExpressionParent
+    | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
     | operator=unaryOperator expr=expression                    # unaryExpression
-    | expr=specialFunctionExpression                            # specialFunctionExpr
-    | expr=functionExpression                                   # functionExpr
-    | expr=placeholderExpression                                # placeholderExpr
+    | expr=specialFunctionExpression                            # specialFunctionExpressionParent
+    | expr=functionExpression                                   # functionExpressionParent
+    | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=expression
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression
     | expr=AST                                                  # allColumnWildcardExpression
@@ -891,6 +920,48 @@ expression:
                 )
         )                                                       # datetimeExpression
     | expr=sqlName                                              # simpleExpressionName
+    // starting with 23c a condition is treated as a synonym to an expression
+    | operator=K_NOT cond=expression                            # notCondition
+    | left=expression operator=K_AND right=expression           # logicalCondition
+    | left=expression operator=K_OR right=expression            # logicalCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        groupOperator=(K_ANY|K_SOME|K_ALL)
+        right=expression                                        # groupComparisionCondition
+    | left=expression
+        operator=simpleComparisionOperator
+        right=expression                                        # simpleComparisionCondition
+    | expr=expression
+        operator=K_IS K_NOT? (K_NAN|K_INFINITE)                 # floatingPointCondition
+    | expr=expression operator=K_IS K_ANY                       # isAnyCondition // "any" only is handled as sqlName
+    | expr=expression operator=K_IS K_PRESENT                   # isPresentCondition
+    | expr=expression operator=K_IS K_NOT? K_A K_SET            # isASetCondition
+    | expr=expression operator=K_IS K_NOT? K_EMPTY              # isEmptyCondition
+    | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
+    | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
+    | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
+    | expr=expression
+        operator=K_IS K_NOT? K_JSON formatClause?
+        (
+            LPAR (options+=jsonConditionOption+) RPAR
+          | options+=jsonConditionOption*
+        )                                                       # isJsonCondition
+    | left=expression K_NOT? operator=K_MEMBER
+        K_OF? right=expression                                  # memberCondition
+    | left=expression K_NOT? operator=K_SUBMULTISET
+        K_OF? right=expression                                  # submultisetCondition
+    | left=expression K_NOT?
+        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        right=expression
+        (K_ESCAPE escChar=expression)?                          # likeCondition
+    | expr1=expression K_NOT? operator=K_BETWEEN
+        expr2=expression K_AND expr3=expression                 # betweenCondition
+    | K_EXISTS LPAR subquery RPAR                               # existsCondition
+    | left=expression K_NOT? operator=K_IN
+        right=expression                                        # inCondition
+    | expr=expression K_IS K_NOT? K_OF K_TYPE?
+        LPAR types+=isOfTypeConditionItem
+        (COMMA types+=isOfTypeConditionItem)* RPAR              # isOfTypeCondition
 ;
 
 intervalExpression:
@@ -964,7 +1035,12 @@ simpleCaseExpression:
 ;
 
 simpleCaseExpressionWhenClause:
-    K_WHEN compExpr=expression K_THEN expr=expression
+    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN expr=expression
+;
+
+whenClauseValue:
+      expression            # selectorValue
+    | danglingCondition     # danglingPredicate
 ;
 
 searchedCaseExpression:
@@ -985,6 +1061,8 @@ specialFunctionExpression:
     | cast
     | extract
     | featureCompare
+    | fuzzyMatch
+    | graphTable
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -996,6 +1074,7 @@ specialFunctionExpression:
     | jsonTable
     | jsonTransform
     | jsonValue
+    | jsonEqualCondition
     | jsonExistsCondition
     | listagg
     | nthValue
@@ -1221,16 +1300,147 @@ respectIgnoreNullsClause:
     (K_RESPECT | K_IGNORE) K_NULLS
 ;
 
+fuzzyMatch:
+    K_FUZZY_MATCH LPAR
+        algorithm=(
+            K_LEVENSHTEIN
+          | K_DAMERAU_LEVENSHTEIN
+          | K_JARO_WINKLER
+          | K_BIGRAM
+          | K_TRIGRAM
+          | K_WHOLE_WORD_MATCH
+          | K_LONGEST_COMMON_SUBSTRING
+        )
+        COMMA str1=expression
+        COMMA str2=expression
+        (COMMA option=(K_UNSCALED|K_RELATE_TO_SHORTER|K_EDIT_TOLERANCE) tolerance=expression?)?
+    RPAR
+;
+
+// simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
+// graph_table_shape, graph_table_columns_clause
+graphTable:
+    K_GRAPH_TABLE LPAR
+    (schema=sqlName PERIOD)?
+    graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
+    (K_WHERE cond=condition)?
+    K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
+    RPAR
+;
+
+graphTableColumnDefinition:
+    expr=expression (K_AS column=sqlName)?
+;
+
+// simplified, includes path_pattern, path_pattern_expression, path_concatenation (to handle left-recursion)
+pathTerm:
+      pathFactor
+    | pathTerm pathFactor
+;
+
+pathFactor:
+      pathPrimary
+    | quantifiedPathPrimary
+;
+
+pathPrimary:
+      elementPattern
+    | parenthesizedPathPatternExpression
+;
+
+quantifiedPathPrimary:
+    pathPrimary graphPatternQuantifier
+;
+
+graphPatternQuantifier:
+      fixedQuantifier
+    | generalQuantifier
+;
+
+fixedQuantifier:
+    LCUB value=expression RCUB
+;
+
+// simplified, includes lower_bound, upper_bound
+generalQuantifier:
+    LCUB lowerBound=expression? COMMA upperBound=expression RCUB
+;
+
+elementPattern:
+      vertexPattern
+    | edgePattern
+;
+
+// simplified, includes parenthesized_path_pattern_where_clause
+parenthesizedPathPatternExpression:
+    LPAR expr=pathTerm (K_WHERE cond=condition)? RPAR
+;
+
+vertexPattern:
+    LPAR elementPatternFiller RPAR
+;
+
+// simplified, includes: element_variable_declaration, element_variable, isLabelExpression/isLabelDeclaration,
+// element_pattern_where_clause, is_label_declaration
+elementPatternFiller:
+    var=sqlName? (K_IS label=labelExpression)? (K_WHERE cond=condition)?
+;
+
+// simplified, includes: label, label_disjunction
+labelExpression:
+    labels+=sqlName (VERBAR labels+=sqlName)*
+;
+
+edgePattern:
+      fullEdgePattern
+    | abbreviatedEdgePattern
+;
+
+fullEdgePattern:
+      fullEdgePointingRight
+    | fullEdgePointingLeft
+    | fullEdgeAnyDirection
+;
+
+abbreviatedEdgePattern:
+      MINUS GT      # abbreviatedEdgePatternPointingRight
+    | LT MINUS      # abbreviatedEdgePatternPointingLeft
+    | MINUS         # abbreviatedEdgePatternAnyDirection
+    | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
+;
+
+fullEdgePointingRight:
+    MINUS LSQB elementPatternFiller RSQB MINUS GT
+;
+
+fullEdgePointingLeft:
+    LT MINUS LSQB elementPatternFiller RSQB MINUS
+;
+
+fullEdgeAnyDirection:
+      MINUS LSQB elementPatternFiller RSQB MINUS
+    | LT MINUS LSQB elementPatternFiller RSQB MINUS GT
+;
+
 jsonArray:
       K_JSON_ARRAY LPAR jsonArrayContent RPAR
     | K_JSON LSQB jsonArrayContent RSQB
 ;
 
 jsonArrayContent:
+      jsonArrayEnumerationContent
+    | jsonArrayQueryContent
+;
+
+jsonArrayEnumerationContent:
     (element+=jsonArrayElement (COMMA element+=jsonArrayElement)*)?
         jsonOnNullClause?
         jsonReturningClause?
         options+=jsonOption*
+;
+
+jsonArrayQueryContent:
+    queryExpression=subquery jsonOnNullClause? jsonReturningClause? options+=jsonOption*
 ;
 
 // undocumented: pretty/ascii
@@ -1353,13 +1563,14 @@ jsonObjectagg:
     jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonQuery:
-    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
+    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
     (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? RPAR
 ;
 
-// in SQL ins just a string
+// in SQL it is just a string
 jsonBasicPathExpression:
     expr=expression
 ;
@@ -1393,14 +1604,17 @@ jsonQueryOnMismatchClause:
     (K_ERROR|K_NULL) K_ON K_MISMATCH
 ;
 
+// wrong documentation, either "null on error" or "error on error" is allowed, but not both clauses
+// therefore we use here the json_table_on_error_clause
 jsonScalar:
-    K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? RPAR
+    K_JSON_SCALAR LPAR expr=expression (K_SQL|K_JSON)? (K_NULL K_ON K_NULL)? jsonTableOnErrorClause? RPAR
 ;
 
 jsonSerialize:
     K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTable:
     K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
     jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
@@ -1477,19 +1691,25 @@ ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
 ;
 
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 jsonTransform:
     K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
     jsonTransformReturningClause? jsonPassingClause? RPAR
 ;
 
+// TODO: implement undocumented grammar of operations case, copy, intersect, merge, minus, prepend, union, see https://github.com/IslandSQL/IslandSQL/issues/49
+// prepend is implemented according to append, this might need some amendments once the syntax for these operations is published.
 operation:
       removeOp
     | insertOp
     | replaceOp
     | appendOp
+    | prependOp
     | setOp
     | renameOp
     | keepOp
+    | sortOp
+    | nestedPathOp
 ;
 
 removeOp:
@@ -1497,26 +1717,37 @@ removeOp:
 ;
 
 // works only if there is no space before INSERT as long as the INSERT statement is not supported fully
+// not documented optional use of "path" keyword
 insertOp:
-    K_INSERT pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_INSERT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
     ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
 ;
 
+// not documented optional use of "path" keyword
 replaceOp:
-    K_REPLACE pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_REPLACE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
 ;
 
+// not documented optional use of "path" keyword
 appendOp:
-    K_APPEND pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_APPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
 ;
 
+// not documented, syntax according append
+prependOp:
+    K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+;
+
+// not documented optional use of "path" keyword
 setOp:
-    K_SET pathExpr=expression EQUALS rhsExpr=expression formatClause?
+    K_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
@@ -1535,11 +1766,35 @@ keepOpItem:
     pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
 ;
 
+sortOp:
+    K_SORT pathExpr=expression
+    (
+          orderByClause?
+        | (K_ASC | K_DESC) K_UNIQUE?
+        | K_UNIQUE
+    )
+;
+
+nestedPathOp:
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
+;
+
+// TODO: implemented "type (strict|lax)" once the syntax is known, see https://github.com/IslandSQL/IslandSQL/issues/48
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
-    jsonValueReturningClause? jsonValueOnErrorClause?
+    jsonPassingClause? jsonValueReturningClause? jsonValueOnErrorClause?
     jsonValueOnEmptyClause? jsonValueOnMismatchClause? RPAR
+;
+
+jsonEqualCondition:
+    K_JSON_EQUAL LPAR expr1=expression COMMA expr2=expression jsonEqualConditionOption? RPAR
+;
+
+jsonEqualConditionOption:
+      K_ERROR K_ON K_ERROR  # jsonEqualConditionErrorOnError
+    | K_FALSE K_ON K_ERROR  # jsonEqualConditionFalseOnError
+    | K_TRUE K_ON K_ERROR   # jsonEqualConditionTrueOnError
 ;
 
 jsonExistsCondition:
@@ -1873,48 +2128,49 @@ unaryOperator:
 // Condition
 /*----------------------------------------------------------------------------*/
 
+// starting with 23c a condition is treated as a synonym to an expression
+// therefore condition is implementend in expression
 condition:
-      cond=expression                                   # booleanCondition
-    | operator=K_NOT cond=condition                     # notCondition
-    | LPAR cond=condition RPAR                          # parenthesisCondition
-    | left=condition operator=K_AND right=condition     # logicalCondition
-    | left=condition operator=K_OR right=condition      # logicalCondition
-    | left=expression
-        operator=simpleComparisionOperator
+      cond=expression
+;
+
+// based on condition, considering only those conditions with a leading expression predicate
+// that can be ommitted in a dangling_predicate of a case expression and case statement
+danglingCondition:
+      operator=K_AND right=expression                   # logicalConditionDangling
+    | operator=K_OR right=expression                    # logicalConditionDangling
+    | operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                # groupComparisionCondition
-    | left=expression
-        operator=simpleComparisionOperator
-        right=expression                                # simpleComparisionCondition
-    | expr=expression
-        operator=K_IS K_NOT? (K_NAN|K_INFINITE)         # floatingPointCondition
-    | expr=expression operator=K_IS K_ANY               # isAnyCondition // "any" only is handled as sqlName
-    | expr=expression operator=K_IS K_PRESENT           # isPresentCondition
-    | expr=expression operator=K_IS K_NOT? K_A K_SET    # isASetCondition
-    | expr=expression operator=K_IS K_NOT? K_EMPTY      # isEmptyCondition
-    | expr=expression operator=K_IS K_NOT? K_NULL       # isNullCondition
-    | expr=expression
-        operator=K_IS K_NOT? K_JSON formatClause?
+        right=expression                                # groupComparisionConditionDangling
+    | operator=simpleComparisionOperator
+        right=expression                                # simpleComparisionConditionDangling
+    | operator=K_IS K_NOT? (K_NAN|K_INFINITE)           # floatingPointConditionDangling
+    | operator=K_IS K_ANY                               # isAnyConditionDangling // "any" only is handled as sqlName
+    | operator=K_IS K_PRESENT                           # isPresentConditionDangling
+    | operator=K_IS K_NOT? K_A K_SET                    # isASetConditionDangling
+    | operator=K_IS K_NOT? K_EMPTY                      # isEmptyConditionDangling
+    | operator=K_IS K_NOT? K_NULL                       # isNullConditionDangling
+    | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
+    | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
+    | operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
-        )                                               # isJsonCondition
-    | left=expression K_NOT? operator=K_MEMBER
-        K_OF? right=expression                          # memberCondition
-    | left=expression K_NOT? operator=K_SUBMULTISET
-        K_OF? right=expression                          # submultisetCondition
-    | left=expression K_NOT?
-        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        )                                               # isJsonConditionDangling
+    | K_NOT? operator=K_MEMBER
+        K_OF? right=expression                          # memberConditionDangling
+    | K_NOT? operator=K_SUBMULTISET
+        K_OF? right=expression                          # submultisetConditionDangling
+    | K_NOT? operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
         right=expression
-        (K_ESCAPE escChar=expression)?                  # likeCondition
-    | expr1=expression K_NOT? operator=K_BETWEEN
-        expr2=expression K_AND expr3=expression         # betweenCondition
-    | K_EXISTS LPAR subquery RPAR                       # existsCondition
-    | left=expression K_NOT? operator=K_IN
-        right=expression                                # inCondition
-    | expr=expression K_IS K_NOT? K_OF K_TYPE?
+        (K_ESCAPE escChar=expression)?                  # likeConditionDangling
+    | K_NOT? operator=K_BETWEEN
+        expr2=expression K_AND expr3=expression         # betweenConditionDangling
+    | K_NOT? operator=K_IN
+        right=expression                                # inConditionDangling
+    | K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
-        (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeCondition
+        (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeConditionDangling
 ;
 
 jsonPassingClause:
@@ -1948,12 +2204,13 @@ simpleComparisionOperator:
 // it's possible but not documented that options can be used in an arbitrary order
 // it's also possible but not documented to place the options in parenthesis
 jsonConditionOption:
-      K_STRICT                  # jsonConditionOptionStrict
-    | K_LAX                     # jsonConditionOptionLax
-    | K_ALLOW K_SCALARS         # jsonConditionOptionAllowScalars
-    | K_DISALLOW K_SCALARS      # jsonConditionOptionDisallowSclars
-    | K_WITH K_UNIQUE K_KEYS    # jsonConditionOptionWithUniqueKeys
-    | K_WITHOUT K_UNIQUE K_KEYS # jsonConditionOptionWithoutUniqueKeys
+      K_STRICT                                      # jsonConditionOptionStrict
+    | K_LAX                                         # jsonConditionOptionLax
+    | K_ALLOW K_SCALARS                             # jsonConditionOptionAllowScalars
+    | K_DISALLOW K_SCALARS                          # jsonConditionOptionDisallowSclars
+    | K_WITH K_UNIQUE K_KEYS                        # jsonConditionOptionWithUniqueKeys
+    | K_WITHOUT K_UNIQUE K_KEYS                     # jsonConditionOptionWithoutUniqueKeys
+    | K_VALIDATE K_CAST? K_USING? schema=expression # jsonConditionOptionValidate
 ;
 
 isOfTypeConditionItem:
@@ -1993,6 +2250,7 @@ keywordAsId:
     | K_BEGINNING
     | K_BETWEEN
     | K_BFILE
+    | K_BIGRAM
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BLOB
@@ -2030,6 +2288,7 @@ keywordAsId:
     | K_CURRENT
     | K_CURSOR
     | K_CYCLE
+    | K_DAMERAU_LEVENSHTEIN
     | K_DATA
     | K_DATE
     | K_DAY
@@ -2052,6 +2311,7 @@ keywordAsId:
     | K_DISTINCT
     | K_DOCUMENT
     | K_DOUBLE
+    | K_EDIT_TOLERANCE
     | K_ELSE
     | K_EMPTY
     | K_ENCODING
@@ -2083,6 +2343,8 @@ keywordAsId:
     | K_FROM
     | K_FULL
     | K_FUNCTION
+    | K_FUZZY_MATCH
+    | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
     | K_GROUPS
@@ -2121,10 +2383,12 @@ keywordAsId:
     | K_INVISIBLE
     | K_IS
     | K_ITERATE
+    | K_JARO_WINKLER
     | K_JOIN
     | K_JSON
     | K_JSON_ARRAY
     | K_JSON_ARRAYAGG
+    | K_JSON_EQUAL
     | K_JSON_EXISTS
     | K_JSON_MERGEPATCH
     | K_JSON_OBJECT
@@ -2150,6 +2414,7 @@ keywordAsId:
     | K_LEAD_DIFF_PERCENT
     | K_LEFT
     | K_LEVEL
+    | K_LEVENSHTEIN
     | K_LIKE2
     | K_LIKE4
     | K_LIKE
@@ -2162,6 +2427,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOGFILE
     | K_LONG
+    | K_LONGEST_COMMON_SUBSTRING
     | K_MAIN
     | K_MAPPING
     | K_MATCH
@@ -2235,6 +2501,7 @@ keywordAsId:
     | K_PREDICTION
     | K_PREDICTION_COST
     | K_PREDICTION_DETAILS
+    | K_PREPEND
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
@@ -2249,6 +2516,7 @@ keywordAsId:
     | K_REF
     | K_REFERENCE
     | K_REJECT
+    | K_RELATE_TO_SHORTER
     | K_REMOVE
     | K_RENAME
     | K_REPLACE
@@ -2303,6 +2571,7 @@ keywordAsId:
     | K_TO
     | K_TRAILING
     | K_TREAT
+    | K_TRIGRAM
     | K_TRIM
     | K_TRUE
     | K_TRUNCATE
@@ -2313,12 +2582,14 @@ keywordAsId:
     | K_UNION
     | K_UNIQUE
     | K_UNPIVOT
+    | K_UNSCALED
     | K_UNTIL
     | K_UPDATE
     | K_UPDATED
     | K_UPSERT
     | K_UROWID
     | K_USING
+    | K_VALIDATE
     | K_VALIDATE_CONVERSION
     | K_VALUE
     | K_VALUES
@@ -2333,6 +2604,7 @@ keywordAsId:
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
+    | K_WHOLE_WORD_MATCH
     | K_WINDOW
     | K_WITH
     | K_WITHIN
