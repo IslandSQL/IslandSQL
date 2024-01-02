@@ -1440,7 +1440,7 @@ jsonArrayEnumerationContent:
 ;
 
 jsonArrayQueryContent:
-    queryExpression=select jsonOnNullClause? jsonReturningClause? options+=jsonOption*
+    queryExpression=subquery jsonOnNullClause? jsonReturningClause? options+=jsonOption*
 ;
 
 // undocumented: pretty/ascii
