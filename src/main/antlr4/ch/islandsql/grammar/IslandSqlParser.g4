@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Call
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/9
-callStatement:
-    K_CALL ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Delete
 /*----------------------------------------------------------------------------*/
 
@@ -95,6 +86,22 @@ mergeStatement:
 updateStatement:
     K_UPDATE ~SEMI+? K_SET ~SEMI+? sqlEnd
 ;
+
+/*----------------------------------------------------------------------------*/
+// Call
+/*----------------------------------------------------------------------------*/
+
+callStatement:
+    stmt=callStatementUnterminated sqlEnd
+;
+
+// simplified:
+// - treat routine_call and object_access_expression as an ordinary expression
+// - use placeholder_expression as into target
+callStatementUnterminated:
+    K_CALL callable=expression (K_INTO placeholderExpression)?
+;
+
 /*----------------------------------------------------------------------------*/
 // Lock table
 /*----------------------------------------------------------------------------*/
