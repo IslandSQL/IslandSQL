@@ -51,6 +51,36 @@ If a SQL script runs without errors, but IslandSQL reports parse errors, then we
 
 Code that has been wrapped with the [wrap](https://docs.oracle.com/en/database/oracle/oracle-database/21/lnpls/plsql-source-text-wrapping.html#GUID-4C024F24-F054-4E11-BCAD-ACA9D6B745D2) utility can be installed in the target database. However, wrapped code is ignored by the IslandSQL grammar.
 
+### Keywords as Identifiers
+
+The grammar allows the use of keywords as identifiers. This makes the grammar robust and supports the fact the Oracle Database allows the use of keywords in various places.
+
+However, there are cases where this leads to an unexpected parse tree, even if no keywords as identifiers are used. Here's an example: 
+
+```sql
+select *
+  from emp
+  left join dept on emp.deptno = dept.deptno;
+```
+
+In this case `left` is treated as a table alias of `emp`, since `join dept on emp.deptno = dept.deptno` is a valid [`innerCrossJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#innerCrossJoinClause) and the priority of the evaluation in ANTLR4 matches the order in the grammar.
+
+Solving this issue is not simple, especially since the Oracle Database allows the use of `left` or `right` as valid table names and table aliases. Here's an another example:
+
+```sql
+with
+   right as (
+      select * from emp
+   )
+select *
+  from right
+  right join dept on right.deptno = dept.deptno;
+```
+
+In this example the Oracle Database selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#outerJoinClause) by the Oracle Database and not as a table alias.
+
+Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
+
 ### Dynamic Grammar of SQL\*Plus
 
 The following commands affect the grammar and are not interpreted by IslandSQL. The IslandSQL grammar is built on the default settings. As a result other values lead to errors.
