@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Insert
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/26
-insertStatement:
-    K_INSERT ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Merge
 /*----------------------------------------------------------------------------*/
 
@@ -165,6 +156,64 @@ unterminatedDmlStatement:
 // support other statements such as CREATE TABLE, CREATE INDEX, ALTER INDEX as list of tokens
 otherStatement:
     ~SEMI* // optional since all tokens may be on the hidden channel
+;
+
+/*----------------------------------------------------------------------------*/
+// Insert
+/*----------------------------------------------------------------------------*/
+
+insertStatement:
+    insertUnterminated sqlEnd
+;
+
+insertUnterminated:
+    {unhideFirstHint();} K_INSERT hint?
+    (
+          singleTableInsert
+        | multiTableInsert
+    )
+;
+
+singleTableInsert:
+    insertIntoClause
+    (
+          insertValuesClause returningClause?
+        | subquery
+    ) errorLoggingClause?
+;
+
+insertIntoClause:
+    K_INTO dmlTableExpressionClause tAlias=sqlName?
+    (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+;
+
+insertValuesClause:
+    rows+=valuesRow (COMMA rows+=valuesRow)*
+;
+
+multiTableInsert:
+    (
+          unconditionalInsertClause
+        | conditionalInsertClause
+    ) subquery
+;
+
+unconditionalInsertClause:
+    K_ALL intoClauses+=multiTableInsertClause (COMMA intoClauses+=multiTableInsertClause)*
+;
+
+multiTableInsertClause:
+    insertIntoClause valuesClause? errorLoggingClause?
+;
+
+conditionalInsertClause:
+    (K_ALL | K_FIRST)?
+    whenClauses+=conditionalInsertWhenClause+
+    (K_ELSE elseIntoClauses+=multiTableInsertClause+)?
+;
+
+conditionalInsertWhenClause:
+    K_WHEN cond=condition K_THEN intoClauses+=multiTableInsertClause+
 ;
 
 /*----------------------------------------------------------------------------*/
