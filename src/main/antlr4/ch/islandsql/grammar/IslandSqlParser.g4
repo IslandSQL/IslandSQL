@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Explain plan
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/25
-explainPlanStatement:
-    K_EXPLAIN K_PLAN ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Insert
 /*----------------------------------------------------------------------------*/
 
@@ -146,6 +137,34 @@ errorLoggingClause:
     (K_INTO (schema=sqlName PERIOD)? table=sqlName)?
     (LPAR statementTag=expression RPAR)?
     (K_REJECT K_LIMIT (unlimited=K_UNLIMITED | limit=expression))?
+;
+
+/*----------------------------------------------------------------------------*/
+// Explain plan
+/*----------------------------------------------------------------------------*/
+
+explainPlanStatement:
+  stmt=explainPlanStatementUnterminated sqlEnd
+;
+
+explainPlanStatementUnterminated:
+    K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS statementId=expression)?
+    (K_INTO (schema=sqlName PERIOD)? table=sqlName (COMMAT dblink=qualifiedName)?)?
+    K_FOR statement=unterminatedDmlStatement
+;
+
+// TODO: support INSERT with https://github.com/IslandSQL/IslandSQL/issues/26
+// TODO: support MERGE with https://github.com/IslandSQL/IslandSQL/issues/27
+// TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
+unterminatedDmlStatement:
+      select
+    | deleteStatementUnterminated
+    | otherStatement
+;
+
+// support other statements such as CREATE TABLE, CREATE INDEX, ALTER INDEX as list of tokens
+otherStatement:
+    ~SEMI* // optional since all tokens may be on the hidden channel
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2615,6 +2634,7 @@ keywordAsId:
     | K_SQL
     | K_STANDALONE
     | K_START
+    | K_STATEMENT_ID
     | K_STRICT
     | K_SUBMULTISET
     | K_SUBPARTITION
