@@ -65,13 +65,13 @@ updateStatement:
 /*----------------------------------------------------------------------------*/
 
 callStatement:
-    stmt=callStatementUnterminated sqlEnd
+    stmt=call sqlEnd
 ;
 
 // simplified:
 // - treat routine_call and object_access_expression as an ordinary expression
 // - use placeholder_expression as into target
-callStatementUnterminated:
+call:
     K_CALL callable=expression (K_INTO placeholderExpression)?
 ;
 
@@ -80,10 +80,10 @@ callStatementUnterminated:
 /*----------------------------------------------------------------------------*/
 
 deleteStatement:
-    stmt=deleteStatementUnterminated sqlEnd
+    stmt=delete sqlEnd
 ;
 
-deleteStatementUnterminated:
+delete:
     {unhideFirstHint();} K_DELETE hint? K_FROM?
     (
           dmlTableExpressionClause
@@ -135,21 +135,21 @@ errorLoggingClause:
 /*----------------------------------------------------------------------------*/
 
 explainPlanStatement:
-  stmt=explainPlanStatementUnterminated sqlEnd
+  stmt=explainPlan sqlEnd
 ;
 
-explainPlanStatementUnterminated:
+explainPlan:
     K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS statementId=expression)?
     (K_INTO (schema=sqlName PERIOD)? table=sqlName (COMMAT dblink=qualifiedName)?)?
-    K_FOR statement=unterminatedDmlStatement
+    K_FOR statement=forExplainPlanStatement
 ;
 
 // TODO: support INSERT with https://github.com/IslandSQL/IslandSQL/issues/26
 // TODO: support MERGE with https://github.com/IslandSQL/IslandSQL/issues/27
 // TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
-unterminatedDmlStatement:
+forExplainPlanStatement:
       select
-    | deleteStatementUnterminated
+    | delete
     | otherStatement
 ;
 
@@ -163,10 +163,10 @@ otherStatement:
 /*----------------------------------------------------------------------------*/
 
 insertStatement:
-    insertUnterminated sqlEnd
+    insert sqlEnd
 ;
 
-insertUnterminated:
+insert:
     {unhideFirstHint();} K_INSERT hint?
     (
           singleTableInsert
@@ -221,10 +221,10 @@ conditionalInsertWhenClause:
 /*----------------------------------------------------------------------------*/
 
 lockTableStatement:
-    stmt=lockTableStatementUnterminated sqlEnd
+    stmt=lockTable sqlEnd
 ;
 
-lockTableStatementUnterminated:
+lockTable:
     K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
         K_IN lockMode K_MODE lockTableWaitOption?
 ;
