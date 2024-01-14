@@ -2615,6 +2615,7 @@ keywordAsId:
     | K_SQL
     | K_STANDALONE
     | K_START
+    | K_STATEMENT_ID
     | K_STRICT
     | K_SUBMULTISET
     | K_SUBPARTITION

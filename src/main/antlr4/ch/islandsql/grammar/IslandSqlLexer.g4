@@ -403,6 +403,7 @@ K_SORT: 'sort';
 K_SQL: 'sql';
 K_STANDALONE: 'standalone';
 K_START: 'start';
+K_STATEMENT_ID: 'statement_id';
 K_STRICT: 'strict';
 K_SUBMULTISET: 'submultiset';
 K_SUBPARTITION: 'subpartition';
