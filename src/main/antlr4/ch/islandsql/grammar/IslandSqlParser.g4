@@ -2327,6 +2327,7 @@ keywordAsId:
     | K_END
     | K_ENTITYESCAPING
     | K_ERROR
+    | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
     | K_EXCEPT
@@ -2434,6 +2435,7 @@ keywordAsId:
     | K_LOCATION
     | K_LOCK
     | K_LOCKED
+    | K_LOG
     | K_LOGFILE
     | K_LONG
     | K_LONGEST_COMMON_SUBSTRING
@@ -2479,6 +2481,7 @@ keywordAsId:
     | K_OBJECT
     | K_OF
     | K_OFFSET
+    | K_OLD
     | K_ON
     | K_ONE
     | K_ONLY
@@ -2590,6 +2593,7 @@ keywordAsId:
     | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
+    | K_UNLIMITED
     | K_UNPIVOT
     | K_UNSCALED
     | K_UNTIL
