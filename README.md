@@ -74,7 +74,7 @@ with
    )
 select *
   from right
-  right join dept on right.deptno = dept.deptno;
+ right join dept on right.deptno = dept.deptno;
 ```
 
 In this example the Oracle Database selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#outerJoinClause) by the Oracle Database and not as a table alias.
