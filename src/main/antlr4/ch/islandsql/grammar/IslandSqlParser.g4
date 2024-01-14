@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Delete
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/24
-deleteStatement:
-    K_DELETE ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Explain plan
 /*----------------------------------------------------------------------------*/
 
@@ -100,6 +91,61 @@ callStatement:
 // - use placeholder_expression as into target
 callStatementUnterminated:
     K_CALL callable=expression (K_INTO placeholderExpression)?
+;
+
+/*----------------------------------------------------------------------------*/
+// Delete
+/*----------------------------------------------------------------------------*/
+
+deleteStatement:
+    stmt=deleteStatementUnterminated sqlEnd
+;
+
+deleteStatementUnterminated:
+    {unhideFirstHint();} K_DELETE hint? K_FROM?
+    (
+          dmlTableExpressionClause
+        | K_ONLY LPAR dmlTableExpressionClause RPAR
+    ) talias=sqlName?
+    fromUsingClause?
+    whereClause?
+    returningClause?
+    errorLoggingClause?
+;
+
+// simplified, table_collection_expression treated as expression
+dmlTableExpressionClause:
+      (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause | COMMAT dblink=qualifiedName)?
+    | LPAR query=subquery RPAR
+    | expr=expression
+;
+
+// introduced in Oracle Database 23c, re-use grammar in select statement
+// it's similar to the fromClause, the only difference is that you can use K_USING instead of K_FROM
+fromUsingClause:
+    (K_FROM | K_USING) items+=fromItem (COMMA items+=fromItem)*
+;
+
+returningClause:
+    (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
+    (K_BULK K_COLLECT)? // within PL/SQL
+    K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+;
+
+// OLD and NEW are introduced in Oracle Database 23c
+sourceItem:
+    (K_OLD | K_NEW)? expr=expression
+;
+
+dataItem:
+    expr=expression
+;
+
+errorLoggingClause:
+    K_LOG K_ERRORS
+    (K_INTO (schema=sqlName PERIOD)? table=sqlName)?
+    (LPAR statementTag=expression RPAR)?
+    (K_REJECT K_LIMIT (unlimited=K_UNLIMITED | limit=expression))?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2327,6 +2373,7 @@ keywordAsId:
     | K_END
     | K_ENTITYESCAPING
     | K_ERROR
+    | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
     | K_EXCEPT
@@ -2434,6 +2481,7 @@ keywordAsId:
     | K_LOCATION
     | K_LOCK
     | K_LOCKED
+    | K_LOG
     | K_LOGFILE
     | K_LONG
     | K_LONGEST_COMMON_SUBSTRING
@@ -2479,6 +2527,7 @@ keywordAsId:
     | K_OBJECT
     | K_OF
     | K_OFFSET
+    | K_OLD
     | K_ON
     | K_ONE
     | K_ONLY
@@ -2590,6 +2639,7 @@ keywordAsId:
     | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
+    | K_UNLIMITED
     | K_UNPIVOT
     | K_UNSCALED
     | K_UNTIL
