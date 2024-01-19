@@ -188,7 +188,7 @@ insertIntoClause:
 ;
 
 insertValuesClause:
-    rows+=valuesRow (COMMA rows+=valuesRow)*
+    K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*
 ;
 
 multiTableInsert:
@@ -199,11 +199,11 @@ multiTableInsert:
 ;
 
 unconditionalInsertClause:
-    K_ALL intoClauses+=multiTableInsertClause (COMMA intoClauses+=multiTableInsertClause)*
+    K_ALL intoClauses+=multiTableInsertClause+
 ;
 
 multiTableInsertClause:
-    insertIntoClause valuesClause? errorLoggingClause?
+    insertIntoClause insertValuesClause? errorLoggingClause?
 ;
 
 conditionalInsertClause:
