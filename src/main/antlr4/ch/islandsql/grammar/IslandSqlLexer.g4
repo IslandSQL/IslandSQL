@@ -153,6 +153,7 @@ K_DISALLOW: 'disallow';
 K_DISCARD: 'discard';
 K_DISTINCT: 'distinct';
 K_DOCUMENT: 'document';
+K_DOMAIN: 'domain';
 K_DOUBLE: 'double';
 K_EDIT_TOLERANCE: 'edit_tolerance';
 K_ELSE: 'else';

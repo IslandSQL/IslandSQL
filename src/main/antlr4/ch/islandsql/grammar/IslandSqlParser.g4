@@ -2433,6 +2433,7 @@ keywordAsId:
     | K_DISCARD
     | K_DISTINCT
     | K_DOCUMENT
+    | K_DOMAIN
     | K_DOUBLE
     | K_EDIT_TOLERANCE
     | K_ELSE
