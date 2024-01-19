@@ -1398,7 +1398,7 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS typeName=dataType
+        K_AS K_DOMAIN? typeName=dataType
         defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
