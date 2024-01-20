@@ -135,12 +135,12 @@ explainPlan:
     K_FOR statement=forExplainPlanStatement
 ;
 
-// TODO: support INSERT with https://github.com/IslandSQL/IslandSQL/issues/26
-// TODO: support MERGE with https://github.com/IslandSQL/IslandSQL/issues/27
 // TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
 forExplainPlanStatement:
       select
     | delete
+    | insert
+    | merge
     | otherStatement
 ;
 
