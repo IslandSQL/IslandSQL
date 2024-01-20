@@ -954,7 +954,9 @@ update:
         | K_ONLY LPAR dmlTableExpressionClause RPAR
     ) talias=sqlName?
     updateSetClause
+    fromUsingClause?
     whereClause?
+    orderByClause?
     returningClause?
     errorLoggingClause?
 ;
