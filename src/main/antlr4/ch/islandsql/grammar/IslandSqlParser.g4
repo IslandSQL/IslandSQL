@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Merge
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
-mergeStatement:
-    K_MERGE ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Update
 /*----------------------------------------------------------------------------*/
 
@@ -254,6 +245,57 @@ lockMode:
 lockTableWaitOption:
       K_NOWAIT                      # nowaitLockOption
     | K_WAIT waitSeconds=expression # waitLockOption
+;
+
+/*----------------------------------------------------------------------------*/
+// Merge
+/*----------------------------------------------------------------------------*/
+
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
+mergeStatement:
+    merge sqlEnd
+;
+
+merge:
+    {unhideFirstHint();} K_MERGE hint?
+    mergeSourceClause
+    mergeTargetClause
+    K_ON LPAR cond=condition RPAR
+    (
+          mergeUpdateClause mergeInsertClause?
+        | mergeInsertClause
+    )
+    errorLoggingClause?
+;
+
+// artifical clause, undocumented: database link and subquery
+// simplified using database link and subquery
+mergeSourceClause:
+    K_INTO qte=queryTableExpression talias=sqlName?
+;
+
+// artifical clause, undocumented: database link, table function
+// simplified using values_clause, subquery, database link, table function as query_table_expression
+mergeTargetClause:
+    K_USING qte=queryTableExpression talias=sqlName?
+;
+
+mergeUpdateClause:
+    K_WHEN K_MATCHED K_THEN K_UPDATE K_SET
+    columns+=mergeUpdateColumn (COMMA columns+=mergeUpdateColumn)*
+    updateWhere=whereClause?
+    (K_DELETE deleteWhere=whereClause)?
+;
+
+// artifical clause
+mergeUpdateColumn:
+    column=qualifiedName EQUALS expr=expression
+;
+
+mergeInsertClause:
+    K_WHEN K_NOT K_MATCHED K_THEN K_INSERT
+    (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
 ;
 
 /*----------------------------------------------------------------------------*/
