@@ -258,8 +258,8 @@ mergeStatement:
 
 merge:
     {unhideFirstHint();} K_MERGE hint?
-    mergeSourceClause
-    mergeTargetClause
+    mergeIntoClause
+    mergeUsingClause
     K_ON LPAR cond=condition RPAR
     (
           mergeUpdateClause mergeInsertClause?
@@ -270,13 +270,13 @@ merge:
 
 // artifical clause, undocumented: database link and subquery
 // simplified using database link and subquery
-mergeSourceClause:
+mergeIntoClause:
     K_INTO qte=queryTableExpression talias=sqlName?
 ;
 
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
-mergeTargetClause:
+mergeUsingClause:
     K_USING qte=queryTableExpression talias=sqlName?
 ;
 
