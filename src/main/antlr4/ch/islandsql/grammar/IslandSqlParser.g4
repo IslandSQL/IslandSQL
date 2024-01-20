@@ -127,12 +127,12 @@ explainPlan:
     K_FOR statement=forExplainPlanStatement
 ;
 
-// TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
 forExplainPlanStatement:
       select
     | delete
     | insert
     | merge
+    | update
     | otherStatement
 ;
 
@@ -243,7 +243,6 @@ lockTableWaitOption:
 // Merge
 /*----------------------------------------------------------------------------*/
 
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
 mergeStatement:
     merge sqlEnd
 ;
