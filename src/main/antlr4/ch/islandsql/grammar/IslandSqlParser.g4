@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Merge
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
-mergeStatement:
-    K_MERGE ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Update
 /*----------------------------------------------------------------------------*/
 
@@ -65,7 +56,7 @@ updateStatement:
 /*----------------------------------------------------------------------------*/
 
 callStatement:
-    stmt=call sqlEnd
+    call sqlEnd
 ;
 
 // simplified:
@@ -80,7 +71,7 @@ call:
 /*----------------------------------------------------------------------------*/
 
 deleteStatement:
-    stmt=delete sqlEnd
+    delete sqlEnd
 ;
 
 delete:
@@ -123,6 +114,7 @@ dataItem:
     expr=expression
 ;
 
+// dblinks are really not supported: ORA-38919: remote table not supported for DML error logging
 errorLoggingClause:
     K_LOG K_ERRORS
     (K_INTO (schema=sqlName PERIOD)? table=sqlName)?
@@ -135,7 +127,7 @@ errorLoggingClause:
 /*----------------------------------------------------------------------------*/
 
 explainPlanStatement:
-  stmt=explainPlan sqlEnd
+  explainPlan sqlEnd
 ;
 
 explainPlan:
@@ -144,12 +136,12 @@ explainPlan:
     K_FOR statement=forExplainPlanStatement
 ;
 
-// TODO: support INSERT with https://github.com/IslandSQL/IslandSQL/issues/26
-// TODO: support MERGE with https://github.com/IslandSQL/IslandSQL/issues/27
 // TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
 forExplainPlanStatement:
       select
     | delete
+    | insert
+    | merge
     | otherStatement
 ;
 
@@ -221,7 +213,7 @@ conditionalInsertWhenClause:
 /*----------------------------------------------------------------------------*/
 
 lockTableStatement:
-    stmt=lockTable sqlEnd
+    lockTable sqlEnd
 ;
 
 lockTable:
@@ -254,6 +246,57 @@ lockMode:
 lockTableWaitOption:
       K_NOWAIT                      # nowaitLockOption
     | K_WAIT waitSeconds=expression # waitLockOption
+;
+
+/*----------------------------------------------------------------------------*/
+// Merge
+/*----------------------------------------------------------------------------*/
+
+// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
+mergeStatement:
+    merge sqlEnd
+;
+
+merge:
+    {unhideFirstHint();} K_MERGE hint?
+    mergeIntoClause
+    mergeUsingClause
+    K_ON LPAR cond=condition RPAR
+    (
+          mergeUpdateClause mergeInsertClause?
+        | mergeInsertClause
+    )
+    errorLoggingClause?
+;
+
+// artifical clause, undocumented: database link and subquery
+// simplified using database link and subquery
+mergeIntoClause:
+    K_INTO qte=queryTableExpression talias=sqlName?
+;
+
+// artifical clause, undocumented: database link, table function
+// simplified using values_clause, subquery, database link, table function as query_table_expression
+mergeUsingClause:
+    K_USING qte=queryTableExpression talias=sqlName?
+;
+
+mergeUpdateClause:
+    K_WHEN K_MATCHED K_THEN K_UPDATE K_SET
+    columns+=mergeUpdateColumn (COMMA columns+=mergeUpdateColumn)*
+    updateWhere=whereClause?
+    (K_DELETE deleteWhere=whereClause)?
+;
+
+// artifical clause
+mergeUpdateColumn:
+    column=qualifiedName EQUALS expr=expression
+;
+
+mergeInsertClause:
+    K_WHEN K_NOT K_MATCHED K_THEN K_INSERT
+    (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2557,6 +2600,7 @@ keywordAsId:
     | K_MAIN
     | K_MAPPING
     | K_MATCH
+    | K_MATCHED
     | K_MATCH_RECOGNIZE
     | K_MEASURES
     | K_MEMBER
