@@ -277,6 +277,7 @@ K_LONGEST_COMMON_SUBSTRING: 'longest_common_substring';
 K_MAIN: 'main';
 K_MAPPING: 'mapping';
 K_MATCH: 'match';
+K_MATCHED: 'matched';
 K_MATCH_RECOGNIZE: 'match_recognize';
 K_MEASURES: 'measures';
 K_MEMBER: 'member';

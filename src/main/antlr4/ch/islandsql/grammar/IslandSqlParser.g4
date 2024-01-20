@@ -2557,6 +2557,7 @@ keywordAsId:
     | K_MAIN
     | K_MAPPING
     | K_MATCH
+    | K_MATCHED
     | K_MATCH_RECOGNIZE
     | K_MEASURES
     | K_MEMBER
