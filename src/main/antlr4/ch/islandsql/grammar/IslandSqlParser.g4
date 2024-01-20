@@ -114,6 +114,7 @@ dataItem:
     expr=expression
 ;
 
+// dblinks are really not supported: ORA-38919: remote table not supported for DML error logging
 errorLoggingClause:
     K_LOG K_ERRORS
     (K_INTO (schema=sqlName PERIOD)? table=sqlName)?
