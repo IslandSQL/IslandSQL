@@ -65,7 +65,7 @@ updateStatement:
 /*----------------------------------------------------------------------------*/
 
 callStatement:
-    stmt=call sqlEnd
+    call sqlEnd
 ;
 
 // simplified:
@@ -80,7 +80,7 @@ call:
 /*----------------------------------------------------------------------------*/
 
 deleteStatement:
-    stmt=delete sqlEnd
+    delete sqlEnd
 ;
 
 delete:
@@ -135,7 +135,7 @@ errorLoggingClause:
 /*----------------------------------------------------------------------------*/
 
 explainPlanStatement:
-  stmt=explainPlan sqlEnd
+  explainPlan sqlEnd
 ;
 
 explainPlan:
@@ -221,7 +221,7 @@ conditionalInsertWhenClause:
 /*----------------------------------------------------------------------------*/
 
 lockTableStatement:
-    stmt=lockTable sqlEnd
+    lockTable sqlEnd
 ;
 
 lockTable:
