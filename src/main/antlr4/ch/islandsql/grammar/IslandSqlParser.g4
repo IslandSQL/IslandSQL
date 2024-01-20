@@ -953,7 +953,7 @@ update:
           dmlTableExpressionClause
         | K_ONLY LPAR dmlTableExpressionClause RPAR
     ) talias=sqlName?
-    updateSetClause?
+    updateSetClause
     whereClause?
     returningClause?
     errorLoggingClause?
