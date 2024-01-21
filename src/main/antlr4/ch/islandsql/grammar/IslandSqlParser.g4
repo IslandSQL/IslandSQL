@@ -1892,9 +1892,7 @@ jsonTransform:
     jsonTransformReturningClause? jsonTypeClause? jsonPassingClause? RPAR
 ;
 
-// TODO: implement undocumented grammar of operations case, copy, intersect, merge, minus, prepend, union, see https://github.com/IslandSQL/IslandSQL/issues/49
-// prependOp is implemented according to append, this might need some amendments once the syntax for these operations is published.
-// caseOp is implemented according the description in the JSON Developer's Guide
+// case, copy, intersect, merge, minus, prepend, union are implemented according the description in the JSON Developer's Guide
 operation:
       removeOp
     | insertOp
@@ -1907,6 +1905,7 @@ operation:
     | sortOp
     | nestedPathOp
     | caseOp
+    | copyOp
 ;
 
 removeOp:
@@ -1972,6 +1971,11 @@ sortOp:
     )
 ;
 
+// syntax based on
+nestedPathOp:
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
+;
+
 caseOp:
     K_CASE
         (
@@ -1989,8 +1993,12 @@ caseOpElseClause:
     K_ELSE LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
-nestedPathOp:
-    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
+// not documented optional use of "path" keyword
+copyOp:
+    K_COPY pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    ((K_CREATE|K_IGNORE|K_ERROR|K_NULL) K_ON K_MISSING)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+    ((K_IGNORE|K_ERROR) K_ON K_EMPTY)?
 ;
 
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
