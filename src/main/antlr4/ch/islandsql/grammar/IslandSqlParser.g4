@@ -1907,6 +1907,7 @@ operation:
     | caseOp
     | copyOp
     | intersectOp
+    | mergeOp
 ;
 
 removeOp:
@@ -2046,6 +2047,16 @@ intersectOp:
           onMissingHandler
         | onMismatchHandler
         | onNullHandler
+    )*
+;
+
+mergeOp:
+    K_MERGE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
+        | onEmptyHandler
     )*
 ;
 
