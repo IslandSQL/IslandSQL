@@ -1893,7 +1893,8 @@ jsonTransform:
 ;
 
 // TODO: implement undocumented grammar of operations case, copy, intersect, merge, minus, prepend, union, see https://github.com/IslandSQL/IslandSQL/issues/49
-// prepend is implemented according to append, this might need some amendments once the syntax for these operations is published.
+// prependOp is implemented according to append, this might need some amendments once the syntax for these operations is published.
+// caseOp is implemented according the description in the JSON Developer's Guide
 operation:
       removeOp
     | insertOp
@@ -1905,6 +1906,7 @@ operation:
     | keepOp
     | sortOp
     | nestedPathOp
+    | caseOp
 ;
 
 removeOp:
@@ -1968,6 +1970,23 @@ sortOp:
         | (K_ASC | K_DESC) K_UNIQUE?
         | K_UNIQUE
     )
+;
+
+caseOp:
+    K_CASE
+        (
+              whens+=caseOpWhenClause+ caseOpElseClause?
+            | caseOpElseClause
+        )
+    K_END
+;
+
+caseOpWhenClause:
+    K_WHEN cond=condition K_THEN LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
+;
+
+caseOpElseClause:
+    K_ELSE LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 nestedPathOp:
