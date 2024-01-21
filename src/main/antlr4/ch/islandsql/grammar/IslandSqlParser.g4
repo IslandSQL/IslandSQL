@@ -121,8 +121,9 @@ explainPlanStatement:
   explainPlan sqlEnd
 ;
 
+// undocumented: equals is optional
 explainPlan:
-    K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS statementId=expression)?
+    K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS? statementId=expression)?
     (K_INTO (schema=sqlName PERIOD)? table=sqlName (COMMAT dblink=qualifiedName)?)?
     K_FOR statement=forExplainPlanStatement
 ;
