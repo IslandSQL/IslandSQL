@@ -43,15 +43,6 @@ dmlStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Update
-/*----------------------------------------------------------------------------*/
-
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/28
-updateStatement:
-    K_UPDATE ~SEMI+? K_SET ~SEMI+? sqlEnd
-;
-
-/*----------------------------------------------------------------------------*/
 // Call
 /*----------------------------------------------------------------------------*/
 
@@ -136,12 +127,12 @@ explainPlan:
     K_FOR statement=forExplainPlanStatement
 ;
 
-// TODO: support UPDATE with https://github.com/IslandSQL/IslandSQL/issues/28
 forExplainPlanStatement:
       select
     | delete
     | insert
     | merge
+    | update
     | otherStatement
 ;
 
@@ -252,7 +243,6 @@ lockTableWaitOption:
 // Merge
 /*----------------------------------------------------------------------------*/
 
-// TODO: complete support, see https://github.com/IslandSQL/IslandSQL/issues/27
 mergeStatement:
     merge sqlEnd
 ;
@@ -947,6 +937,44 @@ forUpdateClause:
 
 forUpdateColumn:
     ((schema=sqlName PERIOD)? table=sqlName PERIOD)? column=sqlName
+;
+
+/*----------------------------------------------------------------------------*/
+// Update
+/*----------------------------------------------------------------------------*/
+
+updateStatement:
+    update sqlEnd
+;
+
+update:
+    {unhideFirstHint();} K_UPDATE hint?
+    (
+          dmlTableExpressionClause
+        | K_ONLY LPAR dmlTableExpressionClause RPAR
+    ) talias=sqlName?
+    updateSetClause
+    fromUsingClause?
+    whereClause?
+    orderByClause?
+    returningClause?
+    errorLoggingClause?
+;
+
+// including update statement exentions in PL/SQL ("current of" is part of expression)
+updateSetClause:
+    K_SET
+    (
+          items+=updateSetClauseItem (COMMA items+=updateSetClauseItem)*
+        | K_VALUE LPAR talias=sqlName RPAR EQUALS (expr=expression | LPAR query=subquery RPAR)
+        | K_ROW EQUALS expr=expression
+    )
+;
+
+updateSetClauseItem:
+      LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+        EQUALS LPAR query=subquery RPAR                                             # updateSetClauseItemColumnList
+    | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2288,6 +2316,7 @@ unaryOperator:
     | K_RUNNING         # runningOperator           // row_pattern_nav_logical
     | K_FINAL           # finalOperator             // row_pattern_nav_logical
     | K_NEW             # newOperator               // type constructor
+    | K_CURRENT K_OF    # currentOfOperator         // operator as update extension in PL/SQL where clause
 ;
 
 /*----------------------------------------------------------------------------*/
