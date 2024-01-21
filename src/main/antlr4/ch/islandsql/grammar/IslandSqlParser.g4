@@ -1910,27 +1910,47 @@ operation:
 ;
 
 removeOp:
-    K_REMOVE pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    K_REMOVE pathExpr=expression
+    (
+          onExistingHandler
+        | onMissingHandler
+    )*
 ;
 
 // works only if there is no space before INSERT as long as the INSERT statement is not supported fully
 // not documented optional use of "path" keyword
 insertOp:
     K_INSERT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
-    ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
+    (
+          onExistingHandler
+        | onMissingHandler
+        | onNullHandler
+        | onErrorHandler
+    )*
 ;
 
 // not documented optional use of "path" keyword
 replaceOp:
     K_REPLACE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
-    ((K_NULL|K_IGNORE|K_ERROR|K_REMOVE) K_ON K_NULL)?
+    (
+          onExistingHandler
+        | onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | onErrorHandler
+    )*
 ;
 
 // not documented optional use of "path" keyword
 appendOp:
     K_APPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
+        | onEmptyHandler
+    )*
+
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
 ;
@@ -1938,25 +1958,37 @@ appendOp:
 // not documented, syntax according append
 prependOp:
     K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
-    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
+        | onEmptyHandler
+    )*
 ;
 
 // not documented optional use of "path" keyword
 setOp:
     K_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_REPLACE|K_IGNORE|K_ERROR) K_ON K_EXISTING)?
-    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
-    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+    (
+          onExistingHandler
+        | onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | onErrorHandler
+    )*
 ;
 
 renameOp:
     K_RENAME pathExpr=expression K_WITH renamed=expression
-    ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    (
+          onExistingHandler
+        | onMissingHandler
+    )*
 ;
 
 keepOp:
     K_KEEP items+=keepOpItem (COMMA items+=keepOpItem)*
+    onMissingHandler?
 ;
 
 keepOpItem:
@@ -1970,6 +2002,11 @@ sortOp:
         | (K_ASC | K_DESC) K_UNIQUE?
         | K_UNIQUE
     )
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onEmptyHandler
+    )*
 ;
 
 // syntax based on
@@ -1996,16 +2033,50 @@ caseOpElseClause:
 
 copyOp:
     K_COPY pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_CREATE|K_IGNORE|K_ERROR|K_NULL) K_ON K_MISSING)?
-    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
-    ((K_IGNORE|K_ERROR) K_ON K_EMPTY)?
+    (
+          onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+    )*
 ;
 
 intersectOp:
     K_INTERSECT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    ((K_ERROR|K_IGNORE|K_CREATE|K_NULL) K_ON K_MISSING)?
-    (K_ERROR K_ON K_MISMATCH)?
-    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
+    )*
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onEmptyHandler:
+    (K_NULL|K_ERROR|K_IGNORE) K_ON K_EMPTY
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onErrorHandler:
+    (K_NULL|K_ERROR|K_IGNORE) K_ON K_ERROR
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onExistingHandler:
+    (K_ERROR|K_IGNORE|K_REPLACE|K_REMOVE) K_ON K_EXISTING
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onMismatchHandler:
+    (K_NULL|K_ERROR|K_IGNORE|K_CREATE|K_REPLACE) K_ON K_MISMATCH
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onMissingHandler:
+    (K_ERROR|K_IGNORE|K_CREATE|K_NULL) K_ON K_MISSING
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+onNullHandler:
+    (K_NULL|K_ERROR|K_IGNORE|K_REMOVE) K_ON K_NULL
 ;
 
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
