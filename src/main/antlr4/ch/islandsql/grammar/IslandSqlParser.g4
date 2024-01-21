@@ -2978,11 +2978,16 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
+    | plsqlInquiryDirective
     | substitionVariable+
 ;
 
 substitionVariable:
     AMP AMP? name=substitionVariableName period=PERIOD?
+;
+
+plsqlInquiryDirective:
+    DOLLAR DOLLAR name=unquotedId
 ;
 
 substitionVariableName:
