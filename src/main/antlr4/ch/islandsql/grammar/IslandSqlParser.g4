@@ -1898,7 +1898,6 @@ operation:
     | insertOp
     | replaceOp
     | appendOp
-    | prependOp
     | setOp
     | renameOp
     | keepOp
@@ -1909,6 +1908,7 @@ operation:
     | intersectOp
     | mergeOp
     | minusOp
+    | prependOp
 ;
 
 removeOp:
@@ -1955,17 +1955,6 @@ appendOp:
 
     ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
-;
-
-// not documented, syntax according append
-prependOp:
-    K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    (
-          onMissingHandler
-        | onMismatchHandler
-        | onNullHandler
-        | onEmptyHandler
-    )*
 ;
 
 // not documented optional use of "path" keyword
@@ -2067,6 +2056,17 @@ minusOp:
           onMissingHandler
         | onMismatchHandler
         | onNullHandler
+    )*
+;
+
+// not documented, syntax according append
+prependOp:
+    K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
+        | onEmptyHandler
     )*
 ;
 
