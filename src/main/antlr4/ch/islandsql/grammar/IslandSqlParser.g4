@@ -1906,6 +1906,7 @@ operation:
     | nestedPathOp
     | caseOp
     | copyOp
+    | intersectOp
 ;
 
 removeOp:
@@ -1993,12 +1994,18 @@ caseOpElseClause:
     K_ELSE LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
-// not documented optional use of "path" keyword
 copyOp:
     K_COPY pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     ((K_CREATE|K_IGNORE|K_ERROR|K_NULL) K_ON K_MISSING)?
     ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
     ((K_IGNORE|K_ERROR) K_ON K_EMPTY)?
+;
+
+intersectOp:
+    K_INTERSECT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    ((K_ERROR|K_IGNORE|K_CREATE|K_NULL) K_ON K_MISSING)?
+    (K_ERROR K_ON K_MISMATCH)?
+    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
 ;
 
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
