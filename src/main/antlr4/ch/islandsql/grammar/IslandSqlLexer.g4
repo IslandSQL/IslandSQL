@@ -124,6 +124,7 @@ K_CONTAINERS_DEFAULT: 'containers_default';
 K_CONTAINER_MAP: 'container_map';
 K_CONTENT: 'content';
 K_CONVERSION: 'conversion';
+K_COPY: 'copy';
 K_COST: 'cost';
 K_COUNT: 'count';
 K_CREATE: 'create';
