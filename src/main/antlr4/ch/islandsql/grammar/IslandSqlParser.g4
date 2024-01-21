@@ -2495,6 +2495,7 @@ keywordAsId:
     | K_CONTAINER_MAP
     | K_CONTENT
     | K_CONVERSION
+    | K_COPY
     | K_COST
     | K_COUNT
     | K_CREATE
