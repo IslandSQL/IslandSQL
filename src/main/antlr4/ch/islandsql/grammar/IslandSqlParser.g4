@@ -1909,6 +1909,7 @@ operation:
     | mergeOp
     | minusOp
     | prependOp
+    | unionOp
 ;
 
 removeOp:
@@ -2067,6 +2068,15 @@ prependOp:
         | onMismatchHandler
         | onNullHandler
         | onEmptyHandler
+    )*
+;
+
+unionOp:
+    K_UNION pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onNullHandler
     )*
 ;
 
