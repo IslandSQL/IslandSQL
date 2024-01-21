@@ -30,14 +30,14 @@ The current islands of interests are:
 
 | Statement      | Notes                                                       |
 |----------------|-------------------------------------------------------------|
-| `call`         | complete statement as list of tokens                        |
-| `delete`       | complete statement as list of tokens                        |
-| `explain plan` | complete statement as list of tokens                        |
-| `insert`       | complete statement as list of tokens                        |
+| `call`         | complete statement                                          |
+| `delete`       | complete statement                                          |
+| `explain plan` | complete statement                                          |
+| `insert`       | complete statement                                          |
 | `lock table`   | complete statement                                          |
-| `merge`        | complete statement as list of tokens                        |
+| `merge`        | complete statement                                          |
 | `select`       | complete statement (embedded PL/SQL only as list of tokens) |
-| `update`       | complete statement as list of tokens                        |
+| `update`       | complete statement                                          |
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
 
