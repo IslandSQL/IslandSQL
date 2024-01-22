@@ -211,7 +211,7 @@ MERGE:
     'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
-// TODO: remove select in parenthesis to avoid identifying out-of-scope subqueries after implementing:
+// TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
 // - https://github.com/IslandSQL/IslandSQL/issues/29
 // - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
@@ -219,8 +219,7 @@ SELECT:
         ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT_WITH_PLSQL+? PLSQL_DECLARATION_END)
       | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
       | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | ('(' COMMENT_OR_WS* ('(' COMMENT_OR_WS*)* 'select' COMMENT_OR_WS+ SQL_TEXT+? ')'
-            COMMENT_OR_WS* ('with' SQL_TEXT+?)? SQL_END)
+      | (('(' COMMENT_OR_WS*)+ 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
     )
 ;
 
