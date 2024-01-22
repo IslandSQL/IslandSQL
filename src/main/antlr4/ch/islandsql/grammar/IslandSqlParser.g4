@@ -263,7 +263,7 @@ merge:
 // artifical clause, undocumented: database link and subquery
 // simplified using database link and subquery
 mergeIntoClause:
-    K_INTO qte=queryTableExpression talias=sqlName?
+    K_INTO dmlTableExpressionClause talias=sqlName?
 ;
 
 // artifical clause, undocumented: database link, table function
