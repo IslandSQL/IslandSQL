@@ -269,7 +269,7 @@ mergeIntoClause:
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
 mergeUsingClause:
-    K_USING qte=queryTableExpression talias=sqlName?
+    K_USING queryTableExpression talias=sqlName?
 ;
 
 mergeUpdateClause:
