@@ -40,6 +40,8 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
+fragment ANY_EXCEPT_WITH: ('w' 'i' 't' ~'h') | ('w' 'i' ~'t') | ('w' ~'i') | (~'w');
+fragment ANY_EXCEPT_AS: ('a' ~'s') | (~'a');
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -73,10 +75,17 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // SQL statements with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
 
-// hide keyword: select, isnert, update, delete
+// hide keyword: with
+ADMINISTER_KEY_MANAGEMENT:
+    'administer' {isBeginOfStatement("administer")}? COMMENT_OR_WS+
+        'key' COMMENT_OR_WS+ 'management' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: select, insert, update, delete
 ALTER_AUDIT_POLICY:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN);
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
 
 // hide keywords: select, insert, update, delete
 CREATE_AUDIT_POLICY:
@@ -102,11 +111,11 @@ CREATE_OPERATOR:
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
-// hide keyword: with
+// hide keyword: with (everything up to the as keyword)
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'view' COMMENT_OR_WS+ ANY_EXCEPT_WITH+
-        'with' COMMENT_OR_WS+ ANY_EXCEPT_AS+ 'as' -> channel(HIDDEN)
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view' COMMENT_OR_WS+ ANY_EXCEPT_WITH+
+        'with' COMMENT_OR_WS+ ANY_EXCEPT_AS+ COMMENT_OR_WS+ -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
