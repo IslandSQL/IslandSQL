@@ -48,6 +48,8 @@ fragment ANY_EXCEPT_EXECUTE: ('e' 'x' 'c' 'e' 'c' 'u' 't' ~'e')
     ('e' 'x' ~'c')
     ('e' ~'x')
     (~'e');
+fragment ANY_EXCEPT_WITH: ('w' 'i' 't' ~'h') ('w' 'i' ~'t') ('w' ~'i') (~'w');
+fragment ANY_EXCEPT_AS: ('a' ~'s') (~'a');
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -81,6 +83,42 @@ CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 // SQL statements with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
 
+// hide keyword: select, isnert, update, delete
+ALTER_AUDIT_POLICY:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN);
+
+// hide keywords: select, insert, update, delete
+CREATE_AUDIT_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_SCHEMA:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_MATERIALIZED_VIEW_LOG:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
+        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_OPERATOR:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'view' COMMENT_OR_WS+ ANY_EXCEPT_WITH+
+        'with' COMMENT_OR_WS+ ANY_EXCEPT_AS+ 'as' -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 GRANT:
     'grant' {isBeginOfStatement("grant")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
@@ -89,18 +127,6 @@ GRANT:
 // hide keywords: select, insert, update, delete
 REVOKE:
     'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-// hide keywords: select, insert, update, delete
-CREATE_AUDIT_POLICY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-// hide keyword: with
-CREATE_MATERIALIZED_VIEW_LOG:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
-        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
