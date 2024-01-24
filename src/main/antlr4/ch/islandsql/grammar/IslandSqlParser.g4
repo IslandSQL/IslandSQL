@@ -1133,6 +1133,7 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
     | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
     | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
+    | expr=expression operator=K_IS K_NOT? K_DANGLING           # isDanglingCondition
     | expr=expression
         operator=K_IS K_NOT? K_JSON formatClause?
         (
@@ -2484,6 +2485,7 @@ danglingCondition:
     | operator=K_IS K_NOT? K_NULL                       # isNullConditionDangling
     | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
     | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
+    | operator=K_IS K_NOT? K_DANGLING                   # isDanglingConditionDangling
     | operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
