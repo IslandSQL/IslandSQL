@@ -915,8 +915,10 @@ nestedClause:
         )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause talias=sqlName?
 ;
 
+// parenthesis around sub_av_clause is not documented, but required
+// as is documented, but does not work, keeping it since it is optional
 inlineAnalyticView:
-    K_ANALYTIC K_VIEW subAvClause (K_AS? alias=sqlName)?
+    K_ANALYTIC K_VIEW LPAR subAvClause RPAR (K_AS? alias=sqlName)?
 ;
 
 // ensure that at least one alternative is not optional
