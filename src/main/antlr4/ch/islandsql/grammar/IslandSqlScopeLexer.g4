@@ -40,8 +40,13 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
-fragment ANY_EXCEPT_WITH: ('w' 'i' 't' ~'h') | ('w' 'i' ~'t') | ('w' ~'i') | (~'w');
-fragment ANY_EXCEPT_AS: ('a' ~'s') | (~'a');
+fragment ANY_EXCEPT_WS_AS:
+    (
+          'a' 's' ~[ \t\r\n]
+        | 'a' ~'s'
+        | ~'a'
+    )+
+;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -114,8 +119,8 @@ CREATE_OPERATOR:
 // hide keyword: with (everything up to the as keyword)
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view' COMMENT_OR_WS+ ANY_EXCEPT_WITH+
-        'with' COMMENT_OR_WS+ ANY_EXCEPT_AS+ COMMENT_OR_WS+ -> channel(HIDDEN)
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view'
+        ANY_EXCEPT_WS_AS -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
