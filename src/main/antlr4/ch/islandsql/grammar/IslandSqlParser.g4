@@ -906,12 +906,13 @@ crossOuterApplyClause:
 ;
 
 // "equivalent to a left-outer ANSI join with JSON_TABLE"
+// table alias is not documnted
 nestedClause:
     K_NESTED K_PATH? identifier=sqlName
         (
               (PERIOD keys+=jsonObjectKey)+
             | (COMMA jsonBasicPathExpression)
-        )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause
+        )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause talias=sqlName?
 ;
 
 inlineAnalyticView:
