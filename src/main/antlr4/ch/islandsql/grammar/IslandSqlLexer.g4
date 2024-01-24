@@ -133,6 +133,7 @@ K_CURRENT: 'current';
 K_CURSOR: 'cursor';
 K_CYCLE: 'cycle';
 K_DAMERAU_LEVENSHTEIN: 'damerau_levenshtein';
+K_DANGLING: 'dangling';
 K_DATA: 'data';
 K_DATE: 'date';
 K_DAY: 'day';

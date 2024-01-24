@@ -2622,6 +2622,7 @@ keywordAsId:
     | K_CURSOR
     | K_CYCLE
     | K_DAMERAU_LEVENSHTEIN
+    | K_DANGLING
     | K_DATA
     | K_DATE
     | K_DAY
