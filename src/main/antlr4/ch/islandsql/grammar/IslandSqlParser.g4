@@ -2864,6 +2864,7 @@ keywordAsId:
     | K_REMOVE
     | K_RENAME
     | K_REPLACE
+    | K_RESERVABLE
     | K_RESPECT
     | K_RETURN
     | K_RETURNING

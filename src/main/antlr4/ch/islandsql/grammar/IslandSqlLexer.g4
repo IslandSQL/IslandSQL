@@ -370,6 +370,7 @@ K_RELATE_TO_SHORTER: 'relate_to_shorter';
 K_REMOVE: 'remove';
 K_RENAME: 'rename';
 K_REPLACE: 'replace';
+K_RESERVABLE: 'reservable';
 K_RESPECT: 'respect';
 K_RETURN: 'return';
 K_RETURNING: 'returning';
