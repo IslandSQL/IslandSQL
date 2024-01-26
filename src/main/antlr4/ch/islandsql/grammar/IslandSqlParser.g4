@@ -720,8 +720,14 @@ nativeOpaqueFormatSpec:
 // minimal clause for use in inlineExternalTable; the following is missing:
 // default clause, identity_clause, encryption_spec, inline_constraint, inline_ref_constraint
 columnDefinition:
-    column=sqlName typeName=dataType
-    (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
+    column=sqlName typeName=datatypeDomain
+    K_RESERVABLE? (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
+;
+
+// simplified, reservable and collate are part of column_definition
+datatypeDomain:
+      dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
+    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
 ;
 
 subqueryRestrictionClause:
