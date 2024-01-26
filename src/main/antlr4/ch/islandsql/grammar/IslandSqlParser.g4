@@ -1688,12 +1688,9 @@ jsonTransformReturningClause:
         ) (K_ALLOW|K_DISALLOW)?
 ;
 
-
+// undocumented: every existing datatype is allowed
 jsonQueryReturnType:
-      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
-    | K_CLOB
-    | K_BLOB
-    | K_JSON
+    dataType
 ;
 
 jsonValueReturningClause:
