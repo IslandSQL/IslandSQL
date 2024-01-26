@@ -1017,7 +1017,7 @@ numberDatatype:
 ;
 
 longAndRawDatatype:
-    | K_LONG
+      K_LONG
     | K_LONG K_RAW
     | K_RAW LPAR size=expression RPAR
 ;
