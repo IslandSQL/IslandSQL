@@ -122,6 +122,14 @@ public class TokenStreamUtil {
         for (Token token : tokenStream.getTokens()) {
             if (token.getType() > 0 && (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 8)) {
                 sb.append(token.getText());
+            } else {
+                // emit new lines in hidden tokens (e.g. multiline strings) to preserve original line numbers
+                String text = token.getText();
+                for (int i = 0; i < text.length(); i++) {
+                    if (text.charAt(i) == '\n') {
+                        sb.append('\n');
+                    }
+                }
             }
         }
         return sb.toString();

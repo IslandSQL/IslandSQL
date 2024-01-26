@@ -40,14 +40,23 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
-fragment ANY_EXCEPT_EXECUTE: ('e' 'x' 'c' 'e' 'c' 'u' 't' ~'e')
-    ('e' 'x' 'c' 'e' 'c' 'u' ~'t')
-    ('e' 'x' 'c' 'e' 'c' ~'u')
-    ('e' 'x' 'c' 'e' ~'c')
-    ('e' 'x' 'c' ~'e')
-    ('e' 'x' ~'c')
-    ('e' ~'x')
-    (~'e');
+fragment ANY_EXCEPT_AS_WS:
+    (
+          'a' 's' ~[ \t\r\n]
+        | 'a' ~'s'
+        | ~'a'
+    )+
+;
+fragment ANY_EXCEPT_BEGIN_WS:
+    (
+          'b' 'e' 'g' 'i' 'n' ~[ \t\r\n]
+        | 'b' 'e' 'g' 'i' ~'n'
+        | 'b' 'e' 'g' ~'i'
+        | 'b' 'e' ~'g'
+        | 'b' ~'e'
+        | ~'b'
+    )+
+;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -78,8 +87,68 @@ PROMPT_COMMAND:
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
+// SQL*Plus commands with keywords conflicting with islands of interest
+/*----------------------------------------------------------------------------*/
+
+// hide keyword: insert, select
+COPY_COMMAND:
+    'copy' {isBeginOfCommand("copy")}?
+        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
 // SQL statements with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
+
+// hide keyword: with
+ADMINISTER_KEY_MANAGEMENT:
+    'administer' {isBeginOfStatement("administer")}? COMMENT_OR_WS+
+        'key' COMMENT_OR_WS+ 'management' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: select, insert, update, delete
+ALTER_AUDIT_POLICY:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_AUDIT_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_SCHEMA:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_MATERIALIZED_VIEW_LOG:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
+        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_OPERATOR:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: insert, update, delete (everything up to the begin keyword)
+CREATE_TRIGGER:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'trigger'
+        ANY_EXCEPT_BEGIN_WS -> channel(HIDDEN)
+;
+
+// hide keyword: with (everything up to the as keyword)
+CREATE_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view'
+        ANY_EXCEPT_AS_WS -> channel(HIDDEN)
+;
 
 // hide keywords: select, insert, update, delete
 GRANT:
@@ -89,18 +158,6 @@ GRANT:
 // hide keywords: select, insert, update, delete
 REVOKE:
     'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-// hide keywords: select, insert, update, delete
-CREATE_AUDIT_POLICY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-// hide keyword: with
-CREATE_MATERIALIZED_VIEW_LOG:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
-        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -169,7 +226,7 @@ OPEN_CURSOR_FOR_START:
 /*----------------------------------------------------------------------------*/
 
 FORALL_IGNORE:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ ANY_EXCEPT_EXECUTE+? WS
+    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ WS
         'execute' WS 'immediate' .+? SQL_END -> channel(HIDDEN);
 
 FORALL_START:

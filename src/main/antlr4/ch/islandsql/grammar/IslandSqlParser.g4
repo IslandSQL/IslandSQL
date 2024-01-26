@@ -720,8 +720,14 @@ nativeOpaqueFormatSpec:
 // minimal clause for use in inlineExternalTable; the following is missing:
 // default clause, identity_clause, encryption_spec, inline_constraint, inline_ref_constraint
 columnDefinition:
-    column=sqlName typeName=dataType
-    (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
+    column=sqlName typeName=datatypeDomain
+    K_RESERVABLE? (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
+;
+
+// simplified, reservable and collate are part of column_definition
+datatypeDomain:
+      dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
+    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
 ;
 
 subqueryRestrictionClause:
@@ -906,16 +912,19 @@ crossOuterApplyClause:
 ;
 
 // "equivalent to a left-outer ANSI join with JSON_TABLE"
+// table alias is not documnted
 nestedClause:
     K_NESTED K_PATH? identifier=sqlName
         (
               (PERIOD keys+=jsonObjectKey)+
             | (COMMA jsonBasicPathExpression)
-        )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause
+        )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause talias=sqlName?
 ;
 
+// parenthesis around sub_av_clause is not documented, but required
+// as is documented, but does not work, keeping it since it is optional
 inlineAnalyticView:
-    K_ANALYTIC K_VIEW subAvClause (K_AS? alias=sqlName)?
+    K_ANALYTIC K_VIEW LPAR subAvClause RPAR (K_AS? alias=sqlName)?
 ;
 
 // ensure that at least one alternative is not optional
@@ -1014,7 +1023,7 @@ numberDatatype:
 ;
 
 longAndRawDatatype:
-    | K_LONG
+      K_LONG
     | K_LONG K_RAW
     | K_RAW LPAR size=expression RPAR
 ;
@@ -1048,8 +1057,8 @@ booleanDatatype:
 
 ansiSupportedDatatype:
       K_CHARACTER K_VARYING? LPAR size=expression RPAR
-    | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression RPAR
-    | K_VARCHAR LPAR size=expression RPAR
+    | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression (K_BYTE|K_CHAR)? RPAR
+    | K_VARCHAR LPAR size=expression (K_BYTE|K_CHAR)? RPAR
     | K_NATIONAL (K_CHARACTER|K_CHAR) K_VARYING? LPAR size=expression RPAR
     | (K_NUMERIC|K_DECIMAL|K_DEC) (LPAR precision=expression (COMMA scale=expression)? RPAR)?
     | (K_INTEGER|K_INT|K_SMALLINT)
@@ -1133,6 +1142,7 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
     | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
     | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
+    | expr=expression operator=K_IS K_NOT? K_DANGLING           # isDanglingCondition
     | expr=expression
         operator=K_IS K_NOT? K_JSON formatClause?
         (
@@ -1678,12 +1688,9 @@ jsonTransformReturningClause:
         ) (K_ALLOW|K_DISALLOW)?
 ;
 
-
+// undocumented: every existing datatype is allowed
 jsonQueryReturnType:
-      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?
-    | K_CLOB
-    | K_BLOB
-    | K_JSON
+    dataType
 ;
 
 jsonValueReturningClause:
@@ -2484,6 +2491,7 @@ danglingCondition:
     | operator=K_IS K_NOT? K_NULL                       # isNullConditionDangling
     | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
     | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
+    | operator=K_IS K_NOT? K_DANGLING                   # isDanglingConditionDangling
     | operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
@@ -2622,6 +2630,7 @@ keywordAsId:
     | K_CURSOR
     | K_CYCLE
     | K_DAMERAU_LEVENSHTEIN
+    | K_DANGLING
     | K_DATA
     | K_DATE
     | K_DAY
@@ -2858,6 +2867,7 @@ keywordAsId:
     | K_REMOVE
     | K_RENAME
     | K_REPLACE
+    | K_RESERVABLE
     | K_RESPECT
     | K_RETURN
     | K_RETURNING
