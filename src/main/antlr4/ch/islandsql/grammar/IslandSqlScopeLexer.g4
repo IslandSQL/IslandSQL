@@ -87,6 +87,16 @@ PROMPT_COMMAND:
 CONDITIONAL_COMPILATION_DIRECTIVE: '$if' .*? '$end' -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
+// SQL*Plus commands with keywords conflicting with islands of interest
+/*----------------------------------------------------------------------------*/
+
+// hide keyword: insert, select
+COPY_COMMAND:
+    'copy' {isBeginOfCommand("copy")}?
+        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
 // SQL statements with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
 
