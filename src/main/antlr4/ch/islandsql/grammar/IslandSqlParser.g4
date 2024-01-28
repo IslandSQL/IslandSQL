@@ -984,6 +984,8 @@ updateSetClause:
 updateSetClauseItem:
       LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # updateSetClauseItemColumnList
+    | LPAR columns+=qualifiedName RPAR
+        EQUALS (expr=expression | LPAR query=subquery RPAR)                         # updateSetClauseItemColumn
     | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
 ;
 
