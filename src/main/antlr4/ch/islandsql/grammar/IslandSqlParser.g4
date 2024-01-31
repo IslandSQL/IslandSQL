@@ -634,11 +634,12 @@ fromItem:
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
 // undocumented: use of optional AS in json_table (query_table_expression)
+// undocumented: use of invalid t_alias before row_pattern_clause, see issue #74
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
-        (pivotClause|unpivotClause|rowPatternClause)? tAlias=sqlName?
+        (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? tAlias=sqlName?
     | qte=queryTableExpression flashbackQueryClause?
-        (pivotClause|unpivotClause|rowPatternClause)? (K_AS? tAlias=sqlName)?
+         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? (K_AS? tAlias=sqlName)?
 ;
 
 // using table for query_name, table, view, mview, hierarchy
@@ -821,7 +822,14 @@ rowpatternMeasureColumn:
 ;
 
 rowPatternRowsPerMatch:
-    (K_ONE K_ROW|K_ALL K_ROWS) K_PER K_MATCH
+    (K_ONE K_ROW|K_ALL K_ROWS) K_PER K_MATCH rowPatternRowsPerMatchOption?
+;
+
+// undocumented artificial clause, see issue #75
+rowPatternRowsPerMatchOption:
+      K_SHOW K_EMPTY K_MATCHES  # rowPatternRowsPerMatchShowEmptyMatches
+    | K_OMIT K_EMPTY K_MATCHES  # rowPatternRowsPerMatchOmitEmptyMatches
+    | K_WITH K_UNMATCHED K_ROWS # rowPatternRowsPerMatchWithUnmatchedRows
 ;
 
 rowPatternSkipTo:
@@ -2779,6 +2787,7 @@ keywordAsId:
     | K_MAPPING
     | K_MATCH
     | K_MATCHED
+    | K_MATCHES
     | K_MATCH_RECOGNIZE
     | K_MEASURES
     | K_MEMBER
@@ -2819,6 +2828,7 @@ keywordAsId:
     | K_OF
     | K_OFFSET
     | K_OLD
+    | K_OMIT
     | K_ON
     | K_ONE
     | K_ONLY
@@ -2933,6 +2943,7 @@ keywordAsId:
     | K_UNION
     | K_UNIQUE
     | K_UNLIMITED
+    | K_UNMATCHED
     | K_UNPIVOT
     | K_UNSCALED
     | K_UNTIL
