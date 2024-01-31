@@ -822,7 +822,14 @@ rowpatternMeasureColumn:
 ;
 
 rowPatternRowsPerMatch:
-    (K_ONE K_ROW|K_ALL K_ROWS) K_PER K_MATCH
+    (K_ONE K_ROW|K_ALL K_ROWS) K_PER K_MATCH rowPatternRowsPerMatchOption?
+;
+
+// undocumented artificial clause, see issue #75
+rowPatternRowsPerMatchOption:
+      K_SHOW K_EMPTY K_MATCHES  # rowPatternRowsPerMatchShowEmptyMatches
+    | K_OMIT K_EMPTY K_MATCHES  # rowPatternRowsPerMatchOmitEmptyMatches
+    | K_WITH K_UNMATCHED K_ROWS # rowPatternRowsPerMatchWithUnmatchedRows
 ;
 
 rowPatternSkipTo:
