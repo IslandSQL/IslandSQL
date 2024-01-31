@@ -2780,6 +2780,7 @@ keywordAsId:
     | K_MAPPING
     | K_MATCH
     | K_MATCHED
+    | K_MATCHES
     | K_MATCH_RECOGNIZE
     | K_MEASURES
     | K_MEMBER
@@ -2820,6 +2821,7 @@ keywordAsId:
     | K_OF
     | K_OFFSET
     | K_OLD
+    | K_OMIT
     | K_ON
     | K_ONE
     | K_ONLY
@@ -2934,6 +2936,7 @@ keywordAsId:
     | K_UNION
     | K_UNIQUE
     | K_UNLIMITED
+    | K_UNMATCHED
     | K_UNPIVOT
     | K_UNSCALED
     | K_UNTIL
