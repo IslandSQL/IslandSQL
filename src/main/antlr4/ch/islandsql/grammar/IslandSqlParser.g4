@@ -634,12 +634,12 @@ fromItem:
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
 // undocumented: use of optional AS in json_table (query_table_expression)
-// undocumented: use of t_alias before row_pattern_clause, last value in tAlias array is relevant, see issue #74
+// undocumented: use of invalid t_alias before row_pattern_clause, see issue #74
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
-        (tAlias+=sqlName? (pivotClause|unpivotClause|rowPatternClause))? tAlias+=sqlName?
+        (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? tAlias=sqlName?
     | qte=queryTableExpression flashbackQueryClause?
-         (tAlias+=sqlName? (pivotClause|unpivotClause|rowPatternClause))? (K_AS? tAlias+=sqlName)?
+         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? (K_AS? tAlias=sqlName)?
 ;
 
 // using table for query_name, table, view, mview, hierarchy
