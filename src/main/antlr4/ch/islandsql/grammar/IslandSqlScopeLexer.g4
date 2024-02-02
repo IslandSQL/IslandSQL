@@ -39,7 +39,12 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
+fragment ANY_EXCEPT_FOR_AND_SEMI:
+    (
+          'f' 'o' ~[r;]
+        | 'f' ~[o;]
+        | ~[f;]
+    )+;
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]
