@@ -431,6 +431,7 @@ K_TRUE: 'true';
 K_TRUNCATE: 'truncate';
 K_TYPE: 'type';
 K_TYPENAME: 'typename';
+K_UESCAPE: 'uescape';
 K_UNBOUNDED: 'unbounded';
 K_UNCONDITIONAL: 'unconditional';
 K_UNION: 'union';
