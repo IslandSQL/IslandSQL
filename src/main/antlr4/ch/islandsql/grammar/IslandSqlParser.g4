@@ -3002,16 +3002,22 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
+    | unicodeIdentifier
     | plsqlInquiryDirective
     | substitionVariable+
 ;
 
-substitionVariable:
-    AMP AMP? name=substitionVariableName period=PERIOD?
+// PostgreSQL
+unicodeIdentifier:
+    UQUOTED_ID (K_UESCAPE STRING)?
 ;
 
 plsqlInquiryDirective:
     DOLLAR DOLLAR name=unquotedId
+;
+
+substitionVariable:
+    AMP AMP? name=substitionVariableName period=PERIOD?
 ;
 
 substitionVariableName:
