@@ -22,8 +22,6 @@ The following table shows the DBMS and their grammar versions in scope:
 
 The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format represents the version that was used to define the grammar.
 
-The railroad diagrams of the current grammar are produced by [RR](https://github.com/GuntherRademacher/rr) and can be found [here](https://islandsql.github.io/IslandSQL/grammar.xhtml).
-
 ### Statements
 
 The current islands of interests are:
@@ -40,6 +38,11 @@ The current islands of interests are:
 | `update`       | complete statement                                          |
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
+
+## IslandSQL Grammar
+
+The railroad diagrams of the IslandSQL grammar are produced by [RR](https://github.com/GuntherRademacher/rr)
+and can be found [here](https://islandsql.github.io/IslandSQL/grammar.html).
 
 ## Limitations
 
