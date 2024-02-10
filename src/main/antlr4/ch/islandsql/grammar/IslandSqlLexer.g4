@@ -526,15 +526,16 @@ VERBAR: '|';
 /*----------------------------------------------------------------------------*/
 
 STRING:
-    [ne]?  // 'e' is PostgreSQL string constant with C-style escapes
-    (
-          (['] ~[']* ['])+
-        | ['] ~[']* ['] ([ \t]* [\r\n] WS* ['] ~[']* ['])+  // PostgreSQL string constant
-        | 'q' ['] '[' .*? ']' [']
-        | 'q' ['] '(' .*? ')' [']
-        | 'q' ['] '{' .*? '}' [']
-        | 'q' ['] '<' .*? '>' [']
-        | 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+    (['] ~[']* ['])+
+;
+
+Q_STRING:
+    'n'? 'q' (
+          ['] '[' .*? ']' [']
+        | ['] '(' .*? ')' [']
+        | ['] '{' .*? '}' [']
+        | ['] '<' .*? '>' [']
+        | ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
     )
 ;
 

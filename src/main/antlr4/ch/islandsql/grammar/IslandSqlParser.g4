@@ -561,14 +561,14 @@ singleColumnForLoop:
 ;
 
 singleColumnForLoopLiteral:
-      STRING
+      string
     | NUMBER
     | sqlName
     | expression // undocumented
 ;
 
 singleColumnForLoopPattern:
-      STRING
+      string
     | sqlName
 ;
 
@@ -679,7 +679,7 @@ modifyExternalTableProperties:
 
 externalFileLocation:
       directory=sqlName
-    | (directory=sqlName COLON)? locationSpecifier=STRING
+    | (directory=sqlName COLON)? locationSpecifier=string
 ;
 
 sampleClause:
@@ -1087,10 +1087,10 @@ userDefinedType:
 /*----------------------------------------------------------------------------*/
 
 expression:
-      expr=STRING                                               # simpleExpressionStringLiteral
+      expr=string                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
-    | K_DATE expr=STRING                                        # dateLiteral
-    | K_TIMESTAMP expr=STRING                                   # timestampLiteral
+    | K_DATE expr=string                                        # dateLiteral
+    | K_TIMESTAMP expr=string                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList // also parenthesisCondition
@@ -1185,12 +1185,12 @@ intervalExpression:
 ;
 
 intervalLiteralYearToMonth:
-    K_INTERVAL expr=STRING
+    K_INTERVAL expr=string
         from=(K_YEAR|K_MONTH) (LPAR precision=NUMBER RPAR)? (K_TO to=(K_YEAR|K_MONTH))?
 ;
 
 intervalLiteralDayToSecond:
-    K_INTERVAL expr=STRING
+    K_INTERVAL expr=string
         (
               from=(K_DAY|K_HOUR|K_MINUTE) (LPAR precision=NUMBER RPAR)?
             | from=K_SECOND (LPAR leadingPrecision=NUMBER (COMMA fromFractionalSecondPrecision=NUMBER)? RPAR)?
@@ -3029,6 +3029,22 @@ substitionVariableName:
 
 qualifiedName:
     sqlName (PERIOD sqlName)*
+;
+
+/*----------------------------------------------------------------------------*/
+// Data Types
+/*----------------------------------------------------------------------------*/
+
+// A parser rule to distinguish between string types.
+// Furthermore, it will simplify writing a value provider for a string.
+// A string with multiple STRING tokens is according SQL:2023 a single string,
+// even if PostgreSQL requires a line break between the tokens.
+// MySQL fully implements the SQL standard for strings.
+string:
+      K_N STRING+   # nationalCharacterString
+    | K_E STRING    # escapedString             // PostgreSQL C-style escape
+    | STRING+       # simpleString
+    | Q_STRING      # quoteDelimiterString      // can be a N-quoted literal
 ;
 
 /*----------------------------------------------------------------------------*/
