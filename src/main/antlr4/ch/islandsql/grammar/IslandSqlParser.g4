@@ -3039,17 +3039,15 @@ qualifiedName:
 
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
-// A string with multiple STRING tokens is according SQL:2023 a single string,
-// even if PostgreSQL requires a line break between the tokens.
-// MySQL fully implements the SQL standard for strings.
 string:
-      K_N STRING+       # nationalCharacterString
-    | K_E STRING        # escapedString             // PostgreSQL C-style escape
-    | K_B STRING        # bitString                 // PostgreSQL bit-string
-    | STRING+           # simpleString
-    | Q_STRING          # quoteDelimiterString      // can be a N-quoted literal
-    | DOLLAR_STRING     # dollarString              // PostgreSQL dollar-string
-    | DOLLAR_ID_STRING  # dollarIdentifierString    // PostgreSQL dollar-string
+      K_N STRING+                           # nationalCharacterString   // PostgreSQL, MySQL national-char strings
+    | K_E STRING                            # escapedString             // PostgreSQL C-style escape
+    | K_U AMP STRING (K_UESCAPE STRING)?    # unicodeString             // PostgreSQL string with unicode escapes
+    | K_B STRING                            # bitString                 // PostgreSQL bit-string
+    | STRING+                               # simpleString              // PostgreSQL, MySQL strings
+    | Q_STRING                              # quoteDelimiterString      // can be a N-quoted literal
+    | DOLLAR_STRING                         # dollarString              // PostgreSQL dollar-string
+    | DOLLAR_ID_STRING                      # dollarIdentifierString    // PostgreSQL dollar-string
 ;
 
 /*----------------------------------------------------------------------------*/
