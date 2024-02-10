@@ -194,7 +194,7 @@ STRING:
     [ne]?  // 'e' is PostgreSQL string constant with C-style escapes
     (
           (['] ~[']* ['])+
-        | ['] ~[']* ['] ([ \t]* [\r\n] WS* ['] ~[']* ['])+  // PostgreSQL string constant
+        | ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])+  // PostgreSQL, MySQL string constant
         | 'q' ['] '[' .*? ']' [']
         | 'q' ['] '(' .*? ')' [']
         | 'q' ['] '{' .*? '}' [']
