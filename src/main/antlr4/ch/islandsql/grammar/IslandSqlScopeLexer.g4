@@ -191,7 +191,7 @@ POSTGRES_DO:
 /*----------------------------------------------------------------------------*/
 
 STRING:
-    [ne]?  // 'e' is PostgreSQL string constant with C-style escapes
+    [neb]?  // 'e' is PostgreSQL string constant with C-style escapes, 'b' is PostgreSQL bit-string constant
     (
           (['] ~[']* ['])+
         | ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])+  // PostgreSQL, MySQL string constant
