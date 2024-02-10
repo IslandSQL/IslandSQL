@@ -3041,10 +3041,12 @@ qualifiedName:
 // even if PostgreSQL requires a line break between the tokens.
 // MySQL fully implements the SQL standard for strings.
 string:
-      K_N STRING+   # nationalCharacterString
-    | K_E STRING    # escapedString             // PostgreSQL C-style escape
-    | STRING+       # simpleString
-    | Q_STRING      # quoteDelimiterString      // can be a N-quoted literal
+      K_N STRING+       # nationalCharacterString
+    | K_E STRING        # escapedString             // PostgreSQL C-style escape
+    | STRING+           # simpleString
+    | Q_STRING          # quoteDelimiterString      // can be a N-quoted literal
+    | DOLLAR_STRING     # dollarString
+    | DOLLAR_ID_STRING  # dollarIdentifierString
 ;
 
 /*----------------------------------------------------------------------------*/
