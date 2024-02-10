@@ -2596,6 +2596,7 @@ keywordAsId:
     | K_AUTO
     | K_AUTOMATIC
     | K_AVERAGE_RANK
+    | K_B
     | K_BADFILE
     | K_BEGINNING
     | K_BETWEEN

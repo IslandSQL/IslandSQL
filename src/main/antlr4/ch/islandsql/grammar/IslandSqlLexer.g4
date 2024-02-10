@@ -89,6 +89,7 @@ K_AT: 'at';
 K_AUTO: 'auto';
 K_AUTOMATIC: 'automatic';
 K_AVERAGE_RANK: 'average_rank';
+K_B: 'b';
 K_BADFILE: 'badfile';
 K_BEGINNING: 'beginning';
 K_BETWEEN: 'between';
