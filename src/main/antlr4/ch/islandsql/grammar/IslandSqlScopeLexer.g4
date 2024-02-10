@@ -195,6 +195,7 @@ STRING:
     (
           (['] ~[']* ['])+
         | ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])+  // PostgreSQL, MySQL string constant
+        | 'u&' ['] ~[']* [']                             // PostgreSQL string constant with unicode escapes
         | 'q' ['] '[' .*? ']' [']
         | 'q' ['] '(' .*? ')' [']
         | 'q' ['] '{' .*? '}' [']
