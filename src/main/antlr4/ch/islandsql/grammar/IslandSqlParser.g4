@@ -2664,6 +2664,7 @@ keywordAsId:
     | K_DOCUMENT
     | K_DOMAIN
     | K_DOUBLE
+    | K_E
     | K_EDIT_TOLERANCE
     | K_ELSE
     | K_EMPTY
@@ -2801,6 +2802,7 @@ keywordAsId:
     | K_MODIFY
     | K_MONTH
     | K_MULTISET
+    | K_N
     | K_NAME
     | K_NAN
     | K_NATIONAL
