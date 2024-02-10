@@ -2941,6 +2941,7 @@ keywordAsId:
     | K_TRUNCATE
     | K_TYPE
     | K_TYPENAME
+    | K_U
     | K_UESCAPE
     | K_UNBOUNDED
     | K_UNCONDITIONAL
