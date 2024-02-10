@@ -200,6 +200,8 @@ STRING:
         | 'q' ['] '{' .*? '}' [']
         | 'q' ['] '<' .*? '>' [']
         | 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+        | '$$' .*? '$$'
+        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
     ) -> channel(HIDDEN)
 ;
 
