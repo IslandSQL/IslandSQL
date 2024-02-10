@@ -3044,10 +3044,11 @@ qualifiedName:
 string:
       K_N STRING+       # nationalCharacterString
     | K_E STRING        # escapedString             // PostgreSQL C-style escape
+    | K_B STRING        # bitString                 // PostgreSQL bit-string
     | STRING+           # simpleString
     | Q_STRING          # quoteDelimiterString      // can be a N-quoted literal
-    | DOLLAR_STRING     # dollarString
-    | DOLLAR_ID_STRING  # dollarIdentifierString
+    | DOLLAR_STRING     # dollarString              // PostgreSQL dollar-string
+    | DOLLAR_ID_STRING  # dollarIdentifierString    // PostgreSQL dollar-string
 ;
 
 /*----------------------------------------------------------------------------*/
