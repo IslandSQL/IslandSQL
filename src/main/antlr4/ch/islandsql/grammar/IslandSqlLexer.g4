@@ -539,6 +539,14 @@ Q_STRING:
     )
 ;
 
+DOLLAR_STRING:
+    '$$' .*? '$$'
+;
+
+DOLLAR_ID_STRING:
+    '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
+;
+
 NUMBER:
     (
           INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
