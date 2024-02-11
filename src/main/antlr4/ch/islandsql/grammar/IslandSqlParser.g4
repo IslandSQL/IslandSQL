@@ -2596,7 +2596,6 @@ keywordAsId:
     | K_AUTO
     | K_AUTOMATIC
     | K_AVERAGE_RANK
-    | K_B
     | K_BADFILE
     | K_BEGINNING
     | K_BETWEEN
@@ -2665,7 +2664,6 @@ keywordAsId:
     | K_DOCUMENT
     | K_DOMAIN
     | K_DOUBLE
-    | K_E
     | K_EDIT_TOLERANCE
     | K_ELSE
     | K_EMPTY
@@ -2803,7 +2801,6 @@ keywordAsId:
     | K_MODIFY
     | K_MONTH
     | K_MULTISET
-    | K_N
     | K_NAME
     | K_NAN
     | K_NATIONAL
@@ -2941,7 +2938,6 @@ keywordAsId:
     | K_TRUNCATE
     | K_TYPE
     | K_TYPENAME
-    | K_U
     | K_UESCAPE
     | K_UNBOUNDED
     | K_UNCONDITIONAL
