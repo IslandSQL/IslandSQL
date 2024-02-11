@@ -2600,17 +2600,23 @@ keywordAsId:
     | K_BEGINNING
     | K_BETWEEN
     | K_BFILE
+    | K_BIGINT
     | K_BIGRAM
+    | K_BIGSERIAL
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
+    | K_BIT
     | K_BLOB
     | K_BLOCK
+    | K_BOOL
     | K_BOOLEAN
     | K_BOTH
+    | K_BOX
     | K_BREADTH
     | K_BULK
     | K_BY
     | K_BYTE
+    | K_BYTEA
     | K_CALL
     | K_CASE
     | K_CASE_SENSITIVE
@@ -2619,6 +2625,8 @@ keywordAsId:
     | K_CHARACTER
     | K_CHAR_CS
     | K_CHECK
+    | K_CIDR
+    | K_CIRCLE
     | K_CLOB
     | K_COLLATE
     | K_COLLECT
@@ -2690,6 +2698,7 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FLOAT8
     | K_FLOAT
     | K_FOLLOWING
     | K_FOR
@@ -2726,9 +2735,12 @@ keywordAsId:
     | K_INCREMENT
     | K_INDENT
     | K_INDICATOR
+    | K_INET
     | K_INFINITE
     | K_INNER
     | K_INSERT
+    | K_INT4
+    | K_INT8
     | K_INT
     | K_INTEGER
     | K_INTERSECT
@@ -2740,6 +2752,7 @@ keywordAsId:
     | K_JARO_WINKLER
     | K_JOIN
     | K_JSON
+    | K_JSONB
     | K_JSON_ARRAY
     | K_JSON_ARRAYAGG
     | K_JSON_EQUAL
@@ -2774,6 +2787,7 @@ keywordAsId:
     | K_LIKE
     | K_LIKEC
     | K_LIMIT
+    | K_LINE
     | K_LISTAGG
     | K_LOCAL
     | K_LOCATION
@@ -2783,6 +2797,9 @@ keywordAsId:
     | K_LOGFILE
     | K_LONG
     | K_LONGEST_COMMON_SUBSTRING
+    | K_LSEG
+    | K_MACADDR8
+    | K_MACADDR
     | K_MAIN
     | K_MAPPING
     | K_MATCH
@@ -2799,6 +2816,7 @@ keywordAsId:
     | K_MODE
     | K_MODEL
     | K_MODIFY
+    | K_MONEY
     | K_MONTH
     | K_MULTISET
     | K_NAME
@@ -2852,8 +2870,11 @@ keywordAsId:
     | K_PERCENT
     | K_PERIOD
     | K_PERMUTE
+    | K_PG_LSN
+    | K_PG_SNAPSHOT
     | K_PIVOT
     | K_PLAN
+    | K_POINT
     | K_POSITION
     | K_PRECEDING
     | K_PRECISION
@@ -2901,6 +2922,7 @@ keywordAsId:
     | K_SELECT
     | K_SEQUENCE
     | K_SEQUENTIAL
+    | K_SERIAL8
     | K_SESSIONTIMEZONE
     | K_SET
     | K_SETS
@@ -2957,6 +2979,7 @@ keywordAsId:
     | K_VALIDATE_CONVERSION
     | K_VALUE
     | K_VALUES
+    | K_VARBIT
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
