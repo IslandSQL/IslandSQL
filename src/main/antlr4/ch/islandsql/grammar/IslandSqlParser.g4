@@ -1004,6 +1004,7 @@ updateSetClauseItem:
 dataType:
       oracleBuiltInDatatype
     | ansiSupportedDatatype
+    | postgresqlDatatype
     | userDefinedType
 ;
 
@@ -1075,6 +1076,53 @@ ansiSupportedDatatype:
     | K_FLOAT (LPAR size=expression RPAR)?
     | K_DOUBLE K_PRECISION
     | K_REAL
+;
+
+// only data types that are not handled in oracleBuiltInDatatype and ansiSupportedDatatype
+postgresqlDatatype:
+      K_BIGINT
+    | K_INT8                                                        // alias for bigint
+    | K_BIGSERIAL
+    | K_SERIAL8                                                     // alias for bigserial
+    | K_BIT (LPAR size=expression RPAR)?
+    | K_BIT K_VARYING (LPAR size=expression RPAR)?
+    | K_VARBIT (LPAR size=expression RPAR)?                         // alias for bit varying
+    | K_BOOL                                                        // alias for boolean
+    | K_BOX
+    | K_BYTEA
+    | K_CHARACTER K_VARYING                                         // no precision allowed
+    | K_CIDR
+    | K_CIRCLE
+    | K_FLOAT8                                                      // alias for double precision
+    | K_INT4                                                        // alias for int, integer
+    | K_INET
+    | K_INTERVAL intervalField? (LPAR precision=expression RPAR)?
+    | K_JSONB
+    | K_LINE
+    | K_LSEG
+    | K_MACADDR
+    | K_MACADDR8
+    | K_MONEY
+    | K_PATH
+    | K_PG_LSN
+    | K_PG_SNAPSHOT
+    | K_POINT
+;
+
+intervalField:
+      K_YEAR                    # yearIntervalField
+    | K_MONTH                   # monthIntervalField
+    | K_DAY                     # dayIntervalField
+    | K_HOUR                    # hourIntervalField
+    | K_MINUTE                  # minuteIntervalField
+    | K_SECOND                  # secondIntervalField
+    | K_YEAR K_TO K_MONTH       # yearToMonthIntervalField
+    | K_DAY K_TO K_HOUR         # dayToHourIntervalField
+    | K_DAY K_TO K_MINUTE       # dayToMinuteIntervalField
+    | K_DAY K_TO K_SECOND       # dayToSecondIntervalField
+    | K_HOUR K_TO K_MINUTE      # hourToMinuteIntervalField
+    | K_HOUR K_TO K_SECOND      # hourToSecondIntervalField
+    | K_MINUTE K_TO K_SECOND    # minuteToSecondIntervalField
 ;
 
 // handles also Oracle_supplied_types, which are just a special type of user_defined_types
