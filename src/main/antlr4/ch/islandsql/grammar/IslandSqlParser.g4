@@ -1165,7 +1165,7 @@ expression:
         (
               operator=PLUS
             | operator=MINUS
-            | operator=VERBAR VERBAR
+            | operator=VERBAR VERBAR    // whitespace, comments allowed in ORACLEDB, but not in PostgreSQL
         )
       right=expression                                          # binaryExpression
     | left=expression operator=K_COLLATE right=expression       # binaryExpression
