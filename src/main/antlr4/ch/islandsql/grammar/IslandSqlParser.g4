@@ -40,9 +40,10 @@ statement:
 // Empty
 /*----------------------------------------------------------------------------*/
 
-// one or more pseudo statement that are ignored in PostgreSQL
+// pseudo statement that is ignored in PostgreSQL
 emptyStatement:
-    (SEMI | SOL)+
+      SEMI
+    | SOL
 ;
 
 /*----------------------------------------------------------------------------*/
