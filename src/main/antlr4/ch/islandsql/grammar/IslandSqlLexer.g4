@@ -522,6 +522,7 @@ COLON: ':';
 COMMA: ',';
 COMMAT: '@';
 DOLLAR: '$';
+DOUBLE_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 EQUALS: '=';
 EXCL: '!';
 GT: '>';
