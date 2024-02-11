@@ -551,12 +551,17 @@ DOLLAR_ID_STRING:
 ;
 
 NUMBER:
-    (
-          INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
-        | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
-    )
-    ('e' ('+'|'-')? INT)?
-    ('f'|'d')?
+      (
+        (
+              INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
+            | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
+        )
+        ('e' ('+'|'-')? INT)?
+        ('f'|'d')?
+      )
+    | '0x' [0123456789abcdef_]+  // PostgreSQL hexidecimal integer
+    | '0o' [01234567_]+          // PostgreSQL octal integer
+    | '0b' [01_]+                // PostgreSQL binary integer
 ;
 
 /*----------------------------------------------------------------------------*/
