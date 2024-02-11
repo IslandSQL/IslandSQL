@@ -29,7 +29,7 @@ fragment SINGLE_NL: '\r'? '\n';
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment INT: [0-9]+;
+fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
@@ -508,6 +508,7 @@ EXCL: '!';
 GT: '>';
 HAT: '^';
 LCUB: '{';
+LOWBAR: '_';
 LPAR: '(';
 LSQB: '[';
 LT: '<';
