@@ -559,9 +559,9 @@ NUMBER:
         ('e' ('+'|'-')? INT)?
         ('f'|'d')?
       )
-    | '0x' [0123456789abcdef_]+  // PostgreSQL hexidecimal integer
-    | '0o' [01234567_]+          // PostgreSQL octal integer
-    | '0b' [01_]+                // PostgreSQL binary integer
+    | '0x' ('_'? [0123456789abcdef]+)+  // PostgreSQL hexidecimal integer
+    | '0o' ('_'? [01234567]+)+          // PostgreSQL octal integer
+    | '0b' ('_'? [01]+)+                // PostgreSQL binary integer
 ;
 
 /*----------------------------------------------------------------------------*/
