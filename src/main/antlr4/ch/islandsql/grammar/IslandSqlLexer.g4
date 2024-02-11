@@ -528,14 +528,34 @@ STRING:
     (['] ~[']* ['])+
 ;
 
+N_STRING:
+    'n' STRING
+;
+
+E_STRING:
+    'e' STRING
+;
+
+B_STRING:
+    'b' STRING
+;
+
+U_AMP_STRING:
+    'u&' STRING
+;
+
 Q_STRING:
-    'n'? 'q' (
+    'q' (
           ['] '[' .*? ']' [']
         | ['] '(' .*? ')' [']
         | ['] '{' .*? '}' [']
         | ['] '<' .*? '>' [']
         | ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
     )
+;
+
+NQ_STRING:
+    'n' Q_STRING
 ;
 
 DOLLAR_STRING:

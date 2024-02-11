@@ -3036,14 +3036,17 @@ qualifiedName:
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
 string:
-      K_N STRING+                           # nationalCharacterString   // PostgreSQL, MySQL national-char strings
-    | K_E STRING                            # escapedString             // PostgreSQL C-style escape
-    | K_U AMP STRING (K_UESCAPE STRING)?    # unicodeString             // PostgreSQL string with unicode escapes
-    | K_B STRING                            # bitString                 // PostgreSQL bit-string
-    | STRING+                               # simpleString              // PostgreSQL, MySQL strings
-    | Q_STRING                              # quoteDelimiterString      // can be a N-quoted literal
-    | DOLLAR_STRING                         # dollarString              // PostgreSQL dollar-string
-    | DOLLAR_ID_STRING                      # dollarIdentifierString    // PostgreSQL dollar-string
+      STRING                                # simpleString
+    | N_STRING                              # nationalString
+    | N_STRING STRING+                      # concatenatedNationalString            // PostgreSQL, MySQL
+    | E_STRING                              # escapedString                         // PostgreSQL
+    | U_AMP_STRING (K_UESCAPE STRING)?      # unicodeString                         // PostgreSQL
+    | B_STRING                              # bitString                             // PostgreSQL
+    | STRING STRING+                        # concatenatedString                    // PostgreSQL, MySQL
+    | Q_STRING                              # quoteDelimiterString
+    | NQ_STRING                             # nationalQuoteDelimiterString
+    | DOLLAR_STRING                         # dollarString                          // PostgreSQL
+    | DOLLAR_ID_STRING                      # dollarIdentifierString                // PostgreSQL
 ;
 
 /*----------------------------------------------------------------------------*/
