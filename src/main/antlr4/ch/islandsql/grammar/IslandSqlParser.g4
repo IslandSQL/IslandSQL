@@ -25,7 +25,25 @@ options {
 // Start rule
 /*----------------------------------------------------------------------------*/
 
-file: dmlStatement* EOF;
+file: statement* EOF;
+
+/*----------------------------------------------------------------------------*/
+// Statement
+/*----------------------------------------------------------------------------*/
+
+statement:
+      dmlStatement
+    | emptyStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Empty
+/*----------------------------------------------------------------------------*/
+
+// one or more pseudo statement that are ignored in PostgreSQL
+emptyStatement:
+    (SEMI | SOL)+
+;
 
 /*----------------------------------------------------------------------------*/
 // Data Manipulation Language
@@ -125,7 +143,7 @@ explainPlanStatement:
 explainPlan:
     K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS? statementId=expression)?
     (K_INTO (schema=sqlName PERIOD)? table=sqlName (COMMAT dblink=qualifiedName)?)?
-    K_FOR statement=forExplainPlanStatement
+    K_FOR statementName=forExplainPlanStatement
 ;
 
 forExplainPlanStatement:
