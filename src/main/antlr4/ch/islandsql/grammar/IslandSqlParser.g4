@@ -1152,6 +1152,8 @@ expression:
     | expr=expression
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression
     | expr=AST                                                  # allColumnWildcardExpression
+    | type=dataType expr=string                                 # postgresqlStringCast
+    | expr=expression COLON COLON type=dataType                 # postgresqlHistoricalCast
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | left=expression K_MULTISET operator=K_INTERSECT
