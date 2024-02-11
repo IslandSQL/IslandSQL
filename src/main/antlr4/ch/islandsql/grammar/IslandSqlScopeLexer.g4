@@ -168,25 +168,6 @@ REVOKE:
 ;
 
 /*----------------------------------------------------------------------------*/
-// PostgreSQL - Procedural Languages - hide all SQL inside
-// TODO: add to islands of interest with https://github.com/IslandSQL/IslandSQL/issues/36
-/*----------------------------------------------------------------------------*/
-
-POSTGRES_CREATE_FUNCTION:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
-        'function' ~[$]* DOLLAR_QUOTE .+? PLPGSQL_END -> channel(HIDDEN)
-;
-
-POSTGRES_CREATE_PROCEDURE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
-        'procedure' ~[$]* DOLLAR_QUOTE .+? PLPGSQL_END -> channel(HIDDEN)
-;
-
-POSTGRES_DO:
-    'do' {isBeginOfStatement("do")}? ~[$]* DOLLAR_QUOTE .+? PLPGSQL_END -> channel(HIDDEN)
-;
-
-/*----------------------------------------------------------------------------*/
 // Data types
 /*----------------------------------------------------------------------------*/
 
