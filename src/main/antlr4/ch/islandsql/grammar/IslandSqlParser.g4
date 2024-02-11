@@ -3126,4 +3126,8 @@ string:
 // SQL statement end, slash accepted without preceding newline
 /*----------------------------------------------------------------------------*/
 
-sqlEnd: EOF | SEMI SOL? | SOL;
+sqlEnd:
+      EOF
+    | SEMI SOL?
+    | SOL
+;
