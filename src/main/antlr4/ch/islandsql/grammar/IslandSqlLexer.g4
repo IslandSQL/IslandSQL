@@ -525,6 +525,7 @@ DOLLAR: '$';
 DOUBLE_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 EQUALS: '=';
 EXCL: '!';
+GRAVE: '`';
 GT: '>';
 HAT: '^';
 LCUB: '{';
@@ -533,6 +534,8 @@ LPAR: '(';
 LSQB: '[';
 LT: '<';
 MINUS: '-';
+NUM: '#';
+PERCNT: '%';
 PERIOD: '.';
 PLUS: '+';
 QUEST: '?';
