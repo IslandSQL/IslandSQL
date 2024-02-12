@@ -19,9 +19,9 @@ The following table shows the DBMS and their grammar versions in scope:
 |            | SQLcl    | 23.3    | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/23.3/sqcug/index.html) | [PDF](docs/oracle-sqlcl-users-guide.pdf)           |
 |            | SQL      | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](docs/sql-language-reference.pdf)             | 
 |            | PL/SQL   | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](docs/database-pl-sql-language-reference.pdf) |
-| PostgreSQL | psql     | 16.1    | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/16/app-psql.html)                   | [PDF](docs/postgresql.pdf)                         |
-|            | SQL      | 16.1    | [The SQL Language](https://www.postgresql.org/docs/16/sql.html)                                              | [PDF](docs/postgresql.pdf)                         |
-|            | PL/pgSQL | 16.1    | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/16/plpgsql.html)                        | [PDF](docs/postgresql.pdf)                         |
+| PostgreSQL | psql     | 16.2    | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/16/app-psql.html)                   | [PDF](docs/postgresql.pdf)                         |
+|            | SQL      | 16.2    | [The SQL Language](https://www.postgresql.org/docs/16/sql.html)                                              | [PDF](docs/postgresql.pdf)                         |
+|            | PL/pgSQL | 16.2    | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/16/plpgsql.html)                        | [PDF](docs/postgresql.pdf)                         |
 
 The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format represents the version that was used to define the grammar.
 
