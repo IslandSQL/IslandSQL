@@ -519,20 +519,22 @@ K_ZONE: 'zone';
 AMP: '&';
 AST: '*';
 COLON: ':';
+COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 COMMA: ',';
 COMMAT: '@';
 DOLLAR: '$';
-DOUBLE_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 EQUALS: '=';
 EXCL: '!';
 GRAVE: '`';
 GT: '>';
+GT_GT: '>>';
 HAT: '^';
 LCUB: '{';
 LOWBAR: '_';
 LPAR: '(';
 LSQB: '[';
 LT: '<';
+LT_LT: '<<';
 MINUS: '-';
 NUM: '#';
 PERCNT: '%';
@@ -546,6 +548,9 @@ SEMI: ';';
 SOL: '/';
 TILDE: '~';
 VERBAR: '|';
+VERBAR_SOL: '|/';
+VERBAR_VERBAR: '||';
+VERBAR_VERBAR_SOL: '||/';
 
 /*----------------------------------------------------------------------------*/
 // Data types
