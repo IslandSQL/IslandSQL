@@ -1160,28 +1160,21 @@ expression:
     | K_TIMESTAMP expr=string                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
-    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList    // also parenthesisCondition
+    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList                // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
-    | operator=unaryOperator expr=expression                    # unaryExpression
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=AST                                                  # allColumnWildcardExpression
     | type=dataType expr=string                                 # postgresqlStringCast
-    | left=expression operator=PERIOD right=expression          # binaryExpression
-    | expr=expression operator=DOUBLE_COLON type=dataType       # postgresqlHistoricalCast
+    | left=expression operator=PERIOD right=expression          # qualifiedExpression           // precedence 1
+    | expr=expression operator=COLON_COLON type=dataType        # postgresqlHistoricalCast      // precedence 2
     | expr=expression
-        LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression   // also PostgreSQL array element selection
-    | left=expression K_MULTISET operator=K_EXCEPT
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression K_MULTISET operator=K_INTERSECT
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression K_MULTISET operator=K_UNION
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression operator=PERIOD right=expression          # binaryExpression
-    | left=expression operator=K_COLLATE right=expression       # binaryExpression
+        LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
+    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 4
+    | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression K_AT
         (
               K_LOCAL
@@ -1191,16 +1184,30 @@ expression:
                    | K_SESSIONTIMEZONE
                    | right=expression
                 )
-        )                                                       # datetimeExpression
-    | left=expression operator=(AST|SOL|PERCNT)                                             // PostgreSQL modulo
-        right=expression                                        # binaryExpression
+        )                                                       # datetimeExpression            // precedence 6
+    | left=expression operator=HAT right=expression             # exponentiationExpression      // precedence 7, PostgreSQL
+    | left=expression operator=AST right=expression             # multiplicationExpression      // precedence 8
+    | left=expression operator=SOL right=expression             # divisionExpression            // precedence 8
+    | left=expression operator=PERCNT right=expression          # moduloExpression              // precedence 8, PostgreSQL
+    | left=expression operator=PLUS right=expression            # additionExpression            // precedence 9
+    | left=expression operator=MINUS right=expression           # substractionExpression        // precedence 9
     | left=expression
         (
-              operator=PLUS
-            | operator=MINUS
-            | operator=VERBAR VERBAR    // whitespace, comments allowed in ORACLEDB, but not in PostgreSQL
+              operator=VERBAR_VERBAR // OracleDB, PostgreSQL (no WS allowed)
+            | operator=VERBAR VERBAR // OracleDB (WS, comment allowed)
         )
-      right=expression                                          # binaryExpression
+        right=expression                                        # concatenationExpression       // precedence 10
+    | left=expression operator=AMP right=expression             # bitwiseAndExpression          // precedence 10
+    | left=expression operator=VERBAR right=expression          # bitwiseOrExpression           // precedence 10
+    | left=expression operator=NUM right=expression             # bitwiseXorExpression          // precedence 10
+    | left=expression operator=LT_LT right=expression           # bitwiseShiftLeftExpression    // precedence 10
+    | left=expression operator=GT_GT right=expression           # bitwiseShiftRightExpression   // precedence 10
+    | left=expression K_MULTISET operator=K_EXCEPT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_INTERSECT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_UNION
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
     | expr=sqlName                                              # simpleExpressionName
     // starting with 23c a condition is treated as a synonym to an expression
@@ -1246,10 +1253,6 @@ expression:
     | expr=expression K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR              # isOfTypeCondition
-    // lowest evaluation priority
-    | operator=postgresqlOperator right=expression              # postgresqlUnaryOperation  // incl. PostgreSQL exponentiation to avoid conflict NE
-    | left=expression operator=postgresqlOperator
-        right=expression                                        # postgresqlBinaryOperation
 ;
 
 intervalExpression:
@@ -2540,6 +2543,10 @@ windowingClause:
 unaryOperator:
       PLUS              # positiveSignOperator
     | MINUS             # negativeSignOperator
+    | COMMAT            # absoluteOperator          // PostgreSQL
+    | VERBAR_SOL        # squareRootOperator        // PostgreSQL
+    | VERBAR_VERBAR_SOL # cubeRootOperator          // PostgreSQL
+    | TILDE             # bitwiseNotOperator        // PostgreSQL
     | K_PRIOR           # priorOpertor              // hierarchical query operator
     | K_CONNECT_BY_ROOT # connectByRootOperator     // hierarchical query operator
     | K_RUNNING         # runningOperator           // row_pattern_nav_logical
@@ -3145,28 +3152,6 @@ string:
     | NQ_STRING                             # nationalQuoteDelimiterString
     | DOLLAR_STRING                         # dollarString                          // PostgreSQL
     | DOLLAR_ID_STRING                      # dollarIdentifierString                // PostgreSQL
-;
-
-postgresqlOperator:
-    (
-          PLUS
-        | MINUS
-        | AST
-        | SOL
-        | GT
-        | LT
-        | EQUALS
-        | TILDE
-        | EXCL
-        | COMMAT
-        | NUM
-        | PERCNT
-        | HAT
-        | AMP
-        | VERBAR
-        | GRAVE
-        | QUEST
-    )+
 ;
 
 /*----------------------------------------------------------------------------*/
