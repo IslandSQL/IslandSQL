@@ -633,6 +633,7 @@ UQUOTED_ID: ('u&') '"' ~["]* '"';
 QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
 ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]*;
 PLSQL_INQUIRY_DIRECTIVE: '$$' ID;
+POSITIONAL_PARAMETER: '$'[0-9]+;
 
 /*----------------------------------------------------------------------------*/
 // Any other token
