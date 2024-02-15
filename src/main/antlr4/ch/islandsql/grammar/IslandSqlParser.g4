@@ -1047,7 +1047,7 @@ characterDatatype:
 
 numberDatatype:
       K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
-    | K_FLOAT (precision=expression)?
+    | K_FLOAT (LPAR precision=expression LPAR)?
     | K_BINARY_FLOAT
     | K_BINARY_DOUBLE
 ;
