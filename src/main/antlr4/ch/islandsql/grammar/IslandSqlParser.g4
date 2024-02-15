@@ -3130,9 +3130,10 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
-    | unicodeIdentifier
-    | plsqlInquiryDirective
+    | PLSQL_INQUIRY_DIRECTIVE
     | substitionVariable+
+    | POSITIONAL_PARAMETER          // PostgreSQL
+    | unicodeIdentifier             // PostgreSQL
 ;
 
 // PostgreSQL
@@ -3140,10 +3141,7 @@ unicodeIdentifier:
     UQUOTED_ID (K_UESCAPE STRING)?
 ;
 
-plsqlInquiryDirective:
-    DOLLAR DOLLAR name=unquotedId
-;
-
+// parser rule to handle conflict with PostgreSQL & operator
 substitionVariable:
     (AMP|AMP_AMP) name=substitionVariableName period=PERIOD?
 ;
