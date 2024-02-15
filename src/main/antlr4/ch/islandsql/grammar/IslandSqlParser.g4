@@ -1164,6 +1164,7 @@ expression:
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
+    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence (4), must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
@@ -1173,7 +1174,6 @@ expression:
     | expr=expression operator=COLON_COLON type=dataType        # postgresqlHistoricalCast      // precedence 2
     | expr=expression
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
-    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 4
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression operator=K_AT
         (
