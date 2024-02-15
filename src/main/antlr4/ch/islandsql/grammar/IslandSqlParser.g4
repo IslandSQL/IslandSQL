@@ -2421,6 +2421,7 @@ xmlTableColumn:
 functionExpression:
     name=sqlName (COMMAT dblink=qualifiedName)? LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
     withinClause?               // e.g. approx_percentile
+    postgresfilterClause?       // e.g. count, sum
     keepClause?                 // e.g. first, last
     respectIgnoreNullsClause?   // e.g. lag
     overClause?                 // e.g. avg
@@ -2466,6 +2467,10 @@ placeholderVariable:
 
 withinClause:
     K_WITHIN K_GROUP LPAR orderByClause RPAR
+;
+
+postgresfilterClause:
+    K_FILTER LPAR whereClause RPAR
 ;
 
 keepClause:
