@@ -103,7 +103,7 @@ dmlTableExpressionClause:
     | expr=expression
 ;
 
-// introduced in Oracle Database 23c, re-use grammar in select statement
+// introduced in OracleDB 23c, re-use grammar in select statement
 // it's similar to the fromClause, the only difference is that you can use K_USING instead of K_FROM
 fromUsingClause:
     (K_FROM | K_USING) items+=fromItem (COMMA items+=fromItem)*
@@ -115,7 +115,7 @@ returningClause:
     K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
 ;
 
-// OLD and NEW are introduced in Oracle Database 23c
+// OLD and NEW are introduced in OracleDB 23c
 sourceItem:
     (K_OLD | K_NEW)? expr=expression
 ;
@@ -336,7 +336,7 @@ queryBlock:
     queryBlockSetOperator?
     selectList
     (intoClause | bulkCollectIntoClause)? // in PL/SQL only
-    fromClause? // starting with Oracle Database 23c the from clause is optional
+    fromClause? // starting with OracleDB 23c the from clause is optional
     whereClause?
     hierarchicalQueryClause?
     groupByClause?
@@ -395,7 +395,7 @@ valuesClause:
     (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
 ;
 
-// undocumented, first value in the first row does not need parentheses (in Oracle Database only)
+// undocumented, first value in the first row does not need parentheses (in OracleDB only)
 valuesRow:
       LPAR expr+=expression (COMMA expr+=expression)* RPAR
     | expr+=expression
@@ -676,13 +676,13 @@ queryTableExpression:
     | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
 
-// grammar definition in SQL Language Reference 19c/21c is wrong, added LPAR/RPAR
+// grammar definition in SQL Language Reference 19c/21c/23c is wrong, added LPAR/RPAR
 modifiedExternalTable:
     K_EXTERNAL K_MODIFY LPAR properties+=modifyExternalTableProperties+ RPAR
 ;
 
 // implemented as alternatives, all are technically optional
-// grammar definition in SQL Language Reference 19c/21c is wrong regarding "access parameters"
+// grammar definition in SQL Language Reference 19c/21c/23c is wrong regarding "access parameters"
 // it the similar as in externalTableDataProps. We use it here with the same restrictions.
 modifyExternalTableProperties:
       K_DEFAULT K_DIRECTORY dir=sqlName                     # defaultDirectoryModifyExternalTableProperty
@@ -731,7 +731,7 @@ externalTableDataProps:
 // We do not fully parse the unquoted opaque_format_spec. The reason is that the grammar
 // is driver specific, e.g. ORACLE_DATAPUMP, ORACLE_HDFS, ORACLE_HIVE. The grammer is
 // only documented in Oracle Database Utilities. See
-// https://docs.oracle.com/en/database/oracle/oracle-database/21/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
+// https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
     .+?
