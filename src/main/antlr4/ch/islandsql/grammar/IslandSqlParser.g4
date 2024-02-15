@@ -1202,6 +1202,7 @@ expression:
     | left=expression operator=NUM right=expression             # bitwiseXorExpression          // precedence 10
     | left=expression operator=LT_LT right=expression           # bitwiseShiftLeftExpression    // precedence 10
     | left=expression operator=GT_GT right=expression           # bitwiseShiftRightExpression   // precedence 10
+    | left=expression operator=customOperator right=expression  # customOperatorExpression      // precedence 10
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | left=expression K_MULTISET operator=K_INTERSECT
@@ -1698,6 +1699,7 @@ abbreviatedEdgePattern:
     | LT MINUS      # abbreviatedEdgePatternPointingLeft
     | MINUS         # abbreviatedEdgePatternAnyDirection
     | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
+    | LT_MINUS_GT   # abbreviatedEdgePatternAnyDirection
 ;
 
 fullEdgePointingRight:
@@ -2555,6 +2557,27 @@ unaryOperator:
     | K_CURRENT K_OF    # currentOfOperator         // operator as update extension in PL/SQL where clause
 ;
 
+// only non-conflicting binary operators, this means they are not implemented by OracleDB or PostgreSQL
+// therefore excluded the following PostGIS operators: '<<', '=', '>>', '~='
+// see https://postgis.net/docs/manual-3.4/reference.html#Operators
+customOperator:
+      AMP_AMP               # postgisIntersectOperator
+    | AMP_AMP_AMP           # postgisNDIntersectOperator
+    | AMP_LT                # postgisOverlapsLeftOperator
+    | AMP_LT_VERBAR         # postgisOverlapsBelowOperator
+    | AMP_GT                # postgisOverlapsRightOperator
+    | LT_LT_VERBAR          # postgisStrictlyBelowOperator
+    | COMMAT                # postgisContainedByOperator
+    | VERBAR_AMP_GT         # postgisOverlapsAboveOperator
+    | VERBAR_GT_GT          # postgisStrictlyAboveOperator
+    | TILDE                 # postgisContainsOperator
+    | LT_MINUS_GT           # postgisDistanceOperator
+    | VERBAR_EQUALS_VERBAR  # postgisClosestDistanceOperator
+    | LT_NUM_GT             # postgisBoxDistanceOperator
+    | LT_LT_MINUS_GT_GT     # postgisNDCentroidBoxDistanceOperator
+    | LT_LT_NUM_GT_GT       # postgisNDBoxDistance
+;
+
 /*----------------------------------------------------------------------------*/
 // Condition
 /*----------------------------------------------------------------------------*/
@@ -3122,7 +3145,7 @@ plsqlInquiryDirective:
 ;
 
 substitionVariable:
-    AMP AMP? name=substitionVariableName period=PERIOD?
+    (AMP|AMP_AMP) name=substitionVariableName period=PERIOD?
 ;
 
 substitionVariableName:
