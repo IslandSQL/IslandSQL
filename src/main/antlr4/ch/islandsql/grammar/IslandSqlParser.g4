@@ -1175,7 +1175,7 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 4
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
-    | left=expression K_AT
+    | left=expression operator=K_AT
         (
               K_LOCAL
             | K_TIME K_ZONE
