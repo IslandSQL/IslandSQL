@@ -517,6 +517,11 @@ K_ZONE: 'zone';
 // or https://oinam.github.io/entities/
 
 AMP: '&';
+AMP_AMP: '&&';
+AMP_AMP_AMP: '&&&';
+AMP_LT: '&<';
+AMP_LT_VERBAR: '&<|';
+AMP_GT: '&>';
 AST: '*';
 COLON: ':';
 COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
@@ -535,6 +540,11 @@ LPAR: '(';
 LSQB: '[';
 LT: '<';
 LT_LT: '<<';
+LT_LT_MINUS_GT_GT: '<<->>';
+LT_LT_NUM_GT_GT: '<<#>>';
+LT_LT_VERBAR: '<<|';
+LT_MINUS_GT: '<->';
+LT_NUM_GT: '<#>';
 MINUS: '-';
 NUM: '#';
 PERCNT: '%';
@@ -548,6 +558,9 @@ SEMI: ';';
 SOL: '/';
 TILDE: '~';
 VERBAR: '|';
+VERBAR_AMP_GT: '|&>';
+VERBAR_EQUALS_VERBAR: '|=|';
+VERBAR_GT_GT: '|>>';
 VERBAR_SOL: '|/';
 VERBAR_VERBAR: '||';
 VERBAR_VERBAR_SOL: '||/';
