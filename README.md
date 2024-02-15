@@ -164,8 +164,17 @@ Here are some examples:
 ## PostgreSQL Custom Operators
 
 Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions.
-However, it should be possible to integrate chosen custom operators into the IslandSQL grammar. Therefore, the
-IslandSQL grammar does not support custom operators for the time being.
+Therefore, the IslandSQL grammar does not support custom operators.
+
+However, the following custom operators provided by the [PostGIS](https://www.postgis.net/) extension are part of 
+the IslandSQL grammar and should produce a reasonable result:
+
+- Bounding Box Operators: `&&`, `&&&`, `&<`, `&<|`, `&>`, `<<|`, `@`, `|&>`, `|>>`, `~` 
+- Distance Operators: `<->`, `|=|`, `<#>`, `<<->>`, `<<#>>`
+
+The following bounding box operators are not provided by the IslandSQL grammar since they are conflicting with
+comparison conditions and bitwise shift expressions: `<<`, `=`, `>>`, `~=`. These
+operators are treated as standard OracleDB/PostgreSQL operators.
 
 ## License
 
