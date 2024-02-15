@@ -161,6 +161,12 @@ Here are some examples:
 | `select a #b from t;`  | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a `#`   |
 | `select 1#2;`          | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a digit |
 
+## PostgreSQL Custom Operators
+
+Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions.
+However, it should be possible to integrate chosen custom operators into the IslandSQL grammar. Therefore, the
+IslandSQL grammar does not support custom operators for the time being.
+
 ## License
 
 IslandSQL is licensed under the Apache License, Version 2.0. You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
