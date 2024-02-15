@@ -1164,7 +1164,7 @@ expression:
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
-    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence (4), must be evaluated before functions
+    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 0, must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
