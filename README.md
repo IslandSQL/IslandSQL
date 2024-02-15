@@ -15,7 +15,7 @@ The following table shows the DBMS and their grammar versions in scope:
 
 | DBMS       | Grammar  | Version | HTML Reference (live)                                                                                        | PDF Reference (snapshot)                           |
 |------------|----------|---------|--------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
-| Oracle     | SQL*Plus | 23c     | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/)           | [PDF](docs/sqlplus-users-guide-and-reference.pdf)  |
+| OracleDB   | SQL*Plus | 23c     | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/)           | [PDF](docs/sqlplus-users-guide-and-reference.pdf)  |
 |            | SQLcl    | 23.3    | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/23.3/sqcug/index.html) | [PDF](docs/oracle-sqlcl-users-guide.pdf)           |
 |            | SQL      | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](docs/sql-language-reference.pdf)             | 
 |            | PL/SQL   | 23c     | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](docs/database-pl-sql-language-reference.pdf) |
@@ -82,7 +82,7 @@ Code that has been wrapped with the [wrap](https://docs.oracle.com/en/database/o
 
 ### Keywords as Identifiers
 
-The grammar allows the use of keywords as identifiers. This makes the grammar robust and supports the fact the Oracle Database allows the use of keywords in various places.
+The grammar allows the use of keywords as identifiers. This makes the grammar robust and supports the fact OracleDB allows the use of keywords in various places.
 
 However, there are cases where this leads to an unexpected parse tree, even if no keywords as identifiers are used. Here's an example: 
 
@@ -94,7 +94,7 @@ select *
 
 In this case `left` is treated as a table alias of `emp`, since `join dept on emp.deptno = dept.deptno` is a valid [`innerCrossJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#innerCrossJoinClause) and the priority of the evaluation in ANTLR4 matches the order in the grammar.
 
-Solving this issue is not simple, especially since the Oracle Database allows the use of `left` or `right` as valid table names and table aliases. Here's an another example:
+Solving this issue is not simple, especially since OracleDB allows the use of `left` or `right` as valid table names and table aliases. Here's an another example:
 
 ```sql
 with
@@ -106,7 +106,7 @@ select *
  right join dept on right.deptno = dept.deptno;
 ```
 
-In this example the Oracle Database selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#outerJoinClause) by the Oracle Database and not as a table alias.
+In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#outerJoinClause) by OracleDB and not as a table alias.
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
@@ -148,7 +148,7 @@ However, when you embed the drivers specific parameters directly, the parameters
 
 ## PostgreSQL Bitwise XOR Operator `#`
 
-In the Oracle Database an unquoted identifier can contain a `#` character. In PostgreSQL this is not allowed.
+In OracleDB an unquoted identifier can contain a `#` character. In PostgreSQL this is not allowed.
 The IslandSQL grammar supports identifiers containing `#`. As a result, in some cases, an expression containing a `#` 
 is interpreted as an `identifier` instead of a `bitwise exclusive OR expression` in IslandSQL.
 
