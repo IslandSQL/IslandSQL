@@ -146,9 +146,20 @@ However, when you embed the drivers specific parameters directly, the parameters
 - [Oracle Database Administrator's Guide: Using Inline External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-621E5DDE-36D9-4661-9D14-80DE35858C3F)
 - [Oracle Database Administrator's Guide: Overriding Parameters for External Tables in a Query](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-6E4219FF-A557-452E-A6E9-96C38BA87EE0)
 
-## PostgreSQL Custom Operators
+## PostgreSQL Bitwise XOR Operator `#`
 
-Custom operators are not supported.
+In the Oracle Database an unquoted identifier can contain a `#` character. In PostgreSQL this is not allowed.
+The IslandSQL grammar supports identifiers containing `#`. As a result, in some cases, an expression containing a `#` 
+is interpreted as an `identifier` instead of a `bitwise exclusive OR expression` in IslandSQL.
+
+Here are some examples:
+
+| Query                  | PostgreSQL             | IslandSQL              | Notes                                |
+|------------------------|------------------------|------------------------|--------------------------------------|
+| `select a#b from t;`   | Bitwise XOR expression | Identifier `a#b`       | No whitespace around operator        |
+| `select a # b from t;` | Bitwise XOR expression | Bitwise XOR expression | Whitespace around operator           |
+| `select a #b from t;`  | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a `#`   |
+| `select 1#2;`          | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a digit |
 
 ## License
 
