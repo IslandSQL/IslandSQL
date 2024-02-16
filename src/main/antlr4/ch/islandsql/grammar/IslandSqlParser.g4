@@ -1025,6 +1025,7 @@ dataType:
     | ansiSupportedDatatype
     | postgresqlDatatype
     | userDefinedType
+    | posgresqlArrayDatatype=dataType (LSQB RSQB)+
 ;
 
 oracleBuiltInDatatype:
