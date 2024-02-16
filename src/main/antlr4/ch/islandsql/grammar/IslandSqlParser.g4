@@ -329,10 +329,12 @@ select:
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
 // undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
+// PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
 subquery:
       withClause? queryBlock forUpdateClause? orderByClause? rowLimitingClause?         # subqueryQueryBlock
     | left=subquery setOperator right=subquery                                          # subquerySet
     | withClause? LPAR subquery RPAR forUpdateClause? orderByClause? rowLimitingClause? # subqueryParen
+    | valuesClause orderByClause? rowLimitingClause?                                    # subqueryValues
 ;
 
 queryBlock:
