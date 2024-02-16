@@ -391,7 +391,16 @@ factoringClause:
 
 subqueryFactoringClause:
     queryName=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
-    K_AS ((LPAR subquery RPAR) | valuesClause)
+    K_AS
+    (K_NOT? K_MATERIALIZED)? // PostgreSQL
+    LPAR
+        (
+              subquery       // including values for OracleDB and PostgreSQL
+            | insert         // PostgreSQL
+            | update         // PostgreSQL
+            | delete         // PostgreSQL
+        )
+    RPAR
     searchClause?
     cycleClause?
 ;
