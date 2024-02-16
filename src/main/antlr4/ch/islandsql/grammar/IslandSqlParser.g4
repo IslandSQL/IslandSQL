@@ -1177,6 +1177,7 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | expr=expression
         LSQB lower=expression COLON upper=expression RSQB       # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression operator=K_AT
         (
@@ -2584,6 +2585,16 @@ customOperator:
     | LT_NUM_GT             # postgisBoxDistanceOperator
     | LT_LT_MINUS_GT_GT     # postgisNDCentroidBoxDistanceOperator
     | LT_LT_NUM_GT_GT       # postgisNDBoxDistance
+;
+
+postgresqlArrayConstructor:
+      K_ARRAY LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB
+    | K_ARRAY LPAR expr+=subquery RPAR
+;
+
+postgresqlArrayElement:
+      expr+=expression                                                               # postgresqlArrayElementItem
+    | LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB # postgresqlArrayElementList
 ;
 
 /*----------------------------------------------------------------------------*/
