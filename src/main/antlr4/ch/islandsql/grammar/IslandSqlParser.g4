@@ -182,9 +182,11 @@ insert:
 singleTableInsert:
     insertIntoClause
     (
-          insertValuesClause returningClause?
+          insertValuesClause
         | subquery
-    ) errorLoggingClause?
+    )
+    returningClause? // unlike OracleDB, PostgreSQL allows a returning_clause for a subquery
+    errorLoggingClause?
 ;
 
 insertIntoClause:
