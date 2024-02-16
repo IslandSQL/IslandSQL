@@ -2776,6 +2776,7 @@ keywordAsId:
     | K_COLLECT
     | K_COLUMNS
     | K_CONDITIONAL
+    | K_CONFLICT
     | K_CONNECT
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
@@ -2813,6 +2814,7 @@ keywordAsId:
     | K_DISALLOW
     | K_DISCARD
     | K_DISTINCT
+    | K_DO
     | K_DOCUMENT
     | K_DOMAIN
     | K_DOUBLE
@@ -2980,6 +2982,7 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NOSCHEMACHECK
     | K_NOT
+    | K_NOTHING
     | K_NOWAIT
     | K_NTH_VALUE
     | K_NULL
@@ -3004,6 +3007,7 @@ keywordAsId:
     | K_OUTER
     | K_OVER
     | K_OVERFLOW
+    | K_OVERRIDING
     | K_PARAMETERS
     | K_PARENT
     | K_PARTITION
@@ -3090,6 +3094,7 @@ keywordAsId:
     | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
+    | K_SYSTEM
     | K_TABLE
     | K_THE
     | K_THEN
@@ -3120,6 +3125,7 @@ keywordAsId:
     | K_UPDATED
     | K_UPSERT
     | K_UROWID
+    | K_USER
     | K_USING
     | K_VALIDATE
     | K_VALIDATE_CONVERSION
