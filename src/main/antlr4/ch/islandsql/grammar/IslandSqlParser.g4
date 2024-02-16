@@ -2930,6 +2930,7 @@ keywordAsId:
     | K_MATCHED
     | K_MATCHES
     | K_MATCH_RECOGNIZE
+    | K_MATERIALIZED
     | K_MEASURES
     | K_MEMBER
     | K_MERGE
@@ -3017,6 +3018,7 @@ keywordAsId:
     | K_RAW
     | K_READ
     | K_REAL
+    | K_RECURSIVE
     | K_REF
     | K_REFERENCE
     | K_REJECT
