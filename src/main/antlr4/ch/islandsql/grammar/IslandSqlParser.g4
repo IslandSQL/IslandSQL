@@ -390,10 +390,13 @@ subqueryFactoringClause:
     cycleClause?
 ;
 
+// Unlike OracleDB, PostgreSQL allows the values_clause without table/column alias in from_clause
+// in this case the ANTLR identifies the required parenthesis as part of a scalar subquery
+// Using the values_clause without table/column alias is primarily used in the with_clause
 valuesClause:
-    LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
-    // caliases must be specified in subquery_factoring_clause after queryName, next line is valid in other contexts (table_reference)
-    (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
+      LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
+        K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR     # valuesClauseQualified
+    | K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*                                 # valuesClauseDefault
 ;
 
 // undocumented, first value in the first row does not need parentheses (in OracleDB only)
