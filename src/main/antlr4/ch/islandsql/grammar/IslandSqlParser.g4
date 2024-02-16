@@ -111,8 +111,10 @@ fromUsingClause:
 
 returningClause:
     (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
-    (K_BULK K_COLLECT)? // within PL/SQL
-    K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+    (
+        (K_BULK K_COLLECT)? // within PL/SQL
+        K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+    )?  // required in OracleDB but not allowed in PostgreSQL
 ;
 
 // OLD and NEW are introduced in OracleDB 23c
