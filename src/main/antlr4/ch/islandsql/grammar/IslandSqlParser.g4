@@ -677,7 +677,8 @@ tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? tAlias=sqlName?
     | qte=queryTableExpression flashbackQueryClause?
-         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? (K_AS? tAlias=sqlName)?
+         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
+         (K_AS? tAlias=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?)? // PostgreSQL allows to caliases
 ;
 
 // using table for query_name, table, view, mview, hierarchy
