@@ -354,6 +354,7 @@ withClause:
     (
           (plsqlDeclarations)+
         | (plsqlDeclarations)* factoringClause (COMMA factoringClause)*
+        | K_RECURSIVE factoringClause (COMMA factoringClause)*              // PostgreSQL
     )
 ;
 
