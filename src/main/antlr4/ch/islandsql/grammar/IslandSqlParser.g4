@@ -119,7 +119,7 @@ returningClause:
 
 // OLD and NEW are introduced in OracleDB 23c
 sourceItem:
-    (K_OLD | K_NEW)? expr=expression
+    (K_OLD | K_NEW)? expr=expression (K_AS? alias=sqlName)? // PostgreSQL allows to define an alias
 ;
 
 dataItem:
@@ -172,6 +172,7 @@ insertStatement:
 ;
 
 insert:
+    withClause?
     {unhideFirstHint();} K_INSERT hint?
     (
           singleTableInsert
@@ -181,16 +182,19 @@ insert:
 
 singleTableInsert:
     insertIntoClause
+    postgresqlOverridingClause?
     (
           insertValuesClause
         | subquery
+        | postgresqlDefaultValuesClause
     )
+    postgresqlOnConflictClause?
     returningClause? // unlike OracleDB, PostgreSQL allows a returning_clause for a subquery
     errorLoggingClause?
 ;
 
 insertIntoClause:
-    K_INTO dmlTableExpressionClause tAlias=sqlName?
+    K_INTO dmlTableExpressionClause K_AS? tAlias=sqlName? // as keyword is allowed in PostgreSQL
     (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
 ;
 
@@ -222,6 +226,49 @@ conditionalInsertClause:
 conditionalInsertWhenClause:
     K_WHEN cond=condition K_THEN intoClauses+=multiTableInsertClause+
 ;
+
+postgresqlOverridingClause:
+    K_OVERRIDING (K_SYSTEM|K_USER) K_VALUE
+;
+
+postgresqlDefaultValuesClause:
+   K_DEFAULT K_VALUES
+;
+
+postgresqlOnConflictClause:
+    K_ON K_CONFLICT target=postgresqlOnConflictTarget? action=postgresqlOnConflictAction
+;
+
+postgresqlOnConflictTarget:
+      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=condition)?
+    | K_ON K_CONSTRAINT constraint=sqlName
+;
+
+postgresqlOnConflictTargetItem:
+    (indexColumnName=sqlName|LPAR indexExpression=expression RPAR)
+    (K_COLLATE collate=sqlName)?
+    (opclass=sqlName)?
+;
+
+postgresqlOnConflictAction:
+      postgresqlOnConflictActionDoNothing
+    | postgresqlOnConflictActionDoUpdate
+;
+
+postgresqlOnConflictActionDoNothing:
+    K_DO K_NOTHING
+;
+
+postgresqlOnConflictActionDoUpdate:
+    K_DO K_UPDATE K_SET
+    (
+          columns+=sqlName EQUALS exprs+=expression
+        | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+            EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+    )
+    (K_WHERE cond=condition)?
+;
+
 
 /*----------------------------------------------------------------------------*/
 // Lock table
