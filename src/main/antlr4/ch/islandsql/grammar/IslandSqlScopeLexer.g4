@@ -54,16 +54,6 @@ fragment ANY_EXCEPT_AS_WS:
         | ~'a'
     )+
 ;
-fragment ANY_EXCEPT_BEGIN_WS:
-    (
-          'b' 'e' 'g' 'i' 'n' ~[ \t\r\n]
-        | 'b' 'e' 'g' 'i' ~'n'
-        | 'b' 'e' 'g' ~'i'
-        | 'b' 'e' ~'g'
-        | 'b' ~'e'
-        | ~'b'
-    )+
-;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
@@ -144,10 +134,11 @@ CREATE_OPERATOR:
 ;
 
 // hide keyword: insert, update, delete (everything up to the begin keyword)
+// hide keyword: insert, update, delete (everything up to the first semicolon)
 CREATE_TRIGGER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'trigger'
-        ANY_EXCEPT_BEGIN_WS -> channel(HIDDEN)
+        COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with (everything up to the as keyword)
