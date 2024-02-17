@@ -133,7 +133,11 @@ CREATE_OPERATOR:
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
-// hide keyword: insert, update, delete (everything up to the begin keyword)
+// hide keyword: with
+CREATE_TABLE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN);
+
 // hide keyword: insert, update, delete (everything up to the first semicolon)
 CREATE_TRIGGER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
