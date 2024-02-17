@@ -115,6 +115,12 @@ CREATE_AUDIT_POLICY:
         'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+// hide keywords: with
+CREATE_DATABASE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'database' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 CREATE_SCHEMA:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
