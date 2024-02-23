@@ -1194,6 +1194,24 @@ postgresqlDatatype:
     | K_PG_LSN
     | K_PG_SNAPSHOT
     | K_POINT
+    | K_POLYGON
+    | K_FLOAT4
+    | K_INT2
+    | K_SMALLSERIAL
+    | K_SERIAL2
+    | K_SERIAL
+    | K_SERIAL4
+    | K_TEXT
+    | K_TIME (LPAR precision=expression RPAR)? (K_WITHOUT K_TIME K_ZONE)?
+    | K_TIME (LPAR precision=expression RPAR)? K_WITH K_TIME K_ZONE
+    | K_TIMETZ
+    | K_TIMESTAMP (LPAR precision=expression RPAR)? K_WITHOUT K_TIME K_ZONE // variant not handled in OracleDB's datetimeDatatype
+    | K_TIMESTAMPTZ
+    | K_TSQUERY
+    | K_TSVECTOR
+    | K_TXID_SNAPSHOT
+    | K_UUID
+    | K_XML
 ;
 
 intervalField:
