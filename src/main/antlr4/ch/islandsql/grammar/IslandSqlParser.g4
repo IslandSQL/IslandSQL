@@ -738,7 +738,7 @@ queryTableExpression:
             | hierarchiesClause
         )? sampleClause?
     | inlineExternalTable sampleClause?
-    | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
+    | expr=expression (LPAR PLUS RPAR)? (K_WITH K_ORDINALITY)? // handle qualified function expressions, table_collection_expression; PostgreSQL: with ordinality
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
     | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
