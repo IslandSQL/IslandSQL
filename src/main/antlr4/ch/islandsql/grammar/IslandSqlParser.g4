@@ -2891,6 +2891,7 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FLOAT4
     | K_FLOAT8
     | K_FLOAT
     | K_FOLLOWING
@@ -2932,6 +2933,7 @@ keywordAsId:
     | K_INFINITE
     | K_INNER
     | K_INSERT
+    | K_INT2
     | K_INT4
     | K_INT8
     | K_INT
@@ -3071,6 +3073,7 @@ keywordAsId:
     | K_PIVOT
     | K_PLAN
     | K_POINT
+    | K_POLYGON
     | K_POSITION
     | K_PRECEDING
     | K_PRECISION
@@ -3119,7 +3122,10 @@ keywordAsId:
     | K_SELECT
     | K_SEQUENCE
     | K_SEQUENTIAL
+    | K_SERIAL2
+    | K_SERIAL4
     | K_SERIAL8
+    | K_SERIAL
     | K_SESSIONTIMEZONE
     | K_SET
     | K_SETS
@@ -3131,6 +3137,7 @@ keywordAsId:
     | K_SIZE
     | K_SKIP
     | K_SMALLINT
+    | K_SMALLSERIAL
     | K_SOME
     | K_SORT
     | K_SQL
@@ -3143,11 +3150,14 @@ keywordAsId:
     | K_SUBSET
     | K_SYSTEM
     | K_TABLE
+    | K_TEXT
     | K_THE
     | K_THEN
     | K_TIES
     | K_TIME
     | K_TIMESTAMP
+    | K_TIMESTAMPTZ
+    | K_TIMETZ
     | K_TIMEZONE
     | K_TO
     | K_TRAILING
@@ -3156,6 +3166,9 @@ keywordAsId:
     | K_TRIM
     | K_TRUE
     | K_TRUNCATE
+    | K_TSQUERY
+    | K_TSVECTOR
+    | K_TXID_SNAPSHOT
     | K_TYPE
     | K_TYPENAME
     | K_UESCAPE
@@ -3174,6 +3187,7 @@ keywordAsId:
     | K_UROWID
     | K_USER
     | K_USING
+    | K_UUID
     | K_VALIDATE
     | K_VALIDATE_CONVERSION
     | K_VALUE
