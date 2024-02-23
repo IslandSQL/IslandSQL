@@ -3194,6 +3194,7 @@ keywordAsId:
     | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
+    | K_UNKNOWN
     | K_UNLIMITED
     | K_UNMATCHED
     | K_UNPIVOT

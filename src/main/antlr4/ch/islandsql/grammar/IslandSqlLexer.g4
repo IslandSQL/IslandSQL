@@ -478,6 +478,7 @@ K_UNBOUNDED: 'unbounded';
 K_UNCONDITIONAL: 'unconditional';
 K_UNION: 'union';
 K_UNIQUE: 'unique';
+K_UNKNOWN: 'unknown';
 K_UNLIMITED: 'unlimited';
 K_UNMATCHED: 'unmatched';
 K_UNPIVOT: 'unpivot';
