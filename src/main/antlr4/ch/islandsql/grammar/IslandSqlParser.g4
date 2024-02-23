@@ -2794,6 +2794,7 @@ keywordAsId:
     | K_ALL
     | K_ALLOW
     | K_ANALYTIC
+    | K_ANALYZE
     | K_ANCESTOR
     | K_AND
     | K_ANY
@@ -2824,6 +2825,7 @@ keywordAsId:
     | K_BOTH
     | K_BOX
     | K_BREADTH
+    | K_BUFFERS
     | K_BULK
     | K_BY
     | K_BYTE
@@ -2853,6 +2855,7 @@ keywordAsId:
     | K_CONVERSION
     | K_COPY
     | K_COST
+    | K_COSTS
     | K_COUNT
     | K_CREATE
     | K_CROSS
@@ -2921,6 +2924,7 @@ keywordAsId:
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
+    | K_GENERIC_PLAN
     | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
@@ -3168,6 +3172,7 @@ keywordAsId:
     | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
+    | K_SUMMARY
     | K_SYSTEM
     | K_TABLE
     | K_TEXT
@@ -3179,6 +3184,7 @@ keywordAsId:
     | K_TIMESTAMPTZ
     | K_TIMETZ
     | K_TIMEZONE
+    | K_TIMING
     | K_TO
     | K_TRAILING
     | K_TREAT
@@ -3217,11 +3223,13 @@ keywordAsId:
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
+    | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
     | K_WAIT
+    | K_WAL
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
@@ -3246,6 +3254,7 @@ keywordAsId:
     | K_XMLSERIALIZE
     | K_XMLTABLE
     | K_XMLTYPE
+    | K_YAML
     | K_YEAR
     | K_YES
     | K_ZONE
