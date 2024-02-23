@@ -140,7 +140,11 @@ errorLoggingClause:
 /*----------------------------------------------------------------------------*/
 
 explainPlanStatement:
-  explainPlan sqlEnd
+    (
+          explainPlan       // OracleDB
+        | explain           // PostgreSQL
+    )
+    sqlEnd
 ;
 
 // undocumented: equals is optional
@@ -162,6 +166,28 @@ forExplainPlanStatement:
 // support other statements such as CREATE TABLE, CREATE INDEX, ALTER INDEX as list of tokens
 otherStatement:
     ~SEMI* // optional since all tokens may be on the hidden channel
+;
+
+explain:
+    K_EXPLAIN
+        (
+              LPAR option+=explainOption (COMMA option+=explainOption)* RPAR
+            | K_ANALYZE K_VERBOSE?
+            | K_VERBOSE
+        )?
+    statementName=forExplainPlanStatement
+;
+
+explainOption:
+      K_ANALYZE bool=expression?
+    | K_VERBOSE bool=expression?
+    | K_COSTS bool=expression?
+    | K_GENERIC_PLAN bool=expression?
+    | K_BUFFERS bool=expression?
+    | K_WAL bool=expression?
+    | K_TIMING bool=expression?
+    | K_SUMMARY bool=expression?
+    | K_FORMAT (K_TEXT | K_XML | K_JSON | K_YAML)
 ;
 
 /*----------------------------------------------------------------------------*/
