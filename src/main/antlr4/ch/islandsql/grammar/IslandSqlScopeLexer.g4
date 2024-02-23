@@ -265,7 +265,7 @@ DELETE:
 ;
 
 EXPLAIN_PLAN:
-    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 INSERT:
