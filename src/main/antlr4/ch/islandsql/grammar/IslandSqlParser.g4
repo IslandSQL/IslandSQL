@@ -199,7 +199,7 @@ insertStatement:
 ;
 
 insert:
-    withClause?
+    withClause? // PostgreSQL
     {unhideFirstHint();} K_INSERT hint?
     (
           singleTableInsert
