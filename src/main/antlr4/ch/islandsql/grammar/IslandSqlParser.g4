@@ -99,7 +99,7 @@ delete:
 
 // simplified, table_collection_expression treated as expression
 dmlTableExpressionClause:
-      (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause | COMMAT dblink=qualifiedName)?
+      (schema=sqlName PERIOD)? table=sqlName AST? (partitionExtensionClause | COMMAT dblink=qualifiedName)? // PostgreSQL: *
     | LPAR query=subquery RPAR
     | expr=expression
 ;
@@ -351,13 +351,18 @@ mergeStatement:
 ;
 
 merge:
+    withClause? // PostgreSQL
     {unhideFirstHint();} K_MERGE hint?
     mergeIntoClause
     mergeUsingClause
-    K_ON LPAR cond=condition RPAR
+    K_ON (
+          LPAR cond=condition RPAR  // OracleDB
+        | cond=condition            // PostgreSQL
+    )
     (
-          mergeUpdateClause mergeInsertClause?
-        | mergeInsertClause
+          mergeUpdateClause mergeInsertClause?  // OracleDB
+        | mergeInsertClause                     // OracleDB
+        | mergeWhenClause+                      // PostgreSQL
     )
     errorLoggingClause?
 ;
@@ -365,13 +370,13 @@ merge:
 // artifical clause, undocumented: database link and subquery
 // simplified using database link and subquery
 mergeIntoClause:
-    K_INTO dmlTableExpressionClause talias=sqlName?
+    K_INTO K_ONLY? dmlTableExpressionClause K_AS? talias=sqlName? // PostgreSQL: only, as
 ;
 
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
 mergeUsingClause:
-    K_USING queryTableExpression talias=sqlName?
+    K_USING K_ONLY? queryTableExpression K_AS? talias=sqlName? // PostgreSQL: only, as
 ;
 
 mergeUpdateClause:
@@ -390,6 +395,34 @@ mergeInsertClause:
     K_WHEN K_NOT K_MATCHED K_THEN K_INSERT
     (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
     K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
+;
+
+// PostgreSQL
+mergeWhenClause:
+      K_WHEN K_MATCHED (K_AND cond=condition)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_AND cond=condition)? K_THEN (mergeInsert | K_DO K_NOTHING)
+;
+
+// PostgreSQL
+mergeUpdate:
+    K_UPDATE K_SET
+    (
+          columns+=qualifiedName EQUALS exprs+=expression
+        | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+            EQUALS LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+    )
+;
+
+// PostgreSQL
+mergeDelete:
+    K_DELETE
+;
+
+// PostgreSQL
+mergeInsert:
+    K_INSERT (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    (K_OVERRIDING (K_SYSTEM | K_USER) K_VALUE)?
+    (K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR | K_DEFAULT K_VALUES)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -768,6 +801,7 @@ queryTableExpression:
             | partitionExtensionClause
             | COMMAT dblink=qualifiedName
             | hierarchiesClause
+            | AST // PostgreSQL
         )? sampleClause?
     | inlineExternalTable sampleClause?
     | expr=expression (LPAR PLUS RPAR)? (K_WITH K_ORDINALITY)? // handle qualified function expressions, table_collection_expression; PostgreSQL: with ordinality
