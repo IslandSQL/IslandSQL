@@ -306,12 +306,14 @@ lockTableStatement:
 ;
 
 lockTable:
-    K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
+    K_LOCK K_TABLE? K_ONLY? // PostgreSQL: optional table, only
+        objects+=lockTableObject (COMMA objects+=lockTableObject)*
         K_IN lockMode K_MODE lockTableWaitOption?
 ;
 
 lockTableObject:
-    (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause|COMMAT dblink=qualifiedName)?
+    (schema=sqlName PERIOD)? table=sqlName AST? // PostgreSQL: optional *
+    (partitionExtensionClause|COMMAT dblink=qualifiedName)?
 ;
 
 partitionExtensionClause:
@@ -326,10 +328,13 @@ partitionExtensionClause:
 lockMode:
       K_ROW K_SHARE                 # rowShareLockMode
     | K_ROW K_EXCLUSIVE             # rowExclusiveLockMode
-    | K_SHARE K_UPDATE              # shareUpdateLockMode
+    | K_SHARE K_UPDATE              # shareUpdateLockMode // OracleDB only
     | K_SHARE                       # shareLockMode
     | K_SHARE K_ROW K_EXCLUSIVE     # shareRowExclusiveLockMode
     | K_EXCLUSIVE                   # exclusiveLockMode
+    | K_ACCESS K_SHARE              # accessShareMode // PostgreSQL
+    | K_SHARE K_UPDATE K_EXCLUSIVE  # shareUpdateExclusiveMode // PostgreSQL
+    | K_ACCESS K_EXCLUSIVE          # accessExclusiveMode // PostgreSQL
 ;
 
 lockTableWaitOption:
