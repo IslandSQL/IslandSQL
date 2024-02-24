@@ -273,7 +273,7 @@ INSERT:
 ;
 
 LOCK_TABLE:
-    'lock' {isBeginOfStatement("lock")}? COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'lock' {isBeginOfStatement("lock")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 MERGE:
