@@ -3188,6 +3188,7 @@ keywordAsId:
     | K_RELATE_TO_SHORTER
     | K_REMOVE
     | K_RENAME
+    | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
     | K_RESPECT
@@ -3240,6 +3241,7 @@ keywordAsId:
     | K_SUMMARY
     | K_SYSTEM
     | K_TABLE
+    | K_TABLESAMPLE
     | K_TEXT
     | K_THE
     | K_THEN
