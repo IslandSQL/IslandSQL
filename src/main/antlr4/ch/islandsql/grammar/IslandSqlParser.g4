@@ -1819,8 +1819,7 @@ graphTableColumnDefinition:
 
 // simplified, includes path_pattern, path_pattern_expression, path_concatenation (to handle left-recursion)
 pathTerm:
-      pathFactor
-    | pathTerm pathFactor
+      pathFactor+
 ;
 
 pathFactor:
