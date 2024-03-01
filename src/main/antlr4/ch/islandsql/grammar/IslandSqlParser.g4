@@ -1356,6 +1356,7 @@ expression:
     | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 0, must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
+    | expr=plsqlQualifiedExpression                             # plsqlQualifiedExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=AST                                                  # allColumnWildcardExpression
     | type=dataType expr=string                                 # postgresqlStringCast
@@ -2643,6 +2644,50 @@ functionParameterSuffix:
     | miningAttributeClause                         // e.g. cluster_details
     | respectIgnoreNullsClause                      // e.g. lag
     | defaultOnConversionError                      // e.g. to_binary_double
+;
+
+// simplified: allow all combinations of aggregates
+plsqlQualifiedExpression:
+    typemark=sqlName LPAR aggregates+=aggregate? (COMMA aggregates+=aggregate)* RPAR
+;
+
+// simplified: others_choice handled as functionParameter
+// functionExpression has precedence, as result some syntax variants are handled as functionExpression
+aggregate:
+      positionalChoiceList
+    | explicitChoiceList
+;
+
+positionalChoiceList:
+      expression
+    | sequenceIteratorChoice
+;
+
+sequenceIteratorChoice:
+    K_FOR iterator=sqlName K_SEQUENCE EQUALS GT expr=expression
+;
+
+explicitChoiceList:
+      namedChoiceList
+    | indexedChoiceList
+    | basicIteratorChoice
+    | indexIteratorChoice
+;
+
+namedChoiceList:
+    identifiers+=sqlName (VERBAR identifiers+=sqlName)* EQUALS GT expr=expression
+;
+
+indexedChoiceList:
+    indexes+=expression (VERBAR indexes+=expression)* EQUALS GT expr=expression
+;
+
+basicIteratorChoice:
+    K_FOR iterator=sqlName EQUALS GT expr=expression
+;
+
+indexIteratorChoice:
+    K_FOR iterator=sqlName K_INDEX EQUALS GT expr=expression
 ;
 
 placeholderExpression:
