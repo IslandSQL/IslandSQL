@@ -151,6 +151,12 @@ CREATE_TRIGGER:
         COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+// hide keyword: with
+CREATE_USER:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
+        COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 // hide keyword: with (everything up to the as keyword)
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
