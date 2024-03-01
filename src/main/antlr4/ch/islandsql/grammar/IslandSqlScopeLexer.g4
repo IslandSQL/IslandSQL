@@ -121,12 +121,6 @@ CREATE_DATABASE:
         'database' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
-// hide keywords: select, insert, update, delete
-CREATE_SCHEMA:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
 // hide keyword: with
 CREATE_MATERIALIZED_VIEW_LOG:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
@@ -137,6 +131,12 @@ CREATE_MATERIALIZED_VIEW_LOG:
 CREATE_OPERATOR:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_SCHEMA:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
