@@ -793,8 +793,8 @@ fromItem:
 // Handle all kind of table alias, allows more cominatqion than the underlyinging DBMSs
 tableAlias:
       K_AS? tAlias=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)? // OracleDB, PostgreSQL
-    | K_AS? talias=sqlName LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition) RPAR // PostgreSQL (function)
-    | K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition) RPAR // PostgreSQL (function)
+    | K_AS? talias=sqlName LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
+    | K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
 ;
 
 postresqlColumnDefinition:
