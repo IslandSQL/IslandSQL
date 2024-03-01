@@ -435,17 +435,20 @@ selectStatement:
 ;
 
 select:
-    subquery forUpdateClause* // PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
+    subquery
     subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
 // undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
 // PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
+// PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
 subquery:
-      withClause? queryBlock forUpdateClause? orderByClause? rowLimitingClause?         # subqueryQueryBlock
+      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # subqueryQueryBlock
+    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # subqueryQueryBlock
     | left=subquery setOperator right=subquery                                          # subquerySet
-    | withClause? LPAR subquery RPAR forUpdateClause? orderByClause? rowLimitingClause? # subqueryParen
+    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # subqueryParen
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # subqueryParen
     | valuesClause orderByClause? rowLimitingClause?                                    # subqueryValues
     | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlock // PostgreSQL
 ;
