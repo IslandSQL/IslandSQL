@@ -1766,10 +1766,15 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS K_DOMAIN? typeName=dataType
+        K_AS K_DOMAIN? typeName=dataType domainValidateClause?
         defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
+;
+
+domainValidateClause:
+      K_VALIDATE
+    | K_NOVALIDATE
 ;
 
 defaultOnConversionError:
