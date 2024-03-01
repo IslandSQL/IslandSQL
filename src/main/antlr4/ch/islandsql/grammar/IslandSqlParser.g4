@@ -437,6 +437,7 @@ selectStatement:
 select:
     subquery
     subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
+    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create view support, see see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
