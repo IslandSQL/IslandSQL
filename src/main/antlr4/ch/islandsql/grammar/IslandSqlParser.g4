@@ -2627,7 +2627,8 @@ functionExpression:
 ;
 
 functionParameter:
-    (name=sqlName EQUALS GT)? functionParameterPrefix? expr=condition functionParameterSuffix?
+    // PostgreSQL := is older syntax supported for backward compatiblity only
+    (name=sqlName (EQUALS GT | COLON EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
 ;
 
 functionParameterPrefix:
