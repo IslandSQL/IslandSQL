@@ -3061,6 +3061,7 @@ keywordAsId:
     | K_INCLUDE
     | K_INCREMENT
     | K_INDENT
+    | K_INDEX
     | K_INDICATOR
     | K_INET
     | K_INFINITE

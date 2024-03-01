@@ -234,6 +234,7 @@ K_IN: 'in';
 K_INCLUDE: 'include';
 K_INCREMENT: 'increment';
 K_INDENT: 'indent';
+K_INDEX: 'index';
 K_INDICATOR: 'indicator';
 K_INET: 'inet';
 K_INFINITE: 'infinite';
