@@ -457,7 +457,7 @@ subquery:
 queryBlock:
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
-    selectList
+    selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
     (intoClause | bulkCollectIntoClause)? // in PL/SQL only
     fromClause? // starting with OracleDB 23c the from clause is optional
     whereClause?
