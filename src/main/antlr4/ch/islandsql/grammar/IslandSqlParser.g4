@@ -3214,6 +3214,7 @@ keywordAsId:
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
+    | K_NOVALIDATE
     | K_NOWAIT
     | K_NTH_VALUE
     | K_NULL

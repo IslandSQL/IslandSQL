@@ -339,6 +339,7 @@ K_NOENTITYESCAPING: 'noentityescaping';
 K_NOSCHEMACHECK: 'noschemacheck';
 K_NOT: 'not';
 K_NOTHING: 'nothing';
+K_NOVALIDATE: 'novalidate';
 K_NOWAIT: 'nowait';
 K_NTH_VALUE: 'nth_value';
 K_NULL: 'null';
