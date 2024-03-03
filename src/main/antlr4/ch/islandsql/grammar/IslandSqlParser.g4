@@ -838,7 +838,7 @@ postgresqlTableExpression:
 ;
 
 rowsFromFunction:
-    expr=functionExpression (K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition) RPAR)?
+    expr=functionExpression (K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR)?
 ;
 
 // grammar definition in SQL Language Reference 19c/21c/23c is wrong, added LPAR/RPAR
