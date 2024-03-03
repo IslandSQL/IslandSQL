@@ -868,7 +868,7 @@ externalFileLocation:
 
 sampleClause:
       K_SAMPLE K_BLOCK? LPAR samplePercent=expression RPAR (K_SEED LPAR seedValue=expression RPAR)? // OracleDB
-    | K_TABLESAMPLE samplingMethod=sqlName LPAR args+=expression (args+=expression)* RPAR (K_REPEATABLE LPAR seedValue=expression RPAR)? // PostgreSQL
+    | K_TABLESAMPLE samplingMethod=sqlName LPAR args+=expression (COMMA args+=expression)* RPAR (K_REPEATABLE LPAR seedValue=expression RPAR)? // PostgreSQL
 ;
 
 inlineExternalTable:
