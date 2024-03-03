@@ -1080,7 +1080,7 @@ innerCrossJoinClause:
       K_INNER? K_JOIN fromItem
       (
             K_ON cond=condition
-          | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+          | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
       )
     | K_CROSS K_JOIN fromItem
     | K_NATURAL K_INNER? K_JOIN fromItem
@@ -1092,7 +1092,7 @@ outerJoinClause:
     fromItem right=queryPartitionClause?
     (
           K_ON cond=condition
-        | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+        | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
     )?
 ;
 
