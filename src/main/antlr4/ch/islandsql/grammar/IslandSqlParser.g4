@@ -1920,6 +1920,7 @@ fullEdgeAnyDirection:
 jsonArray:
       K_JSON_ARRAY LPAR jsonArrayContent RPAR
     | K_JSON LSQB jsonArrayContent RSQB
+    | LSQB jsonArrayContent RSQB // undocumented, works in nested context only
 ;
 
 jsonArrayContent:
@@ -2029,6 +2030,7 @@ jsonOnErrorClause:
 jsonObject:
       K_JSON_OBJECT LPAR jsonObjectContent RPAR
     | K_JSON LCUB jsonObjectContent RCUB
+    | LCUB jsonObjectContent RCUB // undocumented, works in nested context only
 ;
 
 jsonObjectContent:
