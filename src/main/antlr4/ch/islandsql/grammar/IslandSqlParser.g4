@@ -2189,9 +2189,10 @@ ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
 ;
 
+// undocumented: some options such as pretty, ascii, allow scalars, disallow scalars
 jsonTransform:
     K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
-    jsonTransformReturningClause? jsonTypeClause? jsonPassingClause? RPAR
+    jsonTransformReturningClause? options+=jsonOption* jsonTypeClause? jsonPassingClause? RPAR
 ;
 
 // case, copy, intersect, merge, minus, prepend, union are implemented according the description in the JSON Developer's Guide
