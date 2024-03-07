@@ -2,10 +2,8 @@
 
 ## Introduction
 
-IslandSQL is an ANTLR 4 based parser for SQL.
+IslandSQL is an ANTLR 4 based parser for grammars used in SQL files.
 The parser requires a Java Virtual Machine supporting version 8 or newer and is available on [Maven Central](https://central.sonatype.com/artifact/ch.islandsql/islandsql).
-
-The parser provides chosen parts of grammars used in SQL files.
 
 ## Scope
 
