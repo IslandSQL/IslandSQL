@@ -2281,12 +2281,7 @@ renameOp:
 ;
 
 keepOp:
-    K_KEEP items+=keepOpItem (COMMA items+=keepOpItem)*
-    onMissingHandler?
-;
-
-keepOpItem:
-    pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    K_KEEP items+=expression (COMMA items+=expression)* onMissingHandler?
 ;
 
 sortOp:
