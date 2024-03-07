@@ -2303,9 +2303,8 @@ sortOp:
     )*
 ;
 
-// syntax based on
 nestedPathOp:
-    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 caseOp:
