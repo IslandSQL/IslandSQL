@@ -1987,7 +1987,7 @@ jsonQueryReturnType:
 ;
 
 jsonValueReturningClause:
-    K_RETURNING jsonValueReturnType jsonOption*
+    K_RETURNING jsonValueReturnType options+=jsonOption*
 ;
 
 jsonValueReturnType:
@@ -2038,7 +2038,7 @@ jsonObjectContent:
           AST
         | entries+=entry (COMMA entries+=entry)*
     )
-    jsonOnNullClause? jsonReturningClause? jsonOption*
+    jsonOnNullClause? jsonReturningClause? options+=jsonOption*
     (K_WITH K_UNIQUE K_KEYS)?
 ;
 
@@ -2054,12 +2054,12 @@ regularEntry:
 
 jsonObjectagg:
     K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
-    jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
+    jsonOnNullClause? jsonReturningClause? options+=jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
 jsonQuery:
     K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
-    (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
+    (K_RETURNING jsonQueryReturnType)? options+=jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? jsonTypeClause? RPAR
 ;
 
@@ -2108,7 +2108,7 @@ jsonScalar:
 ;
 
 jsonSerialize:
-    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
+    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? options+=jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
 // jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
