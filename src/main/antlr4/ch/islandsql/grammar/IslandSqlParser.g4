@@ -630,7 +630,7 @@ hierarchicalQueryClause:
 // PostgreSQL: all, distinct
 groupByClause:
       K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
-    | K_HAVING cond=condition (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed
+    | K_HAVING cond=condition (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
 ;
 
 // rollupCubeClause treated as expression
