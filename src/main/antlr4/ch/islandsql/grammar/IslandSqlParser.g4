@@ -761,11 +761,12 @@ queryBlockSetOperator:
     | K_ALL                                                                     # allQbOperator
 ;
 
+// PostreSQL allows the use of distinct
 setOperator:
-      K_UNION     K_ALL?    # unionSetOperator
-    | K_INTERSECT K_ALL?    # intersectSetOperator
-    | K_MINUS     K_ALL?    # minusSetOperator
-    | K_EXCEPT    K_ALL?    # minusSetOperator
+      K_UNION     (K_ALL|K_DISTINCT)?    # unionSetOperator
+    | K_INTERSECT (K_ALL|K_DISTINCT)?    # intersectSetOperator
+    | K_MINUS     (K_ALL|K_DISTINCT)?    # minusSetOperator         // OracleDB
+    | K_EXCEPT    (K_ALL|K_DISTINCT)?    # minusSetOperator
 ;
 
 // only in PL/SQL
