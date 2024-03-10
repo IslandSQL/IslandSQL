@@ -1122,13 +1122,14 @@ inlineAnalyticView:
 ;
 
 // ensure that at least one alternative is not optional
+// make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
-      K_OFFSET offset=expression (K_ROW | K_ROWS)
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS))?
+      K_OFFSET offset=expression (K_ROW | K_ROWS)?
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
       K_FETCH (K_FIRST | K_NEXT) (rowcount=expression | percent=expression K_PERCENT)?
       (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
-    | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS))? // PostgreSQL
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS)) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
+    | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
 ;
 
 forUpdateClause:
