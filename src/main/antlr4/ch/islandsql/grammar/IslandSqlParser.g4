@@ -2792,7 +2792,7 @@ windowingClause:
         K_EXCLUDE
         (
               excludeCurrentRow=K_CURRENT K_ROW
-            | excludeGroups=K_GROUPS
+            | excludeGroup=K_GROUP // wrong documentation in OracleDB 23c (groups instead of group)
             | excludeTies=K_TIES
             | excludeNoOthers=K_NO K_OTHERS
         )
