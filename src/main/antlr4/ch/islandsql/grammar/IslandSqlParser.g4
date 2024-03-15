@@ -1431,6 +1431,7 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_A K_SET            # isASetCondition
     | expr=expression operator=K_IS K_NOT? K_EMPTY              # isEmptyCondition
     | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
+    | expr=expression operator=(K_NOTNULL|K_ISNULL)             # postgresqlNullCondition   // PostgreSQL
     | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
     | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
     | expr=expression operator=K_IS K_NOT? K_DANGLING           # isDanglingCondition
