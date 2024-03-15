@@ -1399,12 +1399,7 @@ expression:
             | operator=VERBAR VERBAR // OracleDB (WS, comment allowed)
         )
         right=expression                                        # concatenationExpression       // precedence 10
-    | left=expression operator=AMP right=expression             # bitwiseAndExpression          // precedence 10
-    | left=expression operator=VERBAR right=expression          # bitwiseOrExpression           // precedence 10
-    | left=expression operator=NUM right=expression             # bitwiseXorExpression          // precedence 10
-    | left=expression operator=LT_LT right=expression           # bitwiseShiftLeftExpression    // precedence 10
-    | left=expression operator=GT_GT right=expression           # bitwiseShiftRightExpression   // precedence 10
-    | left=expression operator=customOperator right=expression  # customOperatorExpression      // precedence 10
+    | left=expression operator=binaryOperator right=expression  # binaryExpression              // precedence 10
     | left=expression K_MULTISET operator=K_EXCEPT
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | left=expression K_MULTISET operator=K_INTERSECT
@@ -2740,7 +2735,7 @@ orderByItem:
 // PostgreSQL (member of some B-tree operator family)
 orderByUsingOperator:
       simpleComparisionOperator
-    | customOperator
+    | binaryOperator
 ;
 
 queryPartitionClause:
@@ -2809,39 +2804,65 @@ windowingClause:
 ;
 
 unaryOperator:
-      PLUS              # positiveSignOperator
-    | MINUS             # negativeSignOperator
-    | COMMAT            # absoluteOperator          // PostgreSQL
-    | VERBAR_SOL        # squareRootOperator        // PostgreSQL
-    | VERBAR_VERBAR_SOL # cubeRootOperator          // PostgreSQL
-    | TILDE             # bitwiseNotOperator        // PostgreSQL
-    | K_PRIOR           # priorOpertor              // hierarchical query operator
-    | K_CONNECT_BY_ROOT # connectByRootOperator     // hierarchical query operator
-    | K_RUNNING         # runningOperator           // row_pattern_nav_logical
-    | K_FINAL           # finalOperator             // row_pattern_nav_logical
-    | K_NEW             # newOperator               // type constructor
-    | K_CURRENT K_OF    # currentOfOperator         // operator as update extension in PL/SQL where clause
+      PLUS                  # positiveSignOperator
+    | MINUS                 # negativeSignOperator
+    | COMMAT                # absoluteOperator          // PostgreSQL
+    | VERBAR_SOL            # squareRootOperator        // PostgreSQL
+    | VERBAR_VERBAR_SOL     # cubeRootOperator          // PostgreSQL
+    | TILDE                 # bitwiseNotOperator        // PostgreSQL
+    | COMMAT_MINUS_COMMAT   # totalLenthOperator        // PostgreSQL
+    | COMMAT_COMMAT         # centerPointOperator       // PostgreSQL
+    | NUM                   # numberOfPointsOperator    // PostgreSQL
+    | QUEST_MINUS           # horizontalLineOperator    // PostgreSQL
+    | QUEST_VERBAR          # verticalLineOperator      // PostgreSQL
+    | EXCL_EXCL             # negateTsQueryOperator     // PostgreSQL
+    | K_PRIOR               # priorOpertor              // hierarchical query operator
+    | K_CONNECT_BY_ROOT     # connectByRootOperator     // hierarchical query operator
+    | K_RUNNING             # runningOperator           // row_pattern_nav_logical
+    | K_FINAL               # finalOperator             // row_pattern_nav_logical
+    | K_NEW                 # newOperator               // type constructor
+    | K_CURRENT K_OF        # currentOfOperator         // operator as update extension in PL/SQL where clause
 ;
 
-// only non-conflicting binary operators, this means they are not implemented by OracleDB or PostgreSQL
-// therefore excluded the following PostGIS operators: '<<', '=', '>>', '~='
-// see https://postgis.net/docs/manual-3.4/reference.html#Operators
-customOperator:
-      AMP_AMP               # postgisIntersectOperator
-    | AMP_AMP_AMP           # postgisNDIntersectOperator
-    | AMP_LT                # postgisOverlapsLeftOperator
-    | AMP_LT_VERBAR         # postgisOverlapsBelowOperator
-    | AMP_GT                # postgisOverlapsRightOperator
-    | LT_LT_VERBAR          # postgisStrictlyBelowOperator
-    | COMMAT                # postgisContainedByOperator
-    | VERBAR_AMP_GT         # postgisOverlapsAboveOperator
-    | VERBAR_GT_GT          # postgisStrictlyAboveOperator
-    | TILDE                 # postgisContainsOperator
-    | LT_MINUS_GT           # postgisDistanceOperator
-    | VERBAR_EQUALS_VERBAR  # postgisClosestDistanceOperator
-    | LT_NUM_GT             # postgisBoxDistanceOperator
-    | LT_LT_MINUS_GT_GT     # postgisNDCentroidBoxDistanceOperator
-    | LT_LT_NUM_GT_GT       # postgisNDBoxDistance
+// binary operators not handled in expression, only single token operators
+// operator meaning is based on context, label can be misleading
+// custom PostGIS operators according see https://postgis.net/docs/manual-3.4/reference.html#Operators
+binaryOperator:
+      AMP                           # bitwiseAndOperator
+    | AMP_AMP                       # overlapsOperator
+    | AMP_AMP_AMP                   # nDimIntersectOperator         // PostGIS
+    | AMP_GT                        # notExtendsLeftOperator
+    | AMP_LT                        # notExtendsRightOperator
+    | AMP_LT_VERBAR                 # notExtendsAboveOperator
+    | COMMAT                        # absoluteValueOperator
+    | COMMAT_COMMAT                 # matchOperator
+    | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
+    | COMMAT_GT                     # containsOperator
+    | GT_GT                         # bitwiseShiftRightOperator
+    | GT_HAT                        # aboveOperator
+    | LT_COMMAT                     # containedByOperator
+    | LT_LT                         # bitwiseShiftLeftOperator
+    | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
+    | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
+    | LT_LT_VERBAR                  # strictlyBelowOperator
+    | LT_HAT                        # belowOperator
+    | LT_MINUS_GT                   # distanceOperator
+    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS
+    | MINUS_GT                      # extractElementOperator
+    | MINUS_GT_GT                   # extractObjectOperator
+    | MINUS_VERBAR_MINUS            # adjacentOperator
+    | NUM                           # bitwiseXorOperator
+    | NUM_GT                        # extractSubObjectOperator
+    | NUM_GT_GT                     # extractSubObjectTextOperator
+    | QUEST_NUM                     # intersectOperator
+    | QUEST_MINUS                   # horizontallyAlignedOperator
+    | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
+    | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
+    | TILDE                         # boxContainsOperator           // PostGIS
+    | VERBAR                        # bitwiseOrOperator
+    | VERBAR_AMP_GT                 # notExtendsBelowOperator
+    | VERBAR_EQUALS_VERBAR          # closestDistanceOperator
+    | VERBAR_GT_GT                  # strictlyAboveOperator
 ;
 
 postgresqlArrayConstructor:
