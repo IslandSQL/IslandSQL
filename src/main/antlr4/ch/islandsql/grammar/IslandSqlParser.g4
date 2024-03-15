@@ -1452,8 +1452,8 @@ expression:
         operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
         right=expression
         (K_ESCAPE escChar=expression)?                          # likeCondition
-    | expr1=expression K_NOT? operator=K_BETWEEN
-        expr2=expression K_AND expr3=expression                 # betweenCondition
+    | expr1=expression K_NOT? operator=K_BETWEEN K_SYMMETRIC?
+        expr2=expression K_AND expr3=expression                 # betweenCondition          // PostgreSQL: symmetric
     | K_EXISTS LPAR subquery RPAR                               # existsCondition
     | left=expression K_NOT? operator=K_IN
         right=expression                                        # inCondition
