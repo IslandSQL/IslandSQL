@@ -88,7 +88,7 @@ delete:
     withClause?                                             // PostgreSQL
     {unhideFirstHint();} K_DELETE hint? K_FROM?
     (
-          K_ONLY? dmlTableExpressionClause AST?             // PostgreSQL: only/*
+          K_ONLY? dmlTableExpressionClause AST?             // PostgreSQL: only, *
         | K_ONLY LPAR dmlTableExpressionClause RPAR
     ) talias=sqlName?
     fromUsingClause?
