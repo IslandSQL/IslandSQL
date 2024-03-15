@@ -90,7 +90,7 @@ delete:
     (
           K_ONLY? dmlTableExpressionClause AST?             // PostgreSQL: only, *
         | K_ONLY LPAR dmlTableExpressionClause RPAR
-    ) talias=sqlName?
+    ) K_AS? talias=sqlName?                                 // PostgreSQL: as
     fromUsingClause?
     whereClause?
     returningClause?
