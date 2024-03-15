@@ -1906,6 +1906,7 @@ fullEdgePattern:
 
 abbreviatedEdgePattern:
       MINUS GT      # abbreviatedEdgePatternPointingRight
+    | MINUS_GT      # abbreviatedEdgePatternPointingRight
     | LT MINUS      # abbreviatedEdgePatternPointingLeft
     | MINUS         # abbreviatedEdgePatternAnyDirection
     | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
@@ -1913,7 +1914,7 @@ abbreviatedEdgePattern:
 ;
 
 fullEdgePointingRight:
-    MINUS LSQB elementPatternFiller RSQB MINUS GT
+    MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
 ;
 
 fullEdgePointingLeft:
@@ -1922,7 +1923,7 @@ fullEdgePointingLeft:
 
 fullEdgeAnyDirection:
       MINUS LSQB elementPatternFiller RSQB MINUS
-    | LT MINUS LSQB elementPatternFiller RSQB MINUS GT
+    | LT MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
 ;
 
 jsonArray:
