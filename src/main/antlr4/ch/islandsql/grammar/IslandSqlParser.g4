@@ -2866,7 +2866,7 @@ binaryOperator:
 ;
 
 postgresqlArrayConstructor:
-      K_ARRAY LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB
+      K_ARRAY LSQB (exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)*)? RSQB
     | K_ARRAY LPAR expr+=subquery RPAR
 ;
 
