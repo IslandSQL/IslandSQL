@@ -1442,6 +1442,8 @@ expression:
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
         )                                                       # isJsonCondition
+    | left=expression operator=K_IS K_NOT?
+        K_DISTINCT K_FROM right=expression                      # isDistinctFromCondition   // PostgreSQL
     | left=expression K_NOT? operator=K_MEMBER
         K_OF? right=expression                                  # memberCondition
     | left=expression K_NOT? operator=K_SUBMULTISET
