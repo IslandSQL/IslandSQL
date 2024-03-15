@@ -3445,11 +3445,18 @@ sqlName:
     | substitionVariable+
     | POSITIONAL_PARAMETER          // PostgreSQL
     | unicodeIdentifier             // PostgreSQL
+    | psqlVariable                  // PostgreSQL
 ;
 
 // PostgreSQL
 unicodeIdentifier:
     UQUOTED_ID (K_UESCAPE STRING)?
+;
+
+// PostgreSQL
+psqlVariable:
+      COLON variable=qualifiedName
+    | COLON stringVariable=STRING
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
