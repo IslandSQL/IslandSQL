@@ -3134,6 +3134,7 @@ keywordAsId:
     | K_INTO
     | K_INVISIBLE
     | K_IS
+    | K_ISNULL
     | K_ITERATE
     | K_JARO_WINKLER
     | K_JOIN
@@ -3223,6 +3224,7 @@ keywordAsId:
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
+    | K_NOTNULL
     | K_NOVALIDATE
     | K_NOWAIT
     | K_NTH_VALUE
@@ -3342,6 +3344,7 @@ keywordAsId:
     | K_SUBPARTITION
     | K_SUBSET
     | K_SUMMARY
+    | K_SYMMETRIC
     | K_SYSTEM
     | K_TABLE
     | K_TABLESAMPLE
