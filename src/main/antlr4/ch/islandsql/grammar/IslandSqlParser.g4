@@ -1161,11 +1161,12 @@ updateStatement:
 ;
 
 update:
+    withClause?                                         // PostgreSQL
     {unhideFirstHint();} K_UPDATE hint?
     (
-          dmlTableExpressionClause
+          K_ONLY? dmlTableExpressionClause AST?         // PostgreSQL: only, *
         | K_ONLY LPAR dmlTableExpressionClause RPAR
-    ) talias=sqlName?
+    ) K_AS? talias=sqlName?                             // PostgreSQL: as
     updateSetClause
     fromUsingClause?
     whereClause?
@@ -1187,6 +1188,8 @@ updateSetClause:
 updateSetClauseItem:
       LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # updateSetClauseItemColumnList
+    | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # updateSetClauseItemPostgresqlRow
     | LPAR columns+=qualifiedName RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # updateSetClauseItemColumn
     | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
