@@ -117,7 +117,10 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     @SuppressWarnings("SameReturnValue")
     public boolean saveDollarIdentifier1() {
-        dollarIdentifier1 = getDollerIdentifier();
+        String id = getDollerIdentifier();
+        if (!id.isEmpty()) {
+            dollarIdentifier1 = id;
+        }
         return true;
     }
 
