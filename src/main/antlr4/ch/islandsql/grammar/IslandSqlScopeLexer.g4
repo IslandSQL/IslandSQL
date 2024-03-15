@@ -31,10 +31,12 @@ fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment SQL_END:
       EOF
     | ';' [ \t]* SINGLE_NL?
     | SLASH_END
+    | PSQL_EXEC
 ;
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
