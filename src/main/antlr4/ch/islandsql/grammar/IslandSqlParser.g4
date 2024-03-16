@@ -3359,6 +3359,7 @@ keywordAsId:
     | K_SHARE_OF
     | K_SHOW
     | K_SIBLINGS
+    | K_SIMILAR
     | K_SINGLE
     | K_SIZE
     | K_SKIP
@@ -3374,6 +3375,7 @@ keywordAsId:
     | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
+    | K_SUBSTRING
     | K_SUMMARY
     | K_SYMMETRIC
     | K_SYSTEM
