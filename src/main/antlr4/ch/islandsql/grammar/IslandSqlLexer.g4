@@ -568,6 +568,7 @@ AMP_LT_VERBAR: '&<|';
 AMP_GT: '&>';
 AMP_SOL_AMP: '&/&';
 AST: '*';
+BSOL: '\\';
 COLON: ':';
 COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 COMMA: ',';
