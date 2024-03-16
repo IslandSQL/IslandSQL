@@ -176,8 +176,25 @@ Integrating custom operators in a generic way will most likely lead to conflicts
 
 However, the custom operators provided by the [PostGIS](https://www.postgis.net/) extension are included in the grammar.
 
+## Variables in psql
 
+[Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
 
+Here's an example of a supported usage:
+
+```sql
+\set schema public
+select e.*, :'schema' as schema from :schema.emp as e;
+```
+
+And here's an example of an unsupported usage:
+
+```sql
+\set schema public.
+select e.*, :'schema' as schema from :schema emp as e;
+```
+
+The grammar expects an identifier to not contain a period. Hence, this usage is not supported.
 
 ## License
 
