@@ -144,7 +144,7 @@ However, when you embed the drivers specific parameters directly, the parameters
 - [Oracle Database Administrator's Guide: Using Inline External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-621E5DDE-36D9-4661-9D14-80DE35858C3F)
 - [Oracle Database Administrator's Guide: Overriding Parameters for External Tables in a Query](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-6E4219FF-A557-452E-A6E9-96C38BA87EE0)
 
-## Unterminated Statements
+### Unterminated Statements
 
 The grammar expects an SQL statement to end with a semicolon, unless it is the last statement in a file. Here is a valid example:
 
@@ -155,7 +155,7 @@ select 'fourty-two' as result
 
 Removing the semicolon in the scripts will result in a parse error. 
 
-## PostgreSQL Bitwise XOR Operator `#`
+### PostgreSQL Bitwise XOR Operator `#`
 
 In OracleDB an unquoted identifier can contain a `#` character. In PostgreSQL this is not allowed.
 The IslandSQL grammar supports identifiers containing `#`. As a result, in some cases, an expression containing a `#` 
@@ -170,13 +170,13 @@ Here are some examples:
 | `select a #b from t;`  | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a `#`   |
 | `select 1#2;`          | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a digit |
 
-## PostgreSQL Custom Operators
+### PostgreSQL Custom Operators
 
 Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions. Therefore, the IslandSQL grammar does not support custom operators.
 
 However, the custom operators provided by the [PostGIS](https://www.postgis.net/) extension are included in the grammar.
 
-## Variables in psql
+### Variables in psql
 
 [Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
 
