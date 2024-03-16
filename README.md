@@ -108,13 +108,19 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
-### Dynamic Grammar of SQL\*Plus
+### Dynamic Grammar of SQL\*Plus and psql
 
 The following commands affect the grammar and are not interpreted by IslandSQL. The IslandSQL grammar is built on the default settings. As a result other values lead to errors.
 
 - [set blockterminator](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-2967B311-24CB-43E0-95F2-BFC429CF033D)
 - [set cmdsep](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-894E73DD-D2CF-4854-B918-AC57C4271C26)
 - [set sqlterminator](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/SET-system-variable-summary.html#GUID-5D91A9A9-13A2-4F62-B02A-AD2F3AFF8BB7)
+- [single line option](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-OPTION-SINGLE-LINE)
+
+However, the following psql meta commands are supported as alternative to a semicolon:
+
+- [\\g](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-META-COMMAND-G)
+- [\\;](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-META-COMMAND-SEMICOLON)
 
 ### SQL\*Plus Substitution Variables
 
