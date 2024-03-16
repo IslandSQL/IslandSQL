@@ -118,7 +118,7 @@ The following commands affect the grammar and are not interpreted by IslandSQL. 
 
 ### SQL\*Plus Substitution Variables
 
-[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a `sqlName` is valid. This is basically everywhere you can use an [expression](https://islandsql.github.io/IslandSQL/grammar.xhtml#expression) or a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName).
+[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
 
 Here's an example of a supported usage:
 
