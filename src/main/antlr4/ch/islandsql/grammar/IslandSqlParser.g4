@@ -837,8 +837,8 @@ queryTableExpression:
 // table/column aliases are part of from_item
 // plain table function is handled in query_table_expression
 postgresqlTableExpression:
-       K_LATERAL expr=functionExpression (K_WITH K_ORDINALITY)?
-     | expr=functionExpression K_WITH K_ORDINALITY
+       K_LATERAL (schema=sqlName PERIOD)? expr=functionExpression (K_WITH K_ORDINALITY)?
+     | (schema=sqlName PERIOD)? expr=functionExpression K_WITH K_ORDINALITY
      | K_LATERAL? K_ROWS K_FROM LPAR exprs+=rowsFromFunction (COMMA exprs+=rowsFromFunction)* RPAR (K_WITH K_ORDINALITY)?
 ;
 
