@@ -581,6 +581,7 @@ GT: '>';
 GT_GT: '>>';
 GT_HAT: '>^';
 HAT: '^';
+HAT_COMMAT: '^@';
 LCUB: '{';
 LOWBAR: '_';
 LPAR: '(';
