@@ -140,6 +140,26 @@ lock table dept in &lock_mode mode nowait;
 
 The grammar expects certain keywords at the position of `&lock_mode`. Hence, this usage is not supported.
 
+### Variables in psql
+
+[Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
+
+Here's an example of a supported usage:
+
+```sql
+\set schema public
+select e.*, :'schema' as schema from :schema.emp as e;
+```
+
+And here's an example of an unsupported usage:
+
+```sql
+\set schema public.
+select e.*, :'schema' as schema from :schema emp as e;
+```
+
+The grammar expects an identifier to not contain a period. Hence, this usage is not supported.
+
 ### External Table Access Parameters
 
 The `access_parameters` clause used in [inline_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-AC907F76-4436-4D28-9EAB-FD3D93AE5648) or [modified_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-BC324A59-5780-461E-8DDF-F8ABCEFD741B) is driver specific. You can pass this access parameters as string or as a subquery returning a CLOB or embed the driver specific parameters directly. All variants are supported. 
@@ -181,26 +201,6 @@ Here are some examples:
 Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions. Therefore, the IslandSQL grammar does not support custom operators.
 
 However, the custom operators provided by the [PostGIS](https://www.postgis.net/) extension are included in the grammar.
-
-### Variables in psql
-
-[Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
-
-Here's an example of a supported usage:
-
-```sql
-\set schema public
-select e.*, :'schema' as schema from :schema.emp as e;
-```
-
-And here's an example of an unsupported usage:
-
-```sql
-\set schema public.
-select e.*, :'schema' as schema from :schema emp as e;
-```
-
-The grammar expects an identifier to not contain a period. Hence, this usage is not supported.
 
 ## License
 
