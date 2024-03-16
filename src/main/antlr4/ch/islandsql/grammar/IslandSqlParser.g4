@@ -3393,6 +3393,8 @@ keywordAsId:
     | K_SYSTEM
     | K_TABLE
     | K_TABLESAMPLE
+    | K_TEMP
+    | K_TEMPORARY
     | K_TEXT
     | K_THE
     | K_THEN
@@ -3422,6 +3424,7 @@ keywordAsId:
     | K_UNIQUE
     | K_UNKNOWN
     | K_UNLIMITED
+    | K_UNLOGGED
     | K_UNMATCHED
     | K_UNPIVOT
     | K_UNSCALED
