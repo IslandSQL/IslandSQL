@@ -2843,6 +2843,7 @@ binaryOperator:
     | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
     | GT_GT                         # bitwiseShiftRightOperator
     | GT_HAT                        # aboveOperator
+    | HAT_COMMAT                    # startsWithOperator
     | LT_COMMAT                     # containedByOperator
     | LT_LT                         # bitwiseShiftLeftOperator
     | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
