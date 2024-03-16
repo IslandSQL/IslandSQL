@@ -3553,5 +3553,6 @@ sqlEnd:
       EOF
     | SEMI SOL?
     | SOL
-    | PSQL_EXEC // PostgreSQL: alternative to to semicolon to terminate a statement
+    | PSQL_EXEC // PostgreSQL: alternative to semicolon to terminate a statement
+    | BSOL SEMI // PostgreSQL: alternative to semicolon to terminate a statement
 ;
