@@ -1343,8 +1343,9 @@ intervalField:
 ;
 
 // handles also Oracle_supplied_types, which are just a special type of user_defined_types
+// handles also parametrized PostGIS data types such as geography
 userDefinedType:
-    name=qualifiedName
+    name=qualifiedName (LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)?
 ;
 
 /*----------------------------------------------------------------------------*/
