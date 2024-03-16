@@ -2834,10 +2834,12 @@ binaryOperator:
     | AMP_GT                        # notExtendsLeftOperator
     | AMP_LT                        # notExtendsRightOperator
     | AMP_LT_VERBAR                 # notExtendsAboveOperator
+    | AMP_SOL_AMP                   # threeDimOverlapsOperator      // PostGIS, undocumented
     | COMMAT                        # absoluteValueOperator
     | COMMAT_COMMAT                 # matchOperator
     | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
     | COMMAT_GT                     # containsOperator
+    | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
     | GT_GT                         # bitwiseShiftRightOperator
     | GT_HAT                        # aboveOperator
     | LT_COMMAT                     # containedByOperator
@@ -2859,6 +2861,8 @@ binaryOperator:
     | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
     | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
     | TILDE                         # boxContainsOperator           // PostGIS
+    | TILDE_EQUAL_EQUAL             # threeDimSame                  // PostGIS, undocumented
+    | TILDE_TILDE_EQUAL             # nDimSame                      // PostGIS, undocumented
     | VERBAR                        # bitwiseOrOperator
     | VERBAR_AMP_GT                 # notExtendsBelowOperator
     | VERBAR_EQUALS_VERBAR          # closestDistanceOperator
