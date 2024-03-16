@@ -135,6 +135,12 @@ CREATE_OPERATOR:
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+// hide keywords: select, insert, update, delete (hides first command only)
+CREATE_RULE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'rule' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 CREATE_SCHEMA:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
