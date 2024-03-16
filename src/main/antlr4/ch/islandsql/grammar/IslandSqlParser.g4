@@ -458,7 +458,7 @@ queryBlock:
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
     selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
-    (intoClause | bulkCollectIntoClause)? // in PL/SQL only
+    (intoClause | bulkCollectIntoClause | postgresqlIntoClause)? // in PL/SQL only
     fromClause? // starting with OracleDB 23c the from clause is optional
     whereClause?
     hierarchicalQueryClause?
@@ -777,6 +777,10 @@ intoClause:
 // only in PL/SQL
 bulkCollectIntoClause:
     K_BULK K_COLLECT K_INTO variables+=expression (COMMA variables+=expression)*
+;
+
+postgresqlIntoClause:
+    K_INTO (K_TEMPORARY|K_TEMP|K_UNLOGGED)? K_TABLE tableName=qualifiedName
 ;
 
 fromClause:
