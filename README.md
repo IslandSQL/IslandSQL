@@ -90,7 +90,7 @@ select *
   left join dept on emp.deptno = dept.deptno;
 ```
 
-In this case `left` is treated as a table alias of `emp`, since `join dept on emp.deptno = dept.deptno` is a valid [`innerCrossJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#innerCrossJoinClause) and the priority of the evaluation in ANTLR4 matches the order in the grammar.
+In this case `left` is treated as a table alias of `emp`, since `join dept on emp.deptno = dept.deptno` is a valid [`innerCrossJoinClause`](https://islandsql.github.io/IslandSQL/grammar.html#innerCrossJoinClause) and the priority of the evaluation in ANTLR4 matches the order in the grammar.
 
 Solving this issue is not simple, especially since OracleDB allows the use of `left` or `right` as valid table names and table aliases. Here's an another example:
 
@@ -104,7 +104,7 @@ select *
  right join dept on right.deptno = dept.deptno;
 ```
 
-In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.xhtml#outerJoinClause) by OracleDB and not as a table alias.
+In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The token `right` on the last line is therefore treated as part of the [`outerJoinClause`](https://islandsql.github.io/IslandSQL/grammar.html#outerJoinClause) by OracleDB and not as a table alias.
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
@@ -135,7 +135,7 @@ Removing the semicolon in the scripts will result in a parse error.
 
 ### SQL\*Plus Substitution Variables
 
-[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
+[Substitution Variables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/using-substitution-variables-sqlplus.html) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for substitution variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.html#sqlName) is valid.
 
 Here's an example of a supported usage:
 
@@ -153,7 +153,7 @@ The grammar expects certain keywords at the position of `&lock_mode`. Hence, thi
 
 ### Variables in psql
 
-[Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.xhtml#sqlName) is valid.
+[Variables in psql](https://www.postgresql.org/docs/current/app-psql.html#APP-PSQL-VARIABLES) can contain arbitrary text. They are replaced before the execution of a script. The IslandSQL grammar provides limited support for these variables. They can be used in places where a [sqlName](https://islandsql.github.io/IslandSQL/grammar.html#sqlName) is valid.
 
 Here's an example of a supported usage:
 
