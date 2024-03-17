@@ -2509,6 +2509,7 @@ trim:
             ) K_FROM
         )?
         trimSource=expression
+        (COMMA trimCharacter=expression)?   // PostgreSQL
     RPAR
 ;
 
