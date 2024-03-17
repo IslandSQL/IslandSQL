@@ -1576,7 +1576,7 @@ specialFunctionExpression:
     | jsonExistsCondition
     | listagg
     | nthValue
-    | substringFunction
+    | substring
     | tableFunction
     | treat
     | trim
@@ -2470,7 +2470,7 @@ listaggOverflowClause:
 ;
 
 // PostgreSQL
-substringFunction:
+substring:
     K_SUBSTRING LPAR text=expression
     (
           K_FROM from=expression (K_FOR for=expression)?
