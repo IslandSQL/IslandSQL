@@ -2869,6 +2869,8 @@ binaryOperator:
     | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
     | COMMAT_GT                     # containsOperator
     | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
+    | EXCL_TILDE                    # notMatchRegexOperator
+    | EXCL_TILDE_AST                # notMatchRegexCaseInsensitiveOperator
     | GT_GT                         # bitwiseShiftRightOperator
     | GT_HAT                        # aboveOperator
     | HAT_COMMAT                    # startsWithOperator
@@ -2891,6 +2893,7 @@ binaryOperator:
     | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
     | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
     | TILDE                         # boxContainsOperator           // PostGIS
+    | TILDE_AST                     # matchRegexCaseInsensitiveOperator
     | TILDE_EQUAL_EQUAL             # threeDimSame                  // PostGIS, undocumented
     | TILDE_TILDE_EQUAL             # nDimSame                      // PostGIS, undocumented
     | VERBAR                        # bitwiseOrOperator
