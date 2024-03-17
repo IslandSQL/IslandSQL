@@ -1576,6 +1576,7 @@ specialFunctionExpression:
     | jsonExistsCondition
     | listagg
     | nthValue
+    | overlay
     | substring
     | tableFunction
     | treat
@@ -2467,6 +2468,12 @@ costMatrixClause:
 listaggOverflowClause:
       K_ON K_OVERFLOW K_ERROR
     | K_ON K_OVERFLOW K_TRUNCATE truncateIndicator=expression? ((K_WITH|K_WITHOUT) K_COUNT)?
+;
+
+// PostgreSQL
+overlay:
+    K_OVERLAY LPAR text=expression K_PLACING placing=expression
+        K_FROM from=expression (K_FOR for=expression)? RPAR
 ;
 
 // PostgreSQL
