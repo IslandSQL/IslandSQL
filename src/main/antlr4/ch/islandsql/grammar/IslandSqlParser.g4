@@ -1436,6 +1436,7 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
     | expr=expression operator=K_IS K_NOT? K_DANGLING           # isDanglingCondition
     | expr=expression operator=K_IS K_NOT? K_UNKNOWN            # isUnknownCondition        // PostgreSQL
+    | expr=expression operator=K_IS K_NOT? K_DOCUMENT           # isDocumentCondition       // PostgreSQL
     | expr=expression
         operator=K_IS K_NOT? K_JSON formatClause?
         (
