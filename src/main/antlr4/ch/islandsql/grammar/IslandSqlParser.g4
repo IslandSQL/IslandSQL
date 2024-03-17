@@ -3297,6 +3297,7 @@ keywordAsId:
     | K_OUTER
     | K_OVER
     | K_OVERFLOW
+    | K_OVERLAY
     | K_OVERRIDING
     | K_PARAMETERS
     | K_PARENT
@@ -3312,6 +3313,7 @@ keywordAsId:
     | K_PG_LSN
     | K_PG_SNAPSHOT
     | K_PIVOT
+    | K_PLACING
     | K_PLAN
     | K_POINT
     | K_POLYGON
