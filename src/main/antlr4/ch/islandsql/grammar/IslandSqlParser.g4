@@ -2870,6 +2870,7 @@ binaryOperator:
     | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
     | COMMAT_GT                     # containsOperator
     | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
+    | COMMAT_QUEST                  # returnsAnyItemOperator
     | EXCL_TILDE                    # notMatchRegexOperator
     | EXCL_TILDE_AST                # notMatchRegexCaseInsensitiveOperator
     | GT_GT                         # bitwiseShiftRightOperator
@@ -2891,10 +2892,13 @@ binaryOperator:
     | NUM                           # bitwiseXorOperator
     | NUM_GT                        # extractSubObjectOperator
     | NUM_GT_GT                     # extractSubObjectTextOperator
+    | QUEST                         # existsAnyOperator
+    | QUEST_AMP                     # existsAllOperator
     | QUEST_NUM                     # intersectOperator
     | QUEST_MINUS                   # horizontallyAlignedOperator
     | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
     | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
+    | QUEST_VERBAR                  # existsAnyOperator
     | TILDE                         # boxContainsOperator           // PostGIS
     | TILDE_AST                     # matchRegexCaseInsensitiveOperator
     | TILDE_EQUAL_EQUAL             # threeDimSame                  // PostGIS, undocumented
