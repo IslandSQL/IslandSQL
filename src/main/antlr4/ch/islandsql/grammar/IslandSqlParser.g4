@@ -2872,10 +2872,12 @@ binaryOperator:
     | EXCL_TILDE                    # notMatchRegexOperator
     | EXCL_TILDE_AST                # notMatchRegexCaseInsensitiveOperator
     | GT_GT                         # bitwiseShiftRightOperator
+    | GT_GT_EQUALS                  # strictlyContainsOrEqualOperator
     | GT_HAT                        # aboveOperator
     | HAT_COMMAT                    # startsWithOperator
     | LT_COMMAT                     # containedByOperator
     | LT_LT                         # bitwiseShiftLeftOperator
+    | LT_LT_EQUALS                  # strictlyContainedByOrEqualOperator
     | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
     | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
     | LT_LT_VERBAR                  # strictlyBelowOperator
