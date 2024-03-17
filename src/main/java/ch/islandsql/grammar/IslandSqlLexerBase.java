@@ -29,6 +29,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     private final boolean scopeLexer;
     private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
+    private String dollarIdentifier1;
 
     /**
      * Constructor.
@@ -87,6 +88,51 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean checkQuoteDelimiter2() {
         String quoteDelimiter2 = _input.getText(new Interval(_input.index()-2, _input.index()-2));
         return quoteDelimiter2.equals(quoteDelimiter1);
+    }
+
+    /**
+     * Determines the idenitifier in a dollar-quoted string constant.
+     * Current index position is directly after the ending dollar sign.
+     *
+     * @return identifier in dollar-quoted string constant.
+     */
+    private String getDollerIdentifier() {
+        String identifier = null;
+        if (_input.index() > 2) {
+            int start = _input.index() - 2;
+            while (start > 0 && !"$".equals(_input.getText(new Interval(start, start)))) {
+                start--;
+            }
+            identifier = _input.getText(new Interval(start + 1, _input.index() - 2));
+        }
+        return identifier;
+    }
+
+    /**
+     * Saves the ID at the previous position as "dollarIdentifier1".
+     * Must be implemented as function returning a boolean value to ensure
+     * it is executed.
+     *
+     * @return Returns always true.
+     */
+    @SuppressWarnings("SameReturnValue")
+    public boolean saveDollarIdentifier1() {
+        String id = getDollerIdentifier();
+        if (!id.isEmpty()) {
+            dollarIdentifier1 = id;
+        }
+        return true;
+    }
+
+    /**
+     * Determines if the ID at the previous position
+     * is equal to the ID saved in "dollarIdentifier1".
+     *
+     * @return Returns true if character matches quoteDelimiter1.
+     */
+    public boolean checkDollarIdentifier2() {
+        String dollarIdentifier2 = getDollerIdentifier();
+        return dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1);
     }
 
     /**

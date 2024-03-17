@@ -29,7 +29,7 @@ fragment SINGLE_NL: '\r'? '\n';
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment INT: [0-9]+;
+fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
@@ -76,6 +76,7 @@ K_AGGREGATE: 'aggregate';
 K_ALL: 'all';
 K_ALLOW: 'allow';
 K_ANALYTIC: 'analytic';
+K_ANALYZE: 'analyze';
 K_ANCESTOR: 'ancestor';
 K_AND: 'and';
 K_ANY: 'any';
@@ -93,17 +94,24 @@ K_BADFILE: 'badfile';
 K_BEGINNING: 'beginning';
 K_BETWEEN: 'between';
 K_BFILE: 'bfile';
+K_BIGINT: 'bigint';
 K_BIGRAM: 'bigram';
+K_BIGSERIAL: 'bigserial';
 K_BINARY_DOUBLE: 'binary_double';
 K_BINARY_FLOAT: 'binary_float';
+K_BIT: 'bit';
 K_BLOB: 'blob';
 K_BLOCK: 'block';
+K_BOOL: 'bool';
 K_BOOLEAN: 'boolean';
 K_BOTH: 'both';
+K_BOX: 'box';
 K_BREADTH: 'breadth';
+K_BUFFERS: 'buffers';
 K_BULK: 'bulk';
 K_BY: 'by';
 K_BYTE: 'byte';
+K_BYTEA: 'bytea';
 K_CALL: 'call';
 K_CASE: 'case';
 K_CASE_SENSITIVE: ('case_sensitive'|'case-sensitive'); // original implementation was based on kebab-case, see https://mobile.twitter.com/phsalvisberg/status/1351990195109974018
@@ -112,11 +120,14 @@ K_CHAR: 'char';
 K_CHARACTER: 'character';
 K_CHAR_CS: 'char_cs';
 K_CHECK: 'check';
+K_CIDR: 'cidr';
+K_CIRCLE: 'circle';
 K_CLOB: 'clob';
 K_COLLATE: 'collate';
 K_COLLECT: 'collect';
 K_COLUMNS: 'columns';
 K_CONDITIONAL: 'conditional';
+K_CONFLICT: 'conflict';
 K_CONNECT: 'connect';
 K_CONNECT_BY_ROOT: 'connect_by_root';
 K_CONSTRAINT: 'constraint';
@@ -126,6 +137,7 @@ K_CONTENT: 'content';
 K_CONVERSION: 'conversion';
 K_COPY: 'copy';
 K_COST: 'cost';
+K_COSTS: 'costs';
 K_COUNT: 'count';
 K_CREATE: 'create';
 K_CROSS: 'cross';
@@ -154,6 +166,7 @@ K_DIRECTORY: 'directory';
 K_DISALLOW: 'disallow';
 K_DISCARD: 'discard';
 K_DISTINCT: 'distinct';
+K_DO: 'do';
 K_DOCUMENT: 'document';
 K_DOMAIN: 'domain';
 K_DOUBLE: 'double';
@@ -183,6 +196,8 @@ K_FETCH: 'fetch';
 K_FILTER: 'filter';
 K_FINAL: 'final';
 K_FIRST: 'first';
+K_FLOAT4: 'float4';
+K_FLOAT8: 'float8';
 K_FLOAT: 'float';
 K_FOLLOWING: 'following';
 K_FOR: 'for';
@@ -191,6 +206,7 @@ K_FROM: 'from';
 K_FULL: 'full';
 K_FUNCTION: 'function';
 K_FUZZY_MATCH: 'fuzzy_match';
+K_GENERIC_PLAN: 'generic_plan';
 K_GRAPH_TABLE: 'graph_table';
 K_GROUP: 'group';
 K_GROUPING: 'grouping';
@@ -218,10 +234,15 @@ K_IN: 'in';
 K_INCLUDE: 'include';
 K_INCREMENT: 'increment';
 K_INDENT: 'indent';
+K_INDEX: 'index';
 K_INDICATOR: 'indicator';
+K_INET: 'inet';
 K_INFINITE: 'infinite';
 K_INNER: 'inner';
 K_INSERT: 'insert';
+K_INT2: 'int2';
+K_INT4: 'int4';
+K_INT8: 'int8';
 K_INT: 'int';
 K_INTEGER: 'integer';
 K_INTERSECT: 'intersect';
@@ -229,10 +250,12 @@ K_INTERVAL: 'interval';
 K_INTO: 'into';
 K_INVISIBLE: 'invisible';
 K_IS: 'is';
+K_ISNULL: 'isnull';
 K_ITERATE: 'iterate';
 K_JARO_WINKLER: 'jaro_winkler';
 K_JOIN: 'join';
 K_JSON: 'json';
+K_JSONB: 'jsonb';
 K_JSON_ARRAY: 'json_array';
 K_JSON_ARRAYAGG: 'json_arrayagg';
 K_JSON_EQUAL: 'json_equal';
@@ -267,6 +290,7 @@ K_LIKE4: 'like4';
 K_LIKE: 'like';
 K_LIKEC: 'likec';
 K_LIMIT: 'limit';
+K_LINE: 'line';
 K_LISTAGG: 'listagg';
 K_LOCAL: 'local';
 K_LOCATION: 'location';
@@ -276,12 +300,16 @@ K_LOG: 'log';
 K_LOGFILE: 'logfile';
 K_LONG: 'long';
 K_LONGEST_COMMON_SUBSTRING: 'longest_common_substring';
+K_LSEG: 'lseg';
+K_MACADDR8: 'macaddr8';
+K_MACADDR: 'macaddr';
 K_MAIN: 'main';
 K_MAPPING: 'mapping';
 K_MATCH: 'match';
 K_MATCHED: 'matched';
 K_MATCHES: 'matches';
 K_MATCH_RECOGNIZE: 'match_recognize';
+K_MATERIALIZED: 'materialized';
 K_MEASURES: 'measures';
 K_MEMBER: 'member';
 K_MERGE: 'merge';
@@ -292,6 +320,7 @@ K_MISSING: 'missing';
 K_MODE: 'mode';
 K_MODEL: 'model';
 K_MODIFY: 'modify';
+K_MONEY: 'money';
 K_MONTH: 'month';
 K_MULTISET: 'multiset';
 K_NAME: 'name';
@@ -310,6 +339,9 @@ K_NOCYCLE: 'nocycle';
 K_NOENTITYESCAPING: 'noentityescaping';
 K_NOSCHEMACHECK: 'noschemacheck';
 K_NOT: 'not';
+K_NOTHING: 'nothing';
+K_NOTNULL: 'notnull';
+K_NOVALIDATE: 'novalidate';
 K_NOWAIT: 'nowait';
 K_NTH_VALUE: 'nth_value';
 K_NULL: 'null';
@@ -334,6 +366,8 @@ K_OTHERS: 'others';
 K_OUTER: 'outer';
 K_OVER: 'over';
 K_OVERFLOW: 'overflow';
+K_OVERLAY: 'overlay';
+K_OVERRIDING: 'overriding';
 K_PARAMETERS: 'parameters';
 K_PARENT: 'parent';
 K_PARTITION: 'partition';
@@ -345,8 +379,13 @@ K_PER: 'per';
 K_PERCENT: 'percent';
 K_PERIOD: 'period';
 K_PERMUTE: 'permute';
+K_PG_LSN: 'pg_lsn';
+K_PG_SNAPSHOT: 'pg_snapshot';
 K_PIVOT: 'pivot';
+K_PLACING: 'placing';
 K_PLAN: 'plan';
+K_POINT: 'point';
+K_POLYGON: 'polygon';
 K_POSITION: 'position';
 K_PRECEDING: 'preceding';
 K_PRECISION: 'precision';
@@ -365,12 +404,14 @@ K_RANK: 'rank';
 K_RAW: 'raw';
 K_READ: 'read';
 K_REAL: 'real';
+K_RECURSIVE: 'recursive';
 K_REF: 'ref';
 K_REFERENCE: 'reference';
 K_REJECT: 'reject';
 K_RELATE_TO_SHORTER: 'relate_to_shorter';
 K_REMOVE: 'remove';
 K_RENAME: 'rename';
+K_REPEATABLE: 'repeatable';
 K_REPLACE: 'replace';
 K_RESERVABLE: 'reservable';
 K_RESPECT: 'respect';
@@ -394,6 +435,10 @@ K_SEED: 'seed';
 K_SELECT: 'select';
 K_SEQUENCE: 'sequence';
 K_SEQUENTIAL: 'sequential';
+K_SERIAL2: 'serial2';
+K_SERIAL4: 'serial4';
+K_SERIAL8: 'serial8';
+K_SERIAL: 'serial';
 K_SESSIONTIMEZONE: 'sessiontimezone';
 K_SET: 'set';
 K_SETS: 'sets';
@@ -401,10 +446,12 @@ K_SHARE: 'share';
 K_SHARE_OF: 'share_of';
 K_SHOW: 'show';
 K_SIBLINGS: 'siblings';
+K_SIMILAR: 'similar';
 K_SINGLE: 'single';
 K_SIZE: 'size';
 K_SKIP: 'skip';
 K_SMALLINT: 'smallint';
+K_SMALLSERIAL: 'smallserial';
 K_SOME: 'some';
 K_SORT: 'sort';
 K_SQL: 'sql';
@@ -415,13 +462,24 @@ K_STRICT: 'strict';
 K_SUBMULTISET: 'submultiset';
 K_SUBPARTITION: 'subpartition';
 K_SUBSET: 'subset';
+K_SUBSTRING: 'substring';
+K_SUMMARY: 'summary';
+K_SYMMETRIC: 'symmetric';
+K_SYSTEM: 'system';
 K_TABLE: 'table';
+K_TABLESAMPLE: 'tablesample';
+K_TEMP: 'temp';
+K_TEMPORARY: 'temporary';
+K_TEXT: 'text';
 K_THE: 'the';
 K_THEN: 'then';
 K_TIES: 'ties';
 K_TIME: 'time';
 K_TIMESTAMP: 'timestamp';
+K_TIMESTAMPTZ: 'timestamptz';
+K_TIMETZ: 'timetz';
 K_TIMEZONE: 'timezone';
+K_TIMING: 'timing';
 K_TO: 'to';
 K_TRAILING: 'trailing';
 K_TREAT: 'treat';
@@ -429,13 +487,19 @@ K_TRIGRAM: 'trigram';
 K_TRIM: 'trim';
 K_TRUE: 'true';
 K_TRUNCATE: 'truncate';
+K_TSQUERY: 'tsquery';
+K_TSVECTOR: 'tsvector';
+K_TXID_SNAPSHOT: 'txid_snapshot';
 K_TYPE: 'type';
 K_TYPENAME: 'typename';
+K_UESCAPE: 'uescape';
 K_UNBOUNDED: 'unbounded';
 K_UNCONDITIONAL: 'unconditional';
 K_UNION: 'union';
 K_UNIQUE: 'unique';
+K_UNKNOWN: 'unknown';
 K_UNLIMITED: 'unlimited';
+K_UNLOGGED: 'unlogged';
 K_UNMATCHED: 'unmatched';
 K_UNPIVOT: 'unpivot';
 K_UNSCALED: 'unscaled';
@@ -444,19 +508,24 @@ K_UPDATE: 'update';
 K_UPDATED: 'updated';
 K_UPSERT: 'upsert';
 K_UROWID: 'urowid';
+K_USER: 'user';
 K_USING: 'using';
+K_UUID: 'uuid';
 K_VALIDATE: 'validate';
 K_VALIDATE_CONVERSION: 'validate_conversion';
 K_VALUE: 'value';
 K_VALUES: 'values';
+K_VARBIT: 'varbit';
 K_VARCHAR2: 'varchar2';
 K_VARCHAR: 'varchar';
 K_VARYING: 'varying';
+K_VERBOSE: 'verbose';
 K_VERSION: 'version';
 K_VERSIONS: 'versions';
 K_VIEW: 'view';
 K_VISIBLE: 'visible';
 K_WAIT: 'wait';
+K_WAL: 'wal';
 K_WELLFORMED: 'wellformed';
 K_WHEN: 'when';
 K_WHERE: 'where';
@@ -481,6 +550,7 @@ K_XMLROOT: 'xmlroot';
 K_XMLSERIALIZE: 'xmlserialize';
 K_XMLTABLE: 'xmltable';
 K_XMLTYPE: 'xmltype';
+K_YAML: 'yaml';
 K_YEAR: 'year';
 K_YES: 'yes';
 K_ZONE: 'zone';
@@ -493,62 +563,160 @@ K_ZONE: 'zone';
 // or https://oinam.github.io/entities/
 
 AMP: '&';
+AMP_AMP: '&&';
+AMP_AMP_AMP: '&&&';
+AMP_LT: '&<';
+AMP_LT_VERBAR: '&<|';
+AMP_GT: '&>';
+AMP_SOL_AMP: '&/&';
 AST: '*';
+BSOL: '\\';
 COLON: ':';
+COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 COMMA: ',';
 COMMAT: '@';
+COMMAT_COMMAT: '@@';
+COMMAT_COMMAT_COMMAT: '@@@';
+COMMAT_GT: '@>';
+COMMAT_GT_GT: '@>>';
+COMMAT_MINUS_COMMAT: '@-@';
+COMMAT_QUEST: '@?';
 DOLLAR: '$';
 EQUALS: '=';
 EXCL: '!';
+EXCL_EXCL: '!!';
+EXCL_TILDE: '!~';
+EXCL_TILDE_AST: '!~*';
+GRAVE: '`';
 GT: '>';
+GT_GT: '>>';
+GT_GT_EQUALS: '>>=';
+GT_HAT: '>^';
 HAT: '^';
+HAT_COMMAT: '^@';
 LCUB: '{';
+LOWBAR: '_';
 LPAR: '(';
 LSQB: '[';
 LT: '<';
+LT_COMMAT: '<@';
+LT_LT: '<<';
+LT_LT_EQUALS: '<<=';
+LT_LT_MINUS_GT_GT: '<<->>';
+LT_LT_NUM_GT_GT: '<<#>>';
+LT_LT_VERBAR: '<<|';
+LT_HAT: '<^';
+LT_MINUS_GT: '<->';
+LT_NUM_GT: '<#>';
 MINUS: '-';
+MINUS_GT: '->';
+MINUS_GT_GT: '->>';
+MINUS_VERBAR_MINUS: '-|-';
+NUM: '#';
+NUM_GT: '#>';
+NUM_GT_GT: '#>>';
+PERCNT: '%';
 PERIOD: '.';
 PLUS: '+';
 QUEST: '?';
+QUEST_AMP: '?&';
+QUEST_MINUS: '?-';
+QUEST_MINUS_VERBAR: '?-|';
+QUEST_MINUS_VERBAR_VERBAR: '?-||';
+QUEST_NUM: '?#';
+QUEST_VERBAR: '?|';
 RCUB: '}';
 RPAR: ')';
 RSQB: ']';
 SEMI: ';';
 SOL: '/';
 TILDE: '~';
+TILDE_AST: '~*';
+TILDE_EQUAL_EQUAL: '~==';
+TILDE_TILDE_EQUAL: '~~=';
 VERBAR: '|';
+VERBAR_AMP_GT: '|&>';
+VERBAR_EQUALS_VERBAR: '|=|';
+VERBAR_GT_GT: '|>>';
+VERBAR_SOL: '|/';
+VERBAR_VERBAR: '||';
+VERBAR_VERBAR_SOL: '||/';
 
 /*----------------------------------------------------------------------------*/
 // Data types
 /*----------------------------------------------------------------------------*/
 
 STRING:
-    'n'?
-    (
-          (['] ~[']* ['])+
-        | ('q' ['] '[' .*? ']' ['])
-        | ('q' ['] '(' .*? ')' ['])
-        | ('q' ['] '{' .*? '}' ['])
-        | ('q' ['] '<' .*? '>' ['])
-        | ('q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?)
+    (['] ~[']* ['])+
+;
+
+N_STRING:
+    'n' STRING
+;
+
+E_STRING:
+    'e' STRING
+;
+
+B_STRING:
+    'b' STRING
+;
+
+U_AMP_STRING:
+    'u&' STRING
+;
+
+Q_STRING:
+    'q' (
+          ['] '[' .*? ']' [']
+        | ['] '(' .*? ')' [']
+        | ['] '{' .*? '}' [']
+        | ['] '<' .*? '>' [']
+        | ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
     )
 ;
 
+NQ_STRING:
+    'n' Q_STRING
+;
+
+DOLLAR_STRING:
+    '$$' .*? '$$'
+;
+
+DOLLAR_ID_STRING:
+    '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
+;
+
 NUMBER:
-    (
-          INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
-        | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
-    )
-    ('e' ('+'|'-')? INT)?
-    ('f'|'d')?
+      (
+        (
+              INT (PERIOD {!isCharAt(".", getCharIndex())}? INT?)?
+            | PERIOD {!isCharAt(".", getCharIndex()-2)}? INT
+        )
+        ('e' ('+'|'-')? INT)?
+        ('f'|'d')?
+      )
+    | '0x' ('_'? [0123456789abcdef]+)+  // PostgreSQL hexidecimal integer
+    | '0o' ('_'? [01234567]+)+          // PostgreSQL octal integer
+    | '0b' ('_'? [01]+)+                // PostgreSQL binary integer
 ;
 
 /*----------------------------------------------------------------------------*/
 // Identifier
 /*----------------------------------------------------------------------------*/
 
+UQUOTED_ID: ('u&') '"' ~["]* '"';
 QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
-ID: [\p{Alpha}] [_$#0-9\p{Alpha}]*;
+ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]*;
+PLSQL_INQUIRY_DIRECTIVE: '$$' ID;
+POSITIONAL_PARAMETER: '$'[0-9]+;
+
+/*----------------------------------------------------------------------------*/
+// psql exec query command
+/*----------------------------------------------------------------------------*/
+
+PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]+;
 
 /*----------------------------------------------------------------------------*/
 // Any other token

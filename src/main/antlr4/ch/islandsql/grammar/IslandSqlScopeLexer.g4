@@ -31,30 +31,29 @@ fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment SQL_END:
       EOF
     | ';' [ \t]* SINGLE_NL?
     | SLASH_END
+    | PSQL_EXEC
 ;
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment ANY_EXCEPT_FOR_AND_SEMI: ('f' 'o' ~[r;] | 'f' ~[o;] | ~[f;])+;
+fragment DOLLAR_QUOTE: '$' ID? '$';
+fragment PLPGSQL_END: DOLLAR_QUOTE ~[;]* SQL_END;
+fragment ANY_EXCEPT_FOR_AND_SEMI:
+    (
+          'f' 'o' ~[r;]
+        | 'f' ~[o;]
+        | ~[f;]
+    )+;
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]
         | 'a' ~'s'
         | ~'a'
-    )+
-;
-fragment ANY_EXCEPT_BEGIN_WS:
-    (
-          'b' 'e' 'g' 'i' 'n' ~[ \t\r\n]
-        | 'b' 'e' 'g' 'i' ~'n'
-        | 'b' 'e' 'g' ~'i'
-        | 'b' 'e' ~'g'
-        | 'b' ~'e'
-        | ~'b'
     )+
 ;
 
@@ -118,10 +117,10 @@ CREATE_AUDIT_POLICY:
         'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
-// hide keywords: select, insert, update, delete
-CREATE_SCHEMA:
+// hide keywords: with
+CREATE_DATABASE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+        'database' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
@@ -136,11 +135,34 @@ CREATE_OPERATOR:
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
-// hide keyword: insert, update, delete (everything up to the begin keyword)
+// hide keywords: select, insert, update, delete (hides first command only)
+CREATE_RULE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'rule' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
+CREATE_SCHEMA:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'schema' COMMENT_OR_WS+ 'authorization' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_TABLE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN);
+
+// hide keyword: insert, update, delete (everything up to the first semicolon)
 CREATE_TRIGGER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'trigger'
-        ANY_EXCEPT_BEGIN_WS -> channel(HIDDEN)
+        COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
+CREATE_USER:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
+        COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with (everything up to the as keyword)
@@ -165,14 +187,18 @@ REVOKE:
 /*----------------------------------------------------------------------------*/
 
 STRING:
-    'n'?
     (
-          (['] ~[']* ['])+
-        | ('q' ['] '[' .*? ']' ['])
-        | ('q' ['] '(' .*? ')' ['])
-        | ('q' ['] '{' .*? '}' ['])
-        | ('q' ['] '<' .*? '>' ['])
-        | ('q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?)
+          'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
+        | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
+        | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
+        | '$$' .*? '$$'                                         // PostgreSQL dollar-quoted string constant
+        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
+        | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
+        | 'n'? 'q' ['] '[' .*? ']' [']
+        | 'n'? 'q' ['] '(' .*? ')' [']
+        | 'n'? 'q' ['] '{' .*? '}' [']
+        | 'n'? 'q' ['] '<' .*? '>' [']
+        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
     ) -> channel(HIDDEN)
 ;
 
@@ -180,7 +206,7 @@ STRING:
 // Identifier
 /*----------------------------------------------------------------------------*/
 
-ID: [\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
+ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
 // Label statement
@@ -253,7 +279,7 @@ DELETE:
 ;
 
 EXPLAIN_PLAN:
-    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ 'plan' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'explain' {isBeginOfStatement("explain")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 INSERT:
@@ -261,7 +287,7 @@ INSERT:
 ;
 
 LOCK_TABLE:
-    'lock' {isBeginOfStatement("lock")}? COMMENT_OR_WS+ 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'lock' {isBeginOfStatement("lock")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 MERGE:

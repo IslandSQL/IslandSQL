@@ -40,8 +40,8 @@ public abstract class IslandSqlParserBase extends Parser {
 
     /**
      * Puts the first hint-style comment right to the current position on the default channel.
-     * We know that the Oracle Database base considers only the first hint-style comment. See
-     * <a href="https://docs.oracle.com/en/database/oracle/oracle-database/21/sqlrf/Comments.html#GUID-D316D545-89E2-4D54-977F-FC97815CD62E">Hints</a>.
+     * We know that OracleDB considers only the first hint-style comment. See
+     * <a href="https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/Comments.html#GUID-D316D545-89E2-4D54-977F-FC97815CD62E">Hints</a>.
      * We do not want to put hint-style comments the DEFAULT_CHANNEL because they are still
      * comments and can be used anywhere in the code. As a result this would lead to parsing errors.
      * Therefore, we handle it in the parser in places where we expect a hint.

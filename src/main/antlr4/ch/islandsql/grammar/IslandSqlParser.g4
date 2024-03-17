@@ -25,7 +25,26 @@ options {
 // Start rule
 /*----------------------------------------------------------------------------*/
 
-file: dmlStatement* EOF;
+file: statement* EOF;
+
+/*----------------------------------------------------------------------------*/
+// Statement
+/*----------------------------------------------------------------------------*/
+
+statement:
+      dmlStatement
+    | emptyStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Empty
+/*----------------------------------------------------------------------------*/
+
+// pseudo statement that is ignored in PostgreSQL
+emptyStatement:
+      SEMI
+    | SOL
+;
 
 /*----------------------------------------------------------------------------*/
 // Data Manipulation Language
@@ -66,11 +85,12 @@ deleteStatement:
 ;
 
 delete:
+    withClause?                                             // PostgreSQL
     {unhideFirstHint();} K_DELETE hint? K_FROM?
     (
-          dmlTableExpressionClause
+          K_ONLY? dmlTableExpressionClause AST?             // PostgreSQL: only, *
         | K_ONLY LPAR dmlTableExpressionClause RPAR
-    ) talias=sqlName?
+    ) K_AS? talias=sqlName?                                 // PostgreSQL: as
     fromUsingClause?
     whereClause?
     returningClause?
@@ -79,12 +99,12 @@ delete:
 
 // simplified, table_collection_expression treated as expression
 dmlTableExpressionClause:
-      (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause | COMMAT dblink=qualifiedName)?
+      (schema=sqlName PERIOD)? table=sqlName AST? (partitionExtensionClause | COMMAT dblink=qualifiedName)? // PostgreSQL: *
     | LPAR query=subquery RPAR
     | expr=expression
 ;
 
-// introduced in Oracle Database 23c, re-use grammar in select statement
+// introduced in OracleDB 23c, re-use grammar in select statement
 // it's similar to the fromClause, the only difference is that you can use K_USING instead of K_FROM
 fromUsingClause:
     (K_FROM | K_USING) items+=fromItem (COMMA items+=fromItem)*
@@ -92,13 +112,15 @@ fromUsingClause:
 
 returningClause:
     (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
-    (K_BULK K_COLLECT)? // within PL/SQL
-    K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+    (
+        (K_BULK K_COLLECT)? // within PL/SQL
+        K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+    )?  // required in OracleDB but not allowed in PostgreSQL
 ;
 
-// OLD and NEW are introduced in Oracle Database 23c
+// OLD and NEW are introduced in OracleDB 23c
 sourceItem:
-    (K_OLD | K_NEW)? expr=expression
+    (K_OLD | K_NEW)? expr=expression (K_AS? alias=sqlName)? // PostgreSQL allows to define an alias
 ;
 
 dataItem:
@@ -118,14 +140,18 @@ errorLoggingClause:
 /*----------------------------------------------------------------------------*/
 
 explainPlanStatement:
-  explainPlan sqlEnd
+    (
+          explainPlan       // OracleDB
+        | explain           // PostgreSQL
+    )
+    sqlEnd
 ;
 
 // undocumented: equals is optional
 explainPlan:
     K_EXPLAIN K_PLAN (K_SET K_STATEMENT_ID EQUALS? statementId=expression)?
     (K_INTO (schema=sqlName PERIOD)? table=sqlName (COMMAT dblink=qualifiedName)?)?
-    K_FOR statement=forExplainPlanStatement
+    K_FOR statementName=forExplainPlanStatement
 ;
 
 forExplainPlanStatement:
@@ -142,6 +168,28 @@ otherStatement:
     ~SEMI* // optional since all tokens may be on the hidden channel
 ;
 
+explain:
+    K_EXPLAIN
+        (
+              LPAR option+=explainOption (COMMA option+=explainOption)* RPAR
+            | K_ANALYZE K_VERBOSE?
+            | K_VERBOSE
+        )?
+    statementName=forExplainPlanStatement
+;
+
+explainOption:
+      K_ANALYZE bool=expression?
+    | K_VERBOSE bool=expression?
+    | K_COSTS bool=expression?
+    | K_GENERIC_PLAN bool=expression?
+    | K_BUFFERS bool=expression?
+    | K_WAL bool=expression?
+    | K_TIMING bool=expression?
+    | K_SUMMARY bool=expression?
+    | K_FORMAT (K_TEXT | K_XML | K_JSON | K_YAML)
+;
+
 /*----------------------------------------------------------------------------*/
 // Insert
 /*----------------------------------------------------------------------------*/
@@ -151,6 +199,7 @@ insertStatement:
 ;
 
 insert:
+    withClause? // PostgreSQL
     {unhideFirstHint();} K_INSERT hint?
     (
           singleTableInsert
@@ -160,14 +209,19 @@ insert:
 
 singleTableInsert:
     insertIntoClause
+    postgresqlOverridingClause?
     (
-          insertValuesClause returningClause?
+          insertValuesClause
         | subquery
-    ) errorLoggingClause?
+        | postgresqlDefaultValuesClause
+    )
+    postgresqlOnConflictClause?
+    returningClause? // unlike OracleDB, PostgreSQL allows a returning_clause for a subquery
+    errorLoggingClause?
 ;
 
 insertIntoClause:
-    K_INTO dmlTableExpressionClause tAlias=sqlName?
+    K_INTO dmlTableExpressionClause K_AS? tAlias=sqlName? // as keyword is allowed in PostgreSQL
     (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
 ;
 
@@ -200,6 +254,49 @@ conditionalInsertWhenClause:
     K_WHEN cond=condition K_THEN intoClauses+=multiTableInsertClause+
 ;
 
+postgresqlOverridingClause:
+    K_OVERRIDING (K_SYSTEM|K_USER) K_VALUE
+;
+
+postgresqlDefaultValuesClause:
+   K_DEFAULT K_VALUES
+;
+
+postgresqlOnConflictClause:
+    K_ON K_CONFLICT target=postgresqlOnConflictTarget? action=postgresqlOnConflictAction
+;
+
+postgresqlOnConflictTarget:
+      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=condition)?
+    | K_ON K_CONSTRAINT constraint=sqlName
+;
+
+postgresqlOnConflictTargetItem:
+    (indexColumnName=sqlName|LPAR indexExpression=expression RPAR)
+    (K_COLLATE collate=sqlName)?
+    (opclass=sqlName)?
+;
+
+postgresqlOnConflictAction:
+      postgresqlOnConflictActionDoNothing
+    | postgresqlOnConflictActionDoUpdate
+;
+
+postgresqlOnConflictActionDoNothing:
+    K_DO K_NOTHING
+;
+
+postgresqlOnConflictActionDoUpdate:
+    K_DO K_UPDATE K_SET
+    (
+          columns+=sqlName EQUALS exprs+=expression
+        | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+            EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+    )
+    (K_WHERE cond=condition)?
+;
+
+
 /*----------------------------------------------------------------------------*/
 // Lock table
 /*----------------------------------------------------------------------------*/
@@ -209,12 +306,14 @@ lockTableStatement:
 ;
 
 lockTable:
-    K_LOCK K_TABLE objects+=lockTableObject (COMMA objects+=lockTableObject)*
+    K_LOCK K_TABLE? K_ONLY? // PostgreSQL: optional table, only
+        objects+=lockTableObject (COMMA objects+=lockTableObject)*
         K_IN lockMode K_MODE lockTableWaitOption?
 ;
 
 lockTableObject:
-    (schema=sqlName PERIOD)? table=sqlName (partitionExtensionClause|COMMAT dblink=qualifiedName)?
+    (schema=sqlName PERIOD)? table=sqlName AST? // PostgreSQL: optional *
+    (partitionExtensionClause|COMMAT dblink=qualifiedName)?
 ;
 
 partitionExtensionClause:
@@ -229,10 +328,13 @@ partitionExtensionClause:
 lockMode:
       K_ROW K_SHARE                 # rowShareLockMode
     | K_ROW K_EXCLUSIVE             # rowExclusiveLockMode
-    | K_SHARE K_UPDATE              # shareUpdateLockMode
+    | K_SHARE K_UPDATE              # shareUpdateLockMode // OracleDB only
     | K_SHARE                       # shareLockMode
     | K_SHARE K_ROW K_EXCLUSIVE     # shareRowExclusiveLockMode
     | K_EXCLUSIVE                   # exclusiveLockMode
+    | K_ACCESS K_SHARE              # accessShareMode // PostgreSQL
+    | K_SHARE K_UPDATE K_EXCLUSIVE  # shareUpdateExclusiveMode // PostgreSQL
+    | K_ACCESS K_EXCLUSIVE          # accessExclusiveMode // PostgreSQL
 ;
 
 lockTableWaitOption:
@@ -249,13 +351,18 @@ mergeStatement:
 ;
 
 merge:
+    withClause? // PostgreSQL
     {unhideFirstHint();} K_MERGE hint?
     mergeIntoClause
     mergeUsingClause
-    K_ON LPAR cond=condition RPAR
+    K_ON (
+          LPAR cond=condition RPAR  // OracleDB
+        | cond=condition            // PostgreSQL
+    )
     (
-          mergeUpdateClause mergeInsertClause?
-        | mergeInsertClause
+          mergeUpdateClause mergeInsertClause?  // OracleDB
+        | mergeInsertClause                     // OracleDB
+        | mergeWhenClause+                      // PostgreSQL
     )
     errorLoggingClause?
 ;
@@ -263,13 +370,13 @@ merge:
 // artifical clause, undocumented: database link and subquery
 // simplified using database link and subquery
 mergeIntoClause:
-    K_INTO dmlTableExpressionClause talias=sqlName?
+    K_INTO K_ONLY? dmlTableExpressionClause K_AS? talias=sqlName? // PostgreSQL: only, as
 ;
 
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
 mergeUsingClause:
-    K_USING queryTableExpression talias=sqlName?
+    K_USING K_ONLY? queryTableExpression K_AS? talias=sqlName? // PostgreSQL: only, as
 ;
 
 mergeUpdateClause:
@@ -290,6 +397,34 @@ mergeInsertClause:
     K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
 ;
 
+// PostgreSQL
+mergeWhenClause:
+      K_WHEN K_MATCHED (K_AND cond=condition)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_AND cond=condition)? K_THEN (mergeInsert | K_DO K_NOTHING)
+;
+
+// PostgreSQL
+mergeUpdate:
+    K_UPDATE K_SET
+    (
+          columns+=qualifiedName EQUALS exprs+=expression
+        | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+            EQUALS LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+    )
+;
+
+// PostgreSQL
+mergeDelete:
+    K_DELETE
+;
+
+// PostgreSQL
+mergeInsert:
+    K_INSERT (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    (K_OVERRIDING (K_SYSTEM | K_USER) K_VALUE)?
+    (K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR | K_DEFAULT K_VALUES)
+;
+
 /*----------------------------------------------------------------------------*/
 // Select
 /*----------------------------------------------------------------------------*/
@@ -300,24 +435,31 @@ selectStatement:
 ;
 
 select:
-    subquery forUpdateClause?
+    subquery
     subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
+    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create view support, see see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
 // undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
+// PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
+// PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
 subquery:
-      withClause? queryBlock forUpdateClause? orderByClause? rowLimitingClause?         # subqueryQueryBlock
+      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # subqueryQueryBlock
+    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # subqueryQueryBlock
     | left=subquery setOperator right=subquery                                          # subquerySet
-    | withClause? LPAR subquery RPAR forUpdateClause? orderByClause? rowLimitingClause? # subqueryParen
+    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # subqueryParen
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # subqueryParen
+    | valuesClause orderByClause? rowLimitingClause?                                    # subqueryValues
+    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlock // PostgreSQL
 ;
 
 queryBlock:
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
-    selectList
-    (intoClause | bulkCollectIntoClause)? // in PL/SQL only
-    fromClause? // starting with Oracle Database 23c the from clause is optional
+    selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
+    (intoClause | bulkCollectIntoClause | postgresqlIntoClause)? // in PL/SQL only
+    fromClause? // starting with OracleDB 23c the from clause is optional
     whereClause?
     hierarchicalQueryClause?
     groupByClause?
@@ -335,6 +477,7 @@ withClause:
     (
           (plsqlDeclarations)+
         | (plsqlDeclarations)* factoringClause (COMMA factoringClause)*
+        | K_RECURSIVE factoringClause (COMMA factoringClause)*              // PostgreSQL
     )
 ;
 
@@ -365,18 +508,30 @@ factoringClause:
 
 subqueryFactoringClause:
     queryName=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
-    K_AS ((LPAR subquery RPAR) | valuesClause)
+    K_AS
+    (K_NOT? K_MATERIALIZED)? // PostgreSQL
+    LPAR
+        (
+              subquery       // including values for OracleDB and PostgreSQL
+            | insert         // PostgreSQL
+            | update         // PostgreSQL
+            | delete         // PostgreSQL
+        )
+    RPAR
     searchClause?
     cycleClause?
 ;
 
+// Unlike OracleDB, PostgreSQL allows the values_clause without table/column alias in from_clause
+// in this case the ANTLR identifies the required parenthesis as part of a scalar subquery
+// Using the values_clause without table/column alias is primarily used in the with_clause
 valuesClause:
-    LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
-    // caliases must be specified in subquery_factoring_clause after queryName, next line is valid in other contexts (table_reference)
-    (K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)?
+      LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
+        K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR     # valuesClauseQualified
+    | K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*                                 # valuesClauseDefault
 ;
 
-// undocumented, first value in the first row does not need parentheses (in Oracle Database only)
+// undocumented, first value in the first row does not need parentheses (in OracleDB only)
 valuesRow:
       LPAR expr+=expression (COMMA expr+=expression)* RPAR
     | expr+=expression
@@ -394,8 +549,8 @@ searchColumn:
 cycleClause:
     K_CYCLE caliases+=sqlName (COMMA caliases+=sqlName)*
     K_SET cycleMarkCalias=sqlName
-    K_TO cycleValue=expression
-    K_DEFAULT noCycleValue=expression
+    (K_TO cycleValue=expression K_DEFAULT noCycleValue=expression)? // Postgresql: optional
+    (K_USING cyclePathColName=expression)? // OracleDB: not supported, Postgresql: mandatory
 ;
 
 subavFactoringClause:
@@ -472,9 +627,10 @@ hierarchicalQueryClause:
     | K_START K_WITH startWithCond=condition K_CONNECT K_BY K_NOCYCLE? connectByCond=condition
 ;
 
+// PostgreSQL: all, distinct
 groupByClause:
-      K_GROUP K_BY items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
-    | K_HAVING cond=condition (K_GROUP K_BY items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed
+      K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
+    | K_HAVING cond=condition (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
 ;
 
 // rollupCubeClause treated as expression
@@ -561,14 +717,14 @@ singleColumnForLoop:
 ;
 
 singleColumnForLoopLiteral:
-      STRING
+      string
     | NUMBER
     | sqlName
     | expression // undocumented
 ;
 
 singleColumnForLoopPattern:
-      STRING
+      string
     | sqlName
 ;
 
@@ -599,16 +755,18 @@ windowSpecification:
 ;
 
 queryBlockSetOperator:
-      K_DISTINCT      # distinctQbOperator
-    | K_UNIQUE        # distinctQbOperator
-    | K_ALL           # allQbOperator
+      K_DISTINCT                                                                # distinctQbOperator
+    | K_DISTINCT K_ON LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # distinctOnQbOperator // PostgreSQL
+    | K_UNIQUE                                                                  # distinctQbOperator
+    | K_ALL                                                                     # allQbOperator
 ;
 
+// PostreSQL allows the use of distinct
 setOperator:
-      K_UNION     K_ALL?    # unionSetOperator
-    | K_INTERSECT K_ALL?    # intersectSetOperator
-    | K_MINUS     K_ALL?    # minusSetOperator
-    | K_EXCEPT    K_ALL?    # minusSetOperator
+      K_UNION     (K_ALL|K_DISTINCT)?    # unionSetOperator
+    | K_INTERSECT (K_ALL|K_DISTINCT)?    # intersectSetOperator
+    | K_MINUS     (K_ALL|K_DISTINCT)?    # minusSetOperator         // OracleDB
+    | K_EXCEPT    (K_ALL|K_DISTINCT)?    # minusSetOperator
 ;
 
 // only in PL/SQL
@@ -621,15 +779,32 @@ bulkCollectIntoClause:
     K_BULK K_COLLECT K_INTO variables+=expression (COMMA variables+=expression)*
 ;
 
+postgresqlIntoClause:
+    K_INTO (K_TEMPORARY|K_TEMP|K_UNLOGGED)? K_TABLE tableName=qualifiedName
+;
+
 fromClause:
     K_FROM items+=fromItem (COMMA items+=fromItem)*
 ;
 
+// handles table aliases for all from items, simplifies from items in parentheses
 fromItem:
-      tableReference               # tableReferenceFromItem
-    | fromItem joins+=joinVariant+ # joinClause
-    | inlineAnalyticView           # inlineAnalyticViewFromItem
-    | LPAR fromItem RPAR           # parenFromItem
+      tableReference tableAlias?        # tableReferenceFromItem
+    | fromItem joins+=joinVariant+      # joinClause
+    | inlineAnalyticView tableAlias?    # inlineAnalyticViewFromItem
+    | LPAR fromItem RPAR tableAlias?    # parenFromItem
+;
+
+// PostgreSQL allows caliases
+// Handle all kind of table alias, allows more cominatqion than the underlyinging DBMSs
+tableAlias:
+      K_AS? tAlias=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)? // OracleDB, PostgreSQL
+    | K_AS? talias=sqlName LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
+    | K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
+;
+
+postresqlColumnDefinition:
+    columnName=sqlName dataType
 ;
 
 // containers_clause and shards_clause handeled as queryTableExpression (functions named containers/shards)
@@ -637,9 +812,9 @@ fromItem:
 // undocumented: use of invalid t_alias before row_pattern_clause, see issue #74
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
-        (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? tAlias=sqlName?
-    | qte=queryTableExpression flashbackQueryClause?
-         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))? (K_AS? tAlias=sqlName)?
+        (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
+    | K_ONLY? qte=queryTableExpression flashbackQueryClause? // Postgresql: only (allowed without parentheses)
+         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
 ;
 
 // using table for query_name, table, view, mview, hierarchy
@@ -650,20 +825,34 @@ queryTableExpression:
             | partitionExtensionClause
             | COMMAT dblink=qualifiedName
             | hierarchiesClause
+            | AST // PostgreSQL
         )? sampleClause?
     | inlineExternalTable sampleClause?
     | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
+    | postgresqlTableExpression
     | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
 
-// grammar definition in SQL Language Reference 19c/21c is wrong, added LPAR/RPAR
+// table/column aliases are part of from_item
+// plain table function is handled in query_table_expression
+postgresqlTableExpression:
+       K_LATERAL (schema=sqlName PERIOD)? expr=functionExpression (K_WITH K_ORDINALITY)?
+     | (schema=sqlName PERIOD)? expr=functionExpression K_WITH K_ORDINALITY
+     | K_LATERAL? K_ROWS K_FROM LPAR exprs+=rowsFromFunction (COMMA exprs+=rowsFromFunction)* RPAR (K_WITH K_ORDINALITY)?
+;
+
+rowsFromFunction:
+    expr=functionExpression (K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR)?
+;
+
+// grammar definition in SQL Language Reference 19c/21c/23c is wrong, added LPAR/RPAR
 modifiedExternalTable:
     K_EXTERNAL K_MODIFY LPAR properties+=modifyExternalTableProperties+ RPAR
 ;
 
 // implemented as alternatives, all are technically optional
-// grammar definition in SQL Language Reference 19c/21c is wrong regarding "access parameters"
+// grammar definition in SQL Language Reference 19c/21c/23c is wrong regarding "access parameters"
 // it the similar as in externalTableDataProps. We use it here with the same restrictions.
 modifyExternalTableProperties:
       K_DEFAULT K_DIRECTORY dir=sqlName                     # defaultDirectoryModifyExternalTableProperty
@@ -679,11 +868,12 @@ modifyExternalTableProperties:
 
 externalFileLocation:
       directory=sqlName
-    | (directory=sqlName COLON)? locationSpecifier=STRING
+    | (directory=sqlName COLON)? locationSpecifier=string
 ;
 
 sampleClause:
-    K_SAMPLE K_BLOCK? LPAR samplePercent=expression RPAR (K_SEED LPAR seedValue=expression RPAR)?
+      K_SAMPLE K_BLOCK? LPAR samplePercent=expression RPAR (K_SEED LPAR seedValue=expression RPAR)? // OracleDB
+    | K_TABLESAMPLE samplingMethod=sqlName LPAR args+=expression (COMMA args+=expression)* RPAR (K_REPEATABLE LPAR seedValue=expression RPAR)? // PostgreSQL
 ;
 
 inlineExternalTable:
@@ -712,7 +902,7 @@ externalTableDataProps:
 // We do not fully parse the unquoted opaque_format_spec. The reason is that the grammar
 // is driver specific, e.g. ORACLE_DATAPUMP, ORACLE_HDFS, ORACLE_HIVE. The grammer is
 // only documented in Oracle Database Utilities. See
-// https://docs.oracle.com/en/database/oracle/oracle-database/21/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
+// https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
     .+?
@@ -895,7 +1085,7 @@ innerCrossJoinClause:
       K_INNER? K_JOIN fromItem
       (
             K_ON cond=condition
-          | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+          | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
       )
     | K_CROSS K_JOIN fromItem
     | K_NATURAL K_INNER? K_JOIN fromItem
@@ -907,7 +1097,7 @@ outerJoinClause:
     fromItem right=queryPartitionClause?
     (
           K_ON cond=condition
-        | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+        | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
     )?
 ;
 
@@ -916,7 +1106,7 @@ outerJoinType:
 ;
 
 crossOuterApplyClause:
-    (K_CROSS|K_OUTER) K_APPLY (tableReference|expression)
+    (K_CROSS|K_OUTER) K_APPLY fromItem
 ;
 
 // "equivalent to a left-outer ANSI join with JSON_TABLE"
@@ -936,16 +1126,25 @@ inlineAnalyticView:
 ;
 
 // ensure that at least one alternative is not optional
+// make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
-      K_OFFSET offset=expression (K_ROW | K_ROWS)
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS))?
+      K_OFFSET offset=expression (K_ROW | K_ROWS)?
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
       K_FETCH (K_FIRST | K_NEXT) (rowcount=expression | percent=expression K_PERCENT)?
       (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
+    | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
 ;
 
 forUpdateClause:
-    K_FOR K_UPDATE
-    (K_OF columns+=forUpdateColumn (COMMA columns+=forUpdateColumn)*)?
+    K_FOR
+    (
+          K_UPDATE              // OracleDB, PostgreSQL
+        | K_NO K_KEY K_UPDATE   // PostgreSQL
+        | K_SHARE               // PostgreSQL
+        | K_KEY K_SHARE         // PostgreSQL
+    )
+    (K_OF columns+=forUpdateColumn (COMMA columns+=forUpdateColumn)*)? // PostgreSQL: tables instead of columns
     (
           K_NOWAIT
         | K_WAIT wait=expression
@@ -966,11 +1165,12 @@ updateStatement:
 ;
 
 update:
+    withClause?                                         // PostgreSQL
     {unhideFirstHint();} K_UPDATE hint?
     (
-          dmlTableExpressionClause
+          K_ONLY? dmlTableExpressionClause AST?         // PostgreSQL: only, *
         | K_ONLY LPAR dmlTableExpressionClause RPAR
-    ) talias=sqlName?
+    ) K_AS? talias=sqlName?                             // PostgreSQL: as
     updateSetClause
     fromUsingClause?
     whereClause?
@@ -992,6 +1192,8 @@ updateSetClause:
 updateSetClauseItem:
       LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # updateSetClauseItemColumnList
+    | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # updateSetClauseItemPostgresqlRow
     | LPAR columns+=qualifiedName RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # updateSetClauseItemColumn
     | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
@@ -1004,7 +1206,9 @@ updateSetClauseItem:
 dataType:
       oracleBuiltInDatatype
     | ansiSupportedDatatype
+    | postgresqlDatatype
     | userDefinedType
+    | posgresqlArrayDatatype=dataType (LSQB RSQB)+
 ;
 
 oracleBuiltInDatatype:
@@ -1027,7 +1231,7 @@ characterDatatype:
 
 numberDatatype:
       K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
-    | K_FLOAT (precision=expression)?
+    | K_FLOAT (LPAR precision=expression LPAR)?
     | K_BINARY_FLOAT
     | K_BINARY_DOUBLE
 ;
@@ -1066,9 +1270,9 @@ booleanDatatype:
 ;
 
 ansiSupportedDatatype:
-      K_CHARACTER K_VARYING? LPAR size=expression RPAR
-    | (K_CHAR|K_NCHAR) K_VARYING LPAR size=expression (K_BYTE|K_CHAR)? RPAR
-    | K_VARCHAR LPAR size=expression (K_BYTE|K_CHAR)? RPAR
+      K_CHARACTER (K_VARYING? LPAR size=expression RPAR)?                       // optional size in PostgreSQL
+    | (K_CHAR|K_NCHAR) (K_VARYING LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?  // optional size in PostgreSQL
+    | K_VARCHAR (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?                   // optional size in PostgreSQL
     | K_NATIONAL (K_CHARACTER|K_CHAR) K_VARYING? LPAR size=expression RPAR
     | (K_NUMERIC|K_DECIMAL|K_DEC) (LPAR precision=expression (COMMA scale=expression)? RPAR)?
     | (K_INTEGER|K_INT|K_SMALLINT)
@@ -1077,9 +1281,75 @@ ansiSupportedDatatype:
     | K_REAL
 ;
 
+// only data types that are not handled in oracleBuiltInDatatype and ansiSupportedDatatype
+postgresqlDatatype:
+      K_BIGINT
+    | K_INT8                                                        // alias for bigint
+    | K_BIGSERIAL
+    | K_SERIAL8                                                     // alias for bigserial
+    | K_BIT (LPAR size=expression RPAR)?
+    | K_BIT K_VARYING (LPAR size=expression RPAR)?
+    | K_VARBIT (LPAR size=expression RPAR)?                         // alias for bit varying
+    | K_BOOL                                                        // alias for boolean
+    | K_BOX
+    | K_BYTEA
+    | K_CHARACTER K_VARYING                                         // no precision allowed
+    | K_CIDR
+    | K_CIRCLE
+    | K_FLOAT8                                                      // alias for double precision
+    | K_INT4                                                        // alias for int, integer
+    | K_INET
+    | K_INTERVAL intervalField? (LPAR precision=expression RPAR)?
+    | K_JSONB
+    | K_LINE
+    | K_LSEG
+    | K_MACADDR
+    | K_MACADDR8
+    | K_MONEY
+    | K_PATH
+    | K_PG_LSN
+    | K_PG_SNAPSHOT
+    | K_POINT
+    | K_POLYGON
+    | K_FLOAT4
+    | K_INT2
+    | K_SMALLSERIAL
+    | K_SERIAL2
+    | K_SERIAL
+    | K_SERIAL4
+    | K_TEXT
+    | K_TIME (LPAR precision=expression RPAR)? (K_WITHOUT K_TIME K_ZONE)?
+    | K_TIME (LPAR precision=expression RPAR)? K_WITH K_TIME K_ZONE
+    | K_TIMETZ
+    | K_TIMESTAMP (LPAR precision=expression RPAR)? K_WITHOUT K_TIME K_ZONE // variant not handled in OracleDB's datetimeDatatype
+    | K_TIMESTAMPTZ
+    | K_TSQUERY
+    | K_TSVECTOR
+    | K_TXID_SNAPSHOT
+    | K_UUID
+    | K_XML
+;
+
+intervalField:
+      K_YEAR                    # yearIntervalField
+    | K_MONTH                   # monthIntervalField
+    | K_DAY                     # dayIntervalField
+    | K_HOUR                    # hourIntervalField
+    | K_MINUTE                  # minuteIntervalField
+    | K_SECOND                  # secondIntervalField
+    | K_YEAR K_TO K_MONTH       # yearToMonthIntervalField
+    | K_DAY K_TO K_HOUR         # dayToHourIntervalField
+    | K_DAY K_TO K_MINUTE       # dayToMinuteIntervalField
+    | K_DAY K_TO K_SECOND       # dayToSecondIntervalField
+    | K_HOUR K_TO K_MINUTE      # hourToMinuteIntervalField
+    | K_HOUR K_TO K_SECOND      # hourToSecondIntervalField
+    | K_MINUTE K_TO K_SECOND    # minuteToSecondIntervalField
+;
+
 // handles also Oracle_supplied_types, which are just a special type of user_defined_types
+// handles also parametrized PostGIS data types such as geography
 userDefinedType:
-    name=qualifiedName
+    name=qualifiedName (LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1087,41 +1357,32 @@ userDefinedType:
 /*----------------------------------------------------------------------------*/
 
 expression:
-      expr=STRING                                               # simpleExpressionStringLiteral
+      expr=string                                               # simpleExpressionStringLiteral
     | expr=NUMBER                                               # simpleExpressionNumberLiteral
-    | K_DATE expr=STRING                                        # dateLiteral
-    | K_TIMESTAMP expr=STRING                                   # timestampLiteral
+    | K_DATE expr=string                                        # dateLiteral
+    | K_TIMESTAMP expr=string                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
-    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList // also parenthesisCondition
+    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList                // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
-    | operator=unaryOperator expr=expression                    # unaryExpression
+    | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 0, must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
+    | expr=plsqlQualifiedExpression                             # plsqlQualifiedExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
-    | expr=expression
-        LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression
     | expr=AST                                                  # allColumnWildcardExpression
-    | left=expression K_MULTISET operator=K_EXCEPT
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression K_MULTISET operator=K_INTERSECT
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression K_MULTISET operator=K_UNION
-        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
-    | left=expression operator=(AST|SOL) right=expression       # binaryExpression
-    | left=expression
-        (
-              operator=PLUS
-            | operator=MINUS
-            | operator=VERBAR VERBAR
-        )
-      right=expression                                          # binaryExpression
-    | left=expression operator=K_COLLATE right=expression       # binaryExpression
-    | left=expression operator=PERIOD right=expression          # binaryExpression
-    | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
-    | left=expression K_AT
+    | type=dataType expr=string                                 # postgresqlStringCast
+    | left=expression operator=PERIOD right=expression          # qualifiedExpression           // precedence 1
+    | expr=expression operator=COLON_COLON type=dataType        # postgresqlHistoricalCast      // precedence 2
+    | expr=expression
+        LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
+    | expr=expression
+        LSQB lower=expression COLON upper=expression RSQB       # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
+    | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
+    | left=expression operator=K_AT
         (
               K_LOCAL
             | K_TIME K_ZONE
@@ -1130,7 +1391,27 @@ expression:
                    | K_SESSIONTIMEZONE
                    | right=expression
                 )
-        )                                                       # datetimeExpression
+        )                                                       # datetimeExpression            // precedence 6
+    | left=expression operator=HAT right=expression             # exponentiationExpression      // precedence 7, PostgreSQL
+    | left=expression operator=AST right=expression             # multiplicationExpression      // precedence 8
+    | left=expression operator=SOL right=expression             # divisionExpression            // precedence 8
+    | left=expression operator=PERCNT right=expression          # moduloExpression              // precedence 8, PostgreSQL
+    | left=expression operator=PLUS right=expression            # additionExpression            // precedence 9
+    | left=expression operator=MINUS right=expression           # substractionExpression        // precedence 9
+    | left=expression
+        (
+              operator=VERBAR_VERBAR // OracleDB, PostgreSQL (no WS allowed)
+            | operator=VERBAR VERBAR // OracleDB (WS, comment allowed)
+        )
+        right=expression                                        # concatenationExpression       // precedence 10
+    | left=expression operator=binaryOperator right=expression  # binaryExpression              // precedence 10
+    | left=expression K_MULTISET operator=K_EXCEPT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_INTERSECT
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | left=expression K_MULTISET operator=K_UNION
+        (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
+    | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
     | expr=sqlName                                              # simpleExpressionName
     // starting with 23c a condition is treated as a synonym to an expression
     | operator=K_NOT cond=expression                            # notCondition
@@ -1145,20 +1426,25 @@ expression:
         right=expression                                        # simpleComparisionCondition
     | expr=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)                 # floatingPointCondition
-    | expr=expression operator=K_IS K_ANY                       # isAnyCondition // "any" only is handled as sqlName
+    | expr=expression operator=K_IS K_ANY                       # isAnyCondition            // "any" only is handled as sqlName
     | expr=expression operator=K_IS K_PRESENT                   # isPresentCondition
     | expr=expression operator=K_IS K_NOT? K_A K_SET            # isASetCondition
     | expr=expression operator=K_IS K_NOT? K_EMPTY              # isEmptyCondition
     | expr=expression operator=K_IS K_NOT? K_NULL               # isNullCondition
+    | expr=expression operator=(K_NOTNULL|K_ISNULL)             # postgresqlNullCondition   // PostgreSQL
     | expr=expression operator=K_IS K_NOT? K_TRUE               # isTrueCondition
     | expr=expression operator=K_IS K_NOT? K_FALSE              # isFalseCondition
     | expr=expression operator=K_IS K_NOT? K_DANGLING           # isDanglingCondition
+    | expr=expression operator=K_IS K_NOT? K_UNKNOWN            # isUnknownCondition        // PostgreSQL
+    | expr=expression operator=K_IS K_NOT? K_DOCUMENT           # isDocumentCondition       // PostgreSQL
     | expr=expression
         operator=K_IS K_NOT? K_JSON formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
         )                                                       # isJsonCondition
+    | left=expression operator=K_IS K_NOT?
+        K_DISTINCT K_FROM right=expression                      # isDistinctFromCondition   // PostgreSQL
     | left=expression K_NOT? operator=K_MEMBER
         K_OF? right=expression                                  # memberCondition
     | left=expression K_NOT? operator=K_SUBMULTISET
@@ -1167,8 +1453,12 @@ expression:
         operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
         right=expression
         (K_ESCAPE escChar=expression)?                          # likeCondition
-    | expr1=expression K_NOT? operator=K_BETWEEN
-        expr2=expression K_AND expr3=expression                 # betweenCondition
+    | left=expression K_NOT?
+        operator=K_SIMILAR K_TO
+        right=expression
+        (K_ESCAPE escChar=expression)?                          # similarCondition          // PostgreSQL
+    | expr1=expression K_NOT? operator=K_BETWEEN K_SYMMETRIC?
+        expr2=expression K_AND expr3=expression                 # betweenCondition          // PostgreSQL: symmetric
     | K_EXISTS LPAR subquery RPAR                               # existsCondition
     | left=expression K_NOT? operator=K_IN
         right=expression                                        # inCondition
@@ -1185,12 +1475,12 @@ intervalExpression:
 ;
 
 intervalLiteralYearToMonth:
-    K_INTERVAL expr=STRING
+    K_INTERVAL expr=string
         from=(K_YEAR|K_MONTH) (LPAR precision=NUMBER RPAR)? (K_TO to=(K_YEAR|K_MONTH))?
 ;
 
 intervalLiteralDayToSecond:
-    K_INTERVAL expr=STRING
+    K_INTERVAL expr=string
         (
               from=(K_DAY|K_HOUR|K_MINUTE) (LPAR precision=NUMBER RPAR)?
             | from=K_SECOND (LPAR leadingPrecision=NUMBER (COMMA fromFractionalSecondPrecision=NUMBER)? RPAR)?
@@ -1227,7 +1517,7 @@ caseExpression:
 
 // recognized only with array step, qualified names are recognized as binaryExpression with PERIOD operator
 jsonObjectAccessExpression:
-    tableAlias=sqlName PERIOD jsonColumn=sqlName (PERIOD keys+=jsonObjectKey)+
+    talias=sqlName PERIOD jsonColumn=sqlName (PERIOD keys+=jsonObjectKey)+
 ;
 
 jsonObjectKey:
@@ -1291,6 +1581,8 @@ specialFunctionExpression:
     | jsonExistsCondition
     | listagg
     | nthValue
+    | overlay
+    | substring
     | tableFunction
     | treat
     | trim
@@ -1490,10 +1782,15 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS K_DOMAIN? typeName=dataType
+        K_AS K_DOMAIN? typeName=dataType domainValidateClause?
         defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
+;
+
+domainValidateClause:
+      K_VALIDATE
+    | K_NOVALIDATE
 ;
 
 defaultOnConversionError:
@@ -1547,8 +1844,7 @@ graphTableColumnDefinition:
 
 // simplified, includes path_pattern, path_pattern_expression, path_concatenation (to handle left-recursion)
 pathTerm:
-      pathFactor
-    | pathTerm pathFactor
+      pathFactor+
 ;
 
 pathFactor:
@@ -1617,13 +1913,15 @@ fullEdgePattern:
 
 abbreviatedEdgePattern:
       MINUS GT      # abbreviatedEdgePatternPointingRight
+    | MINUS_GT      # abbreviatedEdgePatternPointingRight
     | LT MINUS      # abbreviatedEdgePatternPointingLeft
     | MINUS         # abbreviatedEdgePatternAnyDirection
     | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
+    | LT_MINUS_GT   # abbreviatedEdgePatternAnyDirection
 ;
 
 fullEdgePointingRight:
-    MINUS LSQB elementPatternFiller RSQB MINUS GT
+    MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
 ;
 
 fullEdgePointingLeft:
@@ -1632,12 +1930,13 @@ fullEdgePointingLeft:
 
 fullEdgeAnyDirection:
       MINUS LSQB elementPatternFiller RSQB MINUS
-    | LT MINUS LSQB elementPatternFiller RSQB MINUS GT
+    | LT MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
 ;
 
 jsonArray:
       K_JSON_ARRAY LPAR jsonArrayContent RPAR
     | K_JSON LSQB jsonArrayContent RSQB
+    | LSQB jsonArrayContent RSQB // undocumented, works in nested context only
 ;
 
 jsonArrayContent:
@@ -1704,7 +2003,7 @@ jsonQueryReturnType:
 ;
 
 jsonValueReturningClause:
-    K_RETURNING jsonValueReturnType jsonOption*
+    K_RETURNING jsonValueReturnType options+=jsonOption*
 ;
 
 jsonValueReturnType:
@@ -1747,6 +2046,7 @@ jsonOnErrorClause:
 jsonObject:
       K_JSON_OBJECT LPAR jsonObjectContent RPAR
     | K_JSON LCUB jsonObjectContent RCUB
+    | LCUB jsonObjectContent RCUB // undocumented, works in nested context only
 ;
 
 jsonObjectContent:
@@ -1754,7 +2054,7 @@ jsonObjectContent:
           AST
         | entries+=entry (COMMA entries+=entry)*
     )
-    jsonOnNullClause? jsonReturningClause? jsonOption*
+    jsonOnNullClause? jsonReturningClause? options+=jsonOption*
     (K_WITH K_UNIQUE K_KEYS)?
 ;
 
@@ -1770,12 +2070,12 @@ regularEntry:
 
 jsonObjectagg:
     K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
-    jsonOnNullClause? jsonReturningClause? jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
+    jsonOnNullClause? jsonReturningClause? options+=jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
 ;
 
 jsonQuery:
     K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
-    (K_RETURNING jsonQueryReturnType)? jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
+    (K_RETURNING jsonQueryReturnType)? options+=jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
     jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? jsonTypeClause? RPAR
 ;
 
@@ -1824,7 +2124,7 @@ jsonScalar:
 ;
 
 jsonSerialize:
-    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? jsonOption* jsonQueryOnErrorClause? RPAR
+    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? options+=jsonOption* jsonQueryOnErrorClause? RPAR
 ;
 
 // jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
@@ -1905,9 +2205,10 @@ ordinalityColumn:
     columnName=sqlName K_FOR K_ORDINALITY
 ;
 
+// undocumented: some options such as pretty, ascii, allow scalars, disallow scalars
 jsonTransform:
     K_JSON_TRANSFORM LPAR expr=expression COMMA operations+=operation (COMMA operations+=operation)*
-    jsonTransformReturningClause? jsonTypeClause? jsonPassingClause? RPAR
+    jsonTransformReturningClause? options+=jsonOption* jsonTypeClause? jsonPassingClause? RPAR
 ;
 
 // case, copy, intersect, merge, minus, prepend, union are implemented according the description in the JSON Developer's Guide
@@ -1997,12 +2298,7 @@ renameOp:
 ;
 
 keepOp:
-    K_KEEP items+=keepOpItem (COMMA items+=keepOpItem)*
-    onMissingHandler?
-;
-
-keepOpItem:
-    pathExpr=expression ((K_IGNORE|K_ERROR) K_ON K_MISSING)?
+    K_KEEP items+=expression (COMMA items+=expression)* onMissingHandler?
 ;
 
 sortOp:
@@ -2019,9 +2315,8 @@ sortOp:
     )*
 ;
 
-// syntax based on
 nestedPathOp:
-    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*) RPAR
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 caseOp:
@@ -2180,6 +2475,23 @@ listaggOverflowClause:
     | K_ON K_OVERFLOW K_TRUNCATE truncateIndicator=expression? ((K_WITH|K_WITHOUT) K_COUNT)?
 ;
 
+// PostgreSQL
+overlay:
+    K_OVERLAY LPAR text=expression K_PLACING placing=expression
+        K_FROM from=expression (K_FOR for=expression)? RPAR
+;
+
+// PostgreSQL
+substring:
+    K_SUBSTRING LPAR text=expression
+    (
+          K_FROM from=expression (K_FOR for=expression)?
+        | K_FOR for=expression
+        | K_SIMILAR pattern=expression K_ESCAPE escape=expression
+    )
+    RPAR
+;
+
 tableFunction:
     (K_TABLE|K_THE) LPAR (query=subquery|expr=expression) RPAR
 ;
@@ -2202,6 +2514,7 @@ trim:
             ) K_FROM
         )?
         trimSource=expression
+        (COMMA trimCharacter=expression)?   // PostgreSQL
     RPAR
 ;
 
@@ -2339,13 +2652,15 @@ xmlTableColumn:
 functionExpression:
     name=sqlName (COMMAT dblink=qualifiedName)? LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
     withinClause?               // e.g. approx_percentile
+    postgresfilterClause?       // e.g. count, sum
     keepClause?                 // e.g. first, last
     respectIgnoreNullsClause?   // e.g. lag
     overClause?                 // e.g. avg
 ;
 
 functionParameter:
-    (name=sqlName EQUALS GT)? functionParameterPrefix? expr=condition functionParameterSuffix?
+    // PostgreSQL := is older syntax supported for backward compatiblity only
+    (name=sqlName (EQUALS GT | COLON EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
 ;
 
 functionParameterPrefix:
@@ -2372,6 +2687,50 @@ functionParameterSuffix:
     | defaultOnConversionError                      // e.g. to_binary_double
 ;
 
+// simplified: allow all combinations of aggregates
+plsqlQualifiedExpression:
+    typemark=sqlName LPAR aggregates+=aggregate? (COMMA aggregates+=aggregate)* RPAR
+;
+
+// simplified: others_choice handled as functionParameter
+// functionExpression has precedence, as result some syntax variants are handled as functionExpression
+aggregate:
+      positionalChoiceList
+    | explicitChoiceList
+;
+
+positionalChoiceList:
+      expression
+    | sequenceIteratorChoice
+;
+
+sequenceIteratorChoice:
+    K_FOR iterator=sqlName K_SEQUENCE EQUALS GT expr=expression
+;
+
+explicitChoiceList:
+      namedChoiceList
+    | indexedChoiceList
+    | basicIteratorChoice
+    | indexIteratorChoice
+;
+
+namedChoiceList:
+    identifiers+=sqlName (VERBAR identifiers+=sqlName)* EQUALS GT expr=expression
+;
+
+indexedChoiceList:
+    indexes+=expression (VERBAR indexes+=expression)* EQUALS GT expr=expression
+;
+
+basicIteratorChoice:
+    K_FOR iterator=sqlName EQUALS GT expr=expression
+;
+
+indexIteratorChoice:
+    K_FOR iterator=sqlName K_INDEX EQUALS GT expr=expression
+;
+
 placeholderExpression:
     COLON hostVariable=placeholderVariable (K_INDICATOR? COLON indicatorVariable=placeholderVariable)?
 ;
@@ -2386,6 +2745,10 @@ withinClause:
     K_WITHIN K_GROUP LPAR orderByClause RPAR
 ;
 
+postgresfilterClause:
+    K_FILTER LPAR whereClause RPAR
+;
+
 keepClause:
     K_KEEP LPAR K_DENSE_RANK (K_FIRST|K_LAST) orderByClause RPAR
 ;
@@ -2394,8 +2757,15 @@ orderByClause:
     K_ORDER K_SIBLINGS? K_BY items+=orderByItem (COMMA items+=orderByItem)*
 ;
 
+// PostgreSQL: using operator
 orderByItem:
-    expr=expression (K_ASC|K_DESC)? (K_NULLS (K_FIRST|K_LAST))?
+    expr=expression (K_ASC|K_DESC|K_USING orderByUsingOperator)? (K_NULLS (K_FIRST|K_LAST))?
+;
+
+// PostgreSQL (member of some B-tree operator family)
+orderByUsingOperator:
+      simpleComparisionOperator
+    | binaryOperator
 ;
 
 queryPartitionClause:
@@ -2430,6 +2800,7 @@ analyticClause:
     (windowName=sqlName|queryPartitionClause)? (orderByClause windowingClause?)?
 ;
 
+// called frame_clause in PostgreSQL
 windowingClause:
     windowFrame=(K_ROWS|K_RANGE|K_GROUPS)
     (
@@ -2455,7 +2826,7 @@ windowingClause:
         K_EXCLUDE
         (
               excludeCurrentRow=K_CURRENT K_ROW
-            | excludeGroups=K_GROUPS
+            | excludeGroup=K_GROUP // wrong documentation in OracleDB 23c (groups instead of group)
             | excludeTies=K_TIES
             | excludeNoOthers=K_NO K_OTHERS
         )
@@ -2463,14 +2834,89 @@ windowingClause:
 ;
 
 unaryOperator:
-      PLUS              # positiveSignOperator
-    | MINUS             # negativeSignOperator
-    | K_PRIOR           # priorOpertor              // hierarchical query operator
-    | K_CONNECT_BY_ROOT # connectByRootOperator     // hierarchical query operator
-    | K_RUNNING         # runningOperator           // row_pattern_nav_logical
-    | K_FINAL           # finalOperator             // row_pattern_nav_logical
-    | K_NEW             # newOperator               // type constructor
-    | K_CURRENT K_OF    # currentOfOperator         // operator as update extension in PL/SQL where clause
+      PLUS                  # positiveSignOperator
+    | MINUS                 # negativeSignOperator
+    | COMMAT                # absoluteOperator          // PostgreSQL
+    | VERBAR_SOL            # squareRootOperator        // PostgreSQL
+    | VERBAR_VERBAR_SOL     # cubeRootOperator          // PostgreSQL
+    | TILDE                 # bitwiseNotOperator        // PostgreSQL
+    | COMMAT_MINUS_COMMAT   # totalLenthOperator        // PostgreSQL
+    | COMMAT_COMMAT         # centerPointOperator       // PostgreSQL
+    | NUM                   # numberOfPointsOperator    // PostgreSQL
+    | QUEST_MINUS           # horizontalLineOperator    // PostgreSQL
+    | QUEST_VERBAR          # verticalLineOperator      // PostgreSQL
+    | EXCL_EXCL             # negateTsQueryOperator     // PostgreSQL
+    | K_PRIOR               # priorOpertor              // hierarchical query operator
+    | K_CONNECT_BY_ROOT     # connectByRootOperator     // hierarchical query operator
+    | K_RUNNING             # runningOperator           // row_pattern_nav_logical
+    | K_FINAL               # finalOperator             // row_pattern_nav_logical
+    | K_NEW                 # newOperator               // type constructor
+    | K_CURRENT K_OF        # currentOfOperator         // operator as update extension in PL/SQL where clause
+;
+
+// binary operators not handled in expression, only single token operators
+// operator meaning is based on context, label can be misleading
+// custom PostGIS operators according see https://postgis.net/docs/manual-3.4/reference.html#Operators
+binaryOperator:
+      AMP                           # bitwiseAndOperator
+    | AMP_AMP                       # overlapsOperator
+    | AMP_AMP_AMP                   # nDimIntersectOperator         // PostGIS
+    | AMP_GT                        # notExtendsLeftOperator
+    | AMP_LT                        # notExtendsRightOperator
+    | AMP_LT_VERBAR                 # notExtendsAboveOperator
+    | AMP_SOL_AMP                   # threeDimOverlapsOperator      // PostGIS, undocumented
+    | COMMAT                        # absoluteValueOperator
+    | COMMAT_COMMAT                 # matchOperator
+    | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
+    | COMMAT_GT                     # containsOperator
+    | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
+    | COMMAT_QUEST                  # returnsAnyItemOperator
+    | EXCL_TILDE                    # notMatchRegexOperator
+    | EXCL_TILDE_AST                # notMatchRegexCaseInsensitiveOperator
+    | GT_GT                         # bitwiseShiftRightOperator
+    | GT_GT_EQUALS                  # strictlyContainsOrEqualOperator
+    | GT_HAT                        # aboveOperator
+    | HAT_COMMAT                    # startsWithOperator
+    | LT_COMMAT                     # containedByOperator
+    | LT_LT                         # bitwiseShiftLeftOperator
+    | LT_LT_EQUALS                  # strictlyContainedByOrEqualOperator
+    | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
+    | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
+    | LT_LT_VERBAR                  # strictlyBelowOperator
+    | LT_HAT                        # belowOperator
+    | LT_MINUS_GT                   # distanceOperator
+    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS
+    | MINUS_GT                      # extractElementOperator
+    | MINUS_GT_GT                   # extractObjectOperator
+    | MINUS_VERBAR_MINUS            # adjacentOperator
+    | NUM                           # bitwiseXorOperator
+    | NUM_GT                        # extractSubObjectOperator
+    | NUM_GT_GT                     # extractSubObjectTextOperator
+    | QUEST                         # existsAnyOperator
+    | QUEST_AMP                     # existsAllOperator
+    | QUEST_NUM                     # intersectOperator
+    | QUEST_MINUS                   # horizontallyAlignedOperator
+    | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
+    | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
+    | QUEST_VERBAR                  # existsAnyOperator
+    | TILDE                         # boxContainsOperator           // PostGIS
+    | TILDE_AST                     # matchRegexCaseInsensitiveOperator
+    | TILDE_EQUAL_EQUAL             # threeDimSame                  // PostGIS, undocumented
+    | TILDE_TILDE_EQUAL             # nDimSame                      // PostGIS, undocumented
+    | VERBAR                        # bitwiseOrOperator
+    | VERBAR_AMP_GT                 # notExtendsBelowOperator
+    | VERBAR_EQUALS_VERBAR          # closestDistanceOperator
+    | VERBAR_GT_GT                  # strictlyAboveOperator
+;
+
+postgresqlArrayConstructor:
+      K_ARRAY LSQB (exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)*)? RSQB
+    | K_ARRAY LPAR expr+=subquery RPAR
+;
+
+postgresqlArrayElement:
+      expr+=expression                                                               # postgresqlArrayElementItem
+    | LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB # postgresqlArrayElementList
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2583,6 +3029,7 @@ keywordAsId:
     | K_ALL
     | K_ALLOW
     | K_ANALYTIC
+    | K_ANALYZE
     | K_ANCESTOR
     | K_AND
     | K_ANY
@@ -2600,17 +3047,24 @@ keywordAsId:
     | K_BEGINNING
     | K_BETWEEN
     | K_BFILE
+    | K_BIGINT
     | K_BIGRAM
+    | K_BIGSERIAL
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
+    | K_BIT
     | K_BLOB
     | K_BLOCK
+    | K_BOOL
     | K_BOOLEAN
     | K_BOTH
+    | K_BOX
     | K_BREADTH
+    | K_BUFFERS
     | K_BULK
     | K_BY
     | K_BYTE
+    | K_BYTEA
     | K_CALL
     | K_CASE
     | K_CASE_SENSITIVE
@@ -2619,11 +3073,14 @@ keywordAsId:
     | K_CHARACTER
     | K_CHAR_CS
     | K_CHECK
+    | K_CIDR
+    | K_CIRCLE
     | K_CLOB
     | K_COLLATE
     | K_COLLECT
     | K_COLUMNS
     | K_CONDITIONAL
+    | K_CONFLICT
     | K_CONNECT
     | K_CONNECT_BY_ROOT
     | K_CONSTRAINT
@@ -2633,6 +3090,7 @@ keywordAsId:
     | K_CONVERSION
     | K_COPY
     | K_COST
+    | K_COSTS
     | K_COUNT
     | K_CREATE
     | K_CROSS
@@ -2661,6 +3119,7 @@ keywordAsId:
     | K_DISALLOW
     | K_DISCARD
     | K_DISTINCT
+    | K_DO
     | K_DOCUMENT
     | K_DOMAIN
     | K_DOUBLE
@@ -2690,6 +3149,8 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FLOAT4
+    | K_FLOAT8
     | K_FLOAT
     | K_FOLLOWING
     | K_FOR
@@ -2698,6 +3159,7 @@ keywordAsId:
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
+    | K_GENERIC_PLAN
     | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
@@ -2725,10 +3187,15 @@ keywordAsId:
     | K_INCLUDE
     | K_INCREMENT
     | K_INDENT
+    | K_INDEX
     | K_INDICATOR
+    | K_INET
     | K_INFINITE
     | K_INNER
     | K_INSERT
+    | K_INT2
+    | K_INT4
+    | K_INT8
     | K_INT
     | K_INTEGER
     | K_INTERSECT
@@ -2736,10 +3203,12 @@ keywordAsId:
     | K_INTO
     | K_INVISIBLE
     | K_IS
+    | K_ISNULL
     | K_ITERATE
     | K_JARO_WINKLER
     | K_JOIN
     | K_JSON
+    | K_JSONB
     | K_JSON_ARRAY
     | K_JSON_ARRAYAGG
     | K_JSON_EQUAL
@@ -2774,6 +3243,7 @@ keywordAsId:
     | K_LIKE
     | K_LIKEC
     | K_LIMIT
+    | K_LINE
     | K_LISTAGG
     | K_LOCAL
     | K_LOCATION
@@ -2783,12 +3253,16 @@ keywordAsId:
     | K_LOGFILE
     | K_LONG
     | K_LONGEST_COMMON_SUBSTRING
+    | K_LSEG
+    | K_MACADDR8
+    | K_MACADDR
     | K_MAIN
     | K_MAPPING
     | K_MATCH
     | K_MATCHED
     | K_MATCHES
     | K_MATCH_RECOGNIZE
+    | K_MATERIALIZED
     | K_MEASURES
     | K_MEMBER
     | K_MERGE
@@ -2799,6 +3273,7 @@ keywordAsId:
     | K_MODE
     | K_MODEL
     | K_MODIFY
+    | K_MONEY
     | K_MONTH
     | K_MULTISET
     | K_NAME
@@ -2817,6 +3292,9 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NOSCHEMACHECK
     | K_NOT
+    | K_NOTHING
+    | K_NOTNULL
+    | K_NOVALIDATE
     | K_NOWAIT
     | K_NTH_VALUE
     | K_NULL
@@ -2841,6 +3319,8 @@ keywordAsId:
     | K_OUTER
     | K_OVER
     | K_OVERFLOW
+    | K_OVERLAY
+    | K_OVERRIDING
     | K_PARAMETERS
     | K_PARENT
     | K_PARTITION
@@ -2852,8 +3332,13 @@ keywordAsId:
     | K_PERCENT
     | K_PERIOD
     | K_PERMUTE
+    | K_PG_LSN
+    | K_PG_SNAPSHOT
     | K_PIVOT
+    | K_PLACING
     | K_PLAN
+    | K_POINT
+    | K_POLYGON
     | K_POSITION
     | K_PRECEDING
     | K_PRECISION
@@ -2872,12 +3357,14 @@ keywordAsId:
     | K_RAW
     | K_READ
     | K_REAL
+    | K_RECURSIVE
     | K_REF
     | K_REFERENCE
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_REMOVE
     | K_RENAME
+    | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
     | K_RESPECT
@@ -2901,6 +3388,10 @@ keywordAsId:
     | K_SELECT
     | K_SEQUENCE
     | K_SEQUENTIAL
+    | K_SERIAL2
+    | K_SERIAL4
+    | K_SERIAL8
+    | K_SERIAL
     | K_SESSIONTIMEZONE
     | K_SET
     | K_SETS
@@ -2908,10 +3399,12 @@ keywordAsId:
     | K_SHARE_OF
     | K_SHOW
     | K_SIBLINGS
+    | K_SIMILAR
     | K_SINGLE
     | K_SIZE
     | K_SKIP
     | K_SMALLINT
+    | K_SMALLSERIAL
     | K_SOME
     | K_SORT
     | K_SQL
@@ -2922,13 +3415,24 @@ keywordAsId:
     | K_SUBMULTISET
     | K_SUBPARTITION
     | K_SUBSET
+    | K_SUBSTRING
+    | K_SUMMARY
+    | K_SYMMETRIC
+    | K_SYSTEM
     | K_TABLE
+    | K_TABLESAMPLE
+    | K_TEMP
+    | K_TEMPORARY
+    | K_TEXT
     | K_THE
     | K_THEN
     | K_TIES
     | K_TIME
     | K_TIMESTAMP
+    | K_TIMESTAMPTZ
+    | K_TIMETZ
     | K_TIMEZONE
+    | K_TIMING
     | K_TO
     | K_TRAILING
     | K_TREAT
@@ -2936,13 +3440,19 @@ keywordAsId:
     | K_TRIM
     | K_TRUE
     | K_TRUNCATE
+    | K_TSQUERY
+    | K_TSVECTOR
+    | K_TXID_SNAPSHOT
     | K_TYPE
     | K_TYPENAME
+    | K_UESCAPE
     | K_UNBOUNDED
     | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
+    | K_UNKNOWN
     | K_UNLIMITED
+    | K_UNLOGGED
     | K_UNMATCHED
     | K_UNPIVOT
     | K_UNSCALED
@@ -2951,19 +3461,24 @@ keywordAsId:
     | K_UPDATED
     | K_UPSERT
     | K_UROWID
+    | K_USER
     | K_USING
+    | K_UUID
     | K_VALIDATE
     | K_VALIDATE_CONVERSION
     | K_VALUE
     | K_VALUES
+    | K_VARBIT
     | K_VARCHAR2
     | K_VARCHAR
     | K_VARYING
+    | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
     | K_WAIT
+    | K_WAL
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
@@ -2988,6 +3503,7 @@ keywordAsId:
     | K_XMLSERIALIZE
     | K_XMLTABLE
     | K_XMLTYPE
+    | K_YAML
     | K_YEAR
     | K_YES
     | K_ZONE
@@ -3001,16 +3517,27 @@ unquotedId:
 sqlName:
       unquotedId
     | QUOTED_ID
-    | plsqlInquiryDirective
+    | PLSQL_INQUIRY_DIRECTIVE
     | substitionVariable+
+    | POSITIONAL_PARAMETER          // PostgreSQL
+    | unicodeIdentifier             // PostgreSQL
+    | psqlVariable                  // PostgreSQL
 ;
 
+// PostgreSQL
+unicodeIdentifier:
+    UQUOTED_ID (K_UESCAPE STRING)?
+;
+
+// PostgreSQL
+psqlVariable:
+      COLON variable=qualifiedName
+    | COLON stringVariable=STRING
+;
+
+// parser rule to handle conflict with PostgreSQL & operator
 substitionVariable:
-    AMP AMP? name=substitionVariableName period=PERIOD?
-;
-
-plsqlInquiryDirective:
-    DOLLAR DOLLAR name=unquotedId
+    (AMP|AMP_AMP) name=substitionVariableName period=PERIOD?
 ;
 
 substitionVariableName:
@@ -3023,7 +3550,33 @@ qualifiedName:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Data Types
+/*----------------------------------------------------------------------------*/
+
+// A parser rule to distinguish between string types.
+// Furthermore, it will simplify writing a value provider for a string.
+string:
+      STRING                                # simpleString
+    | N_STRING                              # nationalString
+    | N_STRING STRING+                      # concatenatedNationalString            // PostgreSQL, MySQL
+    | E_STRING                              # escapedString                         // PostgreSQL
+    | U_AMP_STRING (K_UESCAPE STRING)?      # unicodeString                         // PostgreSQL
+    | B_STRING                              # bitString                             // PostgreSQL
+    | STRING STRING+                        # concatenatedString                    // PostgreSQL, MySQL
+    | Q_STRING                              # quoteDelimiterString
+    | NQ_STRING                             # nationalQuoteDelimiterString
+    | DOLLAR_STRING                         # dollarString                          // PostgreSQL
+    | DOLLAR_ID_STRING                      # dollarIdentifierString                // PostgreSQL
+;
+
+/*----------------------------------------------------------------------------*/
 // SQL statement end, slash accepted without preceding newline
 /*----------------------------------------------------------------------------*/
 
-sqlEnd: EOF | SEMI SOL? | SOL;
+sqlEnd:
+      EOF
+    | SEMI SOL?
+    | SOL
+    | PSQL_EXEC // PostgreSQL: alternative to semicolon to terminate a statement
+    | BSOL SEMI // PostgreSQL: alternative to semicolon to terminate a statement
+;
