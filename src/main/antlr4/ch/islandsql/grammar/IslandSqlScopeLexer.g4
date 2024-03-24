@@ -111,6 +111,12 @@ ALTER_AUDIT_POLICY:
         'audit' COMMENT_OR_WS+ 'policy' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+// hide keyword: merge
+ALTER_TABLE:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 CREATE_AUDIT_POLICY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
