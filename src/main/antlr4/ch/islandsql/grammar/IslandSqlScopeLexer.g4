@@ -31,6 +31,7 @@ fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment PLSQL_END: ';' COMMENT_OR_WS* (EOF|SLASH_END);
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment SQL_END:
       EOF
@@ -298,6 +299,11 @@ LOCK_TABLE:
 
 MERGE:
     'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+PLSQL_BLOCK:
+      (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+    | (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
 ;
 
 // TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
