@@ -654,6 +654,7 @@ AMP_SOL_AMP: '&/&';
 AST: '*';
 BSOL: '\\';
 COLON: ':';
+COLON_EQUALS: ':=';    // no WS allowed between chars in field_definition of OracleDB
 COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 COMMA: ',';
 COMMAT: '@';
