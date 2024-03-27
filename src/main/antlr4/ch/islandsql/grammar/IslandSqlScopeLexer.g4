@@ -26,7 +26,7 @@ options {
 /*----------------------------------------------------------------------------*/
 
 fragment SINGLE_NL: '\r'? '\n';
-fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT SINGLE_NL)|WS;
+fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
