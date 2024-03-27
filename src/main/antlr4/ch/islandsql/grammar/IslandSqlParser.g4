@@ -57,6 +57,7 @@ dmlStatement:
     | explainPlanStatement
     | insertStatement
     | lockTableStatement
+    | plsqlBlockStatement
     | mergeStatement
     | selectStatement
     | updateStatement
@@ -344,6 +345,556 @@ lockTableWaitOption:
 ;
 
 /*----------------------------------------------------------------------------*/
+// PL/SQL Block Statement
+/*----------------------------------------------------------------------------*/
+
+// top level statement, expected to end on new line, slash
+plsqlBlockStatement:
+    labels+=label* plsqlBlock sqlEnd
+;
+
+label:
+    LT_LT labelName=sqlName GT_GT
+;
+
+
+// simplified grammar, do not distinguish between item_list_1 and item_list_2
+declareSection:
+    items+=listItem+
+;
+
+// all items in item_list_1 and item_list_2
+listItem:
+      typeDefinition
+    | cursorDeclaration
+    | cursorDefinition
+    | itemDeclaration
+    | functionDeclaration
+    | functionDefinition
+    | procedureDeclaration
+    | procedureDefinition
+;
+
+typeDefinition:
+      collectionTypeDefinition
+    | recordTypeDefinition
+    | refCursorTypeDefinition
+    | subtypeDefinition
+;
+
+collectionTypeDefinition:
+    K_TYPE name=sqlName K_IS (
+          assocArrayTypeDef
+        | varrayTypeDef
+        | nestedTableTypeDef
+    )
+;
+
+assocArrayTypeDef:
+    K_TABLE K_OF type=plsqlDataType (K_NOT K_NULL)? K_INDEX K_BY indexType=dataType
+;
+
+plsqlDataType:
+      K_REF dataType            # refPlsqlDataType
+    | dataType PERCNT K_TYPE    # percentTypePlsqlDataType
+    | dataType PERCNT K_ROWTYPE # percentRowtypePlsqlDataType
+    | dataType                  # simplePlsqlDataType
+;
+
+varrayTypeDef:
+    (K_VARRAY | K_VARYING K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT K_NULL)?
+;
+
+nestedTableTypeDef:
+    K_TABLE K_OF type=plsqlDataType (K_NOT K_NULL)?
+;
+
+recordTypeDefinition:
+    K_TYPE name=sqlName K_IS K_RECORD LPAR
+        fieldDefinitions+=fieldDefinition (COMMA fieldDefinitions+=fieldDefinition)*
+    LPAR SEMI
+;
+
+// no space allowed between ':' and '=' in OracleDB 23.3
+fieldDefinition:
+    field=sqlName type=dataType ((K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
+;
+
+refCursorTypeDefinition:
+    K_TYPE type=sqlName K_IS K_REF K_CURSOR (K_RETURN returnType=plsqlDataType)?
+;
+
+subtypeDefinition:
+    K_SUBTYPE subtype=sqlName K_IS baseType=plsqlDataType
+    (subtypeConstraint | K_CHARACTER K_SET characterSet=sqlName)
+;
+
+// precision, scaled are handled by plsqlDataType for baseType, require parentheses which is not documented anyway
+// no space allowed between periods, however we allow it to avoid conflict with substitugion variable ending on period
+subtypeConstraint:
+    K_RANGE lowValue=expression PERIOD PERIOD highValue=expression
+;
+
+cursorDeclaration:
+    K_CURSOR cursor=sqlName
+        (LPAR parameters+=cursorParameterDec (COMMA parameters+=cursorParameterDec)* RPAR)?
+        K_RETURN rowtype=plsqlDataType SEMI
+;
+
+cursorParameterDec:
+    parameterName=sqlName K_IN? type=plsqlDataType ((COLON_EQUALS | K_DEFAULT) expr=expression)?
+;
+
+cursorDefinition:
+    K_CURSOR cursor=sqlName
+        (LPAR parameters+=cursorParameterDec (COMMA parameters+=cursorParameterDec)* RPAR)?
+        (K_RETURN rowtype=plsqlDataType)? K_IS select SEMI
+;
+
+// simplified: collection_variable_decl, cursor_variable_declaration, record_variable_declaration
+// and exception_declaration are handled as variable_declaration
+itemDeclaration:
+      constantDeclaration
+    | variableDeclaration
+;
+
+constantDeclaration:
+    constant=sqlName K_CONSTANT type=dataType (K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+;
+
+variableDeclaration:
+    variable=sqlName type=plsqlDataType ((K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)? SEMI
+;
+
+functionDeclaration:
+    functionHeading options+=functionDeclarationOption* SEMI
+;
+
+functionDeclarationOption:
+      deterministicClause
+    | pipelinedClause
+    | parallelEnableClause
+    | resultCacheClause
+;
+
+deterministicClause:
+    K_DETERMINISTIC
+;
+
+pipelinedClause:
+    K_PIPELINED
+        (
+              K_USING (schema=sqlName PERIOD)? implementationType=sqlName
+            | (K_ROW | K_TABLE) K_POLYMORPHIC (K_USING (schema=sqlName PERIOD)? implementationType=sqlName)?
+        )?
+;
+
+parallelEnableClause:
+    K_PARALLEL_ENABLE
+        (
+            LPAR K_PARTITION arg=sqlName K_BY
+                (
+                      K_ANY
+                    | (K_HASH | K_RANGE) LPAR columns+=sqlName (COMMA columns+=sqlName)* streamingClause? RPAR
+                    | K_VALUE LPAR columns+=sqlName RPAR
+                )
+            RPAR
+        )?
+;
+
+streamingClause:
+    (K_ORDER | K_CLUSTER) expr=expression K_BY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+;
+
+resultCacheClause:
+    K_RESULT_CACHE (K_RELIES_ON LPAR dataSources+=qualifiedName (COMMA dataSources+=qualifiedName)* RPAR)?
+;
+
+functionHeading:
+    K_FUNCTION functionName=sqlName
+        (LPAR parameters+=parameterDeclaration (parameters+=parameterDeclaration)* RPAR)?
+        K_RETURN returnType=plsqlDataType
+;
+
+functionDefinition:
+    functionHeading options+=functionDefinitionOption* (K_IS | K_AS) (declareSection? body | callSpec)
+;
+
+functionDefinitionOption:
+      deterministicClause
+    | pipelinedClause
+    | parallelEnableClause
+    | resultCacheClause
+;
+
+callSpec:
+      javaDeclaration
+    | javascriptDeclaration
+    | cDeclaration
+;
+
+javaDeclaration:
+    K_LANGUAGE K_JAVA K_NAME javaName=string
+;
+
+javascriptDeclaration:
+    K_MLE
+        (
+              K_MODULE (schema=sqlName PERIOD)? moduleName=sqlName
+                (K_ENV (envSchema=sqlName PERIOD)? envName=sqlName)? K_SIGNATURE signature=string
+            | K_LANGUAGE languageName=sqlName code=string
+        )
+;
+
+cDeclaration:
+    (K_LANGUAGE K_C | K_EXTERNAL)
+        (
+              (K_NAME name=sqlName)? K_LIBRARY libName=sqlName
+            | K_LIBRARY libName=sqlName (K_NAME name=sqlName)?
+        )
+        (K_AGENT K_IN LPAR args+=sqlName (COMMA args+=sqlName)* RPAR)?
+        (K_WITH K_CONTEXT)?
+        (K_PARAMETERS LPAR params+=externalParameter (COMMA params+=externalParameter) RPAR)?
+;
+
+externalParameter:
+      K_CONTEXT
+    | K_SELF (K_TDO | externalProperty)
+    | (parameterName=sqlName | K_RETURN) externalProperty? (K_BY K_REFERENCE)? externalDataType=sqlName?
+;
+
+externalProperty:
+      K_INDICATOR (K_STRUCT | K_TDO)?
+    | K_LENGTH
+    | K_DURATION
+    | K_MAXLEN
+    | K_CHARSETID
+    | K_CHARSETFORM
+;
+
+parameterDeclaration:
+    parameter=sqlName
+    (
+          K_IN? type=plsqlDataType ((COLON_EQUALS | K_DEFAULT) expr=expression)?
+        | K_IN? K_OUT K_NOCOPY? type=plsqlDataType
+    )?
+;
+
+// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
+procedureDeclaration:
+    procedureHeading options+=procedureOption* SEMI
+;
+
+procedureOption:
+      accessibleByClause
+    | defaultCollationClause
+    | invokerRightsclause
+;
+
+accessibleByClause:
+    K_ACCESSIBLE K_BY LPAR accessors+=accessor RPAR
+;
+
+accessor:
+    unitKind? (schema=sqlName PERIOD) unitName=sqlName
+;
+
+unitKind:
+      K_FUNCTION
+    | K_PROCEDURE
+    | K_PACKAGE
+    | K_TRIGGER
+    | K_TYPE
+;
+
+// the only documented option is using_nls_comp
+defaultCollationClause:
+    K_DEFAULT K_COLLATION collationOption=sqlName
+;
+
+invokerRightsclause:
+    K_AUTHID (K_CURRENT_USER | K_DEFINER)
+;
+
+procedureHeading:
+    K_PROCEDURE procedure=sqlName (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+;
+
+procedureDefinition:
+    procedureHeading options+=procedureOption* (K_IS | K_AS) (declareSection? body | callSpec)
+;
+
+body:
+    K_BEGIN
+    stmts+=plsqlStatement+
+    (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
+    K_END name=sqlName? SEMI
+;
+
+// collection_method_call is handled in procedure_call
+plsqlStatement:
+    labels+=label* (
+          assignmentStatement
+        | basicLoopStatement
+        | caseStatement
+        | closeStatment
+        | continueStatement
+        | cursorForLoopStatement
+        | executeImmediateStatement
+        | exitStatement
+        | fetchStatement
+        | forLoopStatement
+        | forallStatement
+        | gotoStatement
+        | ifStatement
+        | nullStatement
+        | openStatement
+        | openForStatement
+        | pipeRowStatement
+        | plsqlBlock
+        | procedureCall
+        | raiseStatement
+        | returnStatement
+        | selectIntoStatement
+        | sqlStatement
+        | whileLoopStatement
+    )
+;
+
+assignmentStatement:
+    target=expression COLON_EQUALS value=expression SEMI
+;
+
+basicLoopStatement:
+    K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName
+;
+
+caseStatement:
+      simpleCaseStatement
+    | searchedCaseStatement
+;
+
+simpleCaseStatement:
+    K_CASE selector=expression whens+=simpleCaseStatementWhenClause+
+    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName SEMI
+;
+
+simpleCaseStatementWhenClause:
+    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN stmts+=plsqlStatement+
+;
+
+searchedCaseStatement:
+    K_CASE whens+=searchedCaseStatementWhenClause+
+    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName SEMI
+;
+
+searchedCaseStatementWhenClause:
+    K_WHEN cond=condition K_THEN stmts+=plsqlStatement+
+;
+
+closeStatment:
+    K_CLOSE COLON? cursor=qualifiedName SEMI
+;
+
+continueStatement:
+    K_CONTINUE toLabel=sqlName? (K_WHEN cond=condition)? SEMI
+;
+
+// wrong documentation in 23.3 regarding parentheses for cursor parameters
+cursorForLoopStatement:
+    K_FOR record=sqlName K_IN (
+          K_CURSOR LPAR params+=cursorParameterDec (COMMA params+=cursorParameterDec)* RPAR
+        | LPAR select RPAR
+    ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+executeImmediateStatement:
+    executeImmediate SEMI
+;
+
+// required variant without ending on semicolon, used in forall_statement
+executeImmediate:
+    K_EXECUTE K_IMMEDIATE dynamicSqlStmt=expression (
+        (intoClause | bulkCollectIntoClause) usingClause?
+
+    )?
+;
+
+// wrong documentation in 23.3 regarding comma in bind_argument and optionality
+usingClause:
+    K_USING args+=bindArgument (COMMA args+=bindArgument)*
+;
+
+bindArgument:
+    (
+          K_IN K_OUT?
+        | K_OUT
+    )? arg=expression
+;
+
+exitStatement:
+    K_EXIT toLabel=sqlName? (K_WHEN expr=expression)? SEMI
+;
+
+fetchStatement:
+    K_FETCH COLON? cursor=qualifiedName (
+          intoClause
+        | bulkCollectIntoClause (K_LIMIT limit=expression)?
+    ) SEMI
+;
+
+forLoopStatement:
+    K_FOR iterator K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+iterator:
+    firstIterand=iterandDecl (COMMA secondIterand=iterandDecl)? K_IN ctlSeq=iterationCtlSeq
+;
+
+iterandDecl:
+    identifier=sqlName (K_MUTABLE | K_IMMUTABLE)? dataType?
+;
+
+iterationCtlSeq:
+    controls+=qualIterationCtl (COMMA controls+=qualIterationCtl)*
+;
+
+qualIterationCtl:
+    K_REVERSE? iterationControl predClauseSeq
+;
+
+iterationControl:
+      steppedControl
+    | singleExpressionControl
+    | valuesOfControl
+    | indicesOfControl
+    | pairsOfControl
+    | cursorIterationControl
+;
+
+// TODO: check optionality
+predClauseSeq:
+    (K_WHILE whileExpr=expression)? (K_WHEN whenExpr=expression)?
+;
+
+steppedControl:
+    lowerBound=expression PERIOD PERIOD upperBound=expression (K_BY step=expression)?
+;
+
+singleExpressionControl:
+    K_REPEAT? expr=expression
+;
+
+valuesOfControl:
+    K_VALUES K_OF expr=expression
+;
+
+indicesOfControl:
+    K_INDICES K_OF expr=expression
+;
+
+pairsOfControl:
+    K_PAIRS K_OF expr=expression
+;
+
+cursorIterationControl:
+    LPAR expr=expression RPAR
+;
+
+forallStatement:
+    K_FORALL index=expression K_IN boundsClause (K_SAVE K_EXCEPTIONS)? stmt=forallDmlStatement SEMI
+;
+
+boundsClause:
+      lowerBound=expression PERIOD PERIOD upperBound=expression                                                 # simpleBoundClause
+    | K_INDICES K_OF collection=qualifiedName (K_BETWEEN lowerBound=expression K_AND upperBound=expression)?    # indicesBoundClause
+    | K_VALUES K_OF collection=qualifiedName                                                                    # valuesBoundClause
+;
+
+forallDmlStatement:
+      insert
+    | update
+    | delete
+    | merge
+    | executeImmediate
+;
+
+gotoStatement:
+    K_GOTO toLabel=sqlName SEMI
+;
+
+ifStatement:
+    K_IF conditionToStmts+=conditionToStatements
+    (K_ELSIF conditionToStmts+=conditionToStatements)*
+    (K_ELSE elseStmts=plsqlStatement+)?
+    K_END K_IF SEMI
+;
+
+// artificial clause
+conditionToStatements:
+    cond=condition K_THEN stmts+=plsqlStatement+
+;
+
+nullStatement:
+    K_NULL SEMI
+;
+
+openStatement:
+    K_OPEN cursor=qualifiedName (LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR)? SEMI
+;
+
+openForStatement:
+    K_OPEN COLON? cursor=qualifiedName K_FOR (selectStmt=select | expr=expression) usingClause? SEMI
+;
+
+pipeRowStatement:
+    K_PIPE K_ROW LPAR row=expression RPAR SEMI
+;
+
+plsqlBlock:
+    (K_DECLARE declareSection)? body sqlEnd
+;
+
+// others is handled as normal exception name
+exceptionHandler:
+    K_WHEN exceptions+=sqlName (K_OR exceptions+=sqlName)* K_THEN stmts+=plsqlStatement+
+;
+
+procedureCall:
+    expr=expression SEMI
+;
+
+raiseStatement:
+    K_RAISE exceptionName=qualifiedName? SEMI
+;
+
+returnStatement:
+    K_RETURN value=condition SEMI
+;
+
+selectIntoStatement:
+    select
+;
+
+sqlStatement:
+    (
+          commit
+        | delete
+        | insert
+        | lockTable
+        | merge
+        | rollback
+        | savepoint
+        | setTransaction
+        | update
+    ) SEMI
+;
+
+whileLoopStatement:
+    K_WHILE cond=condition K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+/*----------------------------------------------------------------------------*/
 // Merge
 /*----------------------------------------------------------------------------*/
 
@@ -482,24 +1033,11 @@ withClause:
     )
 ;
 
+// only definitions are allowed in plsql_declarations (no forward declarations)
+// the name of the clause is misleading
 plsqlDeclarations:
-      functionDeclaration
-    | procedureDeclaration
-;
-
-// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
-functionDeclaration:
-    K_FUNCTION plsqlCode K_END sqlName? SEMI
-;
-
-// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
-procedureDeclaration:
-    K_PROCEDURE plsqlCode K_END sqlName? SEMI
-;
-
-// TODO: replace with complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
-plsqlCode:
-    .+?
+      functionDefinition
+    | procedureDefinition
 ;
 
 factoringClause:
