@@ -171,7 +171,7 @@ otherStatement:
 explain:
     K_EXPLAIN
         (
-              LPAR option+=explainOption (COMMA option+=explainOption)* RPAR
+              LPAR options+=explainOption (COMMA options+=explainOption)* RPAR
             | K_ANALYZE K_VERBOSE?
             | K_VERBOSE
         )?
@@ -268,7 +268,7 @@ postgresqlOnConflictClause:
 
 postgresqlOnConflictTarget:
       LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=condition)?
-    | K_ON K_CONSTRAINT constraint=sqlName
+    | K_ON K_CONSTRAINT constraintName=sqlName
 ;
 
 postgresqlOnConflictTargetItem:
@@ -533,8 +533,8 @@ valuesClause:
 
 // undocumented, first value in the first row does not need parentheses (in OracleDB only)
 valuesRow:
-      LPAR expr+=expression (COMMA expr+=expression)* RPAR
-    | expr+=expression
+      LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+    | exprs+=expression
 ;
 
 searchClause:
@@ -569,7 +569,7 @@ hierarchiesClause:
 ;
 
 filterClauses:
-    K_FILTER K_FACT LPAR filter+=filterClause (COMMA filter+=filterClause)* RPAR
+    K_FILTER K_FACT LPAR filters+=filterClause (COMMA filters+=filterClause)* RPAR
 ;
 
 // combinded filter_clause and hier_ids
@@ -922,7 +922,7 @@ datatypeDomain:
 ;
 
 subqueryRestrictionClause:
-    K_WITH (K_READ K_ONLY | K_CHECK K_OPTION) (K_CONSTRAINT constraint=sqlName)?
+    K_WITH (K_READ K_ONLY | K_CHECK K_OPTION) (K_CONSTRAINT constraintName=sqlName)?
 ;
 
 // handle MINVALUE and MAXVALUE as sqlName in expression
@@ -955,7 +955,7 @@ pivotForClause:
 ;
 
 pivotInClause:
-    K_IN LPAR (query=subquery | (expr+=pivotInClauseExpression (COMMA expr+=pivotInClauseExpression)*)) RPAR
+    K_IN LPAR (query=subquery | (exprs+=pivotInClauseExpression (COMMA exprs+=pivotInClauseExpression)*)) RPAR
 ;
 
 pivotInClauseExpression:
@@ -1892,7 +1892,7 @@ vertexPattern:
 // simplified, includes: element_variable_declaration, element_variable, isLabelExpression/isLabelDeclaration,
 // element_pattern_where_clause, is_label_declaration
 elementPatternFiller:
-    var=sqlName? (K_IS label=labelExpression)? (K_WHERE cond=condition)?
+    var=sqlName? (K_IS labelName=labelExpression)? (K_WHERE cond=condition)?
 ;
 
 // simplified, includes: label, label_disjunction
@@ -1945,7 +1945,7 @@ jsonArrayContent:
 ;
 
 jsonArrayEnumerationContent:
-    (element+=jsonArrayElement (COMMA element+=jsonArrayElement)*)?
+    (elements+=jsonArrayElement (COMMA elements+=jsonArrayElement)*)?
         jsonOnNullClause?
         jsonReturningClause?
         options+=jsonOption*
@@ -2705,7 +2705,7 @@ positionalChoiceList:
 ;
 
 sequenceIteratorChoice:
-    K_FOR iterator=sqlName K_SEQUENCE EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName K_SEQUENCE EQUALS GT expr=expression
 ;
 
 explicitChoiceList:
@@ -2724,11 +2724,11 @@ indexedChoiceList:
 ;
 
 basicIteratorChoice:
-    K_FOR iterator=sqlName EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName EQUALS GT expr=expression
 ;
 
 indexIteratorChoice:
-    K_FOR iterator=sqlName K_INDEX EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName K_INDEX EQUALS GT expr=expression
 ;
 
 placeholderExpression:
@@ -2911,11 +2911,11 @@ binaryOperator:
 
 postgresqlArrayConstructor:
       K_ARRAY LSQB (exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)*)? RSQB
-    | K_ARRAY LPAR expr+=subquery RPAR
+    | K_ARRAY LPAR expr=subquery RPAR
 ;
 
 postgresqlArrayElement:
-      expr+=expression                                                               # postgresqlArrayElementItem
+      expr=expression                                                                # postgresqlArrayElementItem
     | LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB # postgresqlArrayElementList
 ;
 
