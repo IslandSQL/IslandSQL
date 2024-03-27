@@ -33,6 +33,7 @@ file: statement* EOF;
 
 statement:
       dmlStatement
+    | tclStatement
     | emptyStatement
 ;
 
@@ -1197,6 +1198,111 @@ updateSetClauseItem:
     | LPAR columns+=qualifiedName RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # updateSetClauseItemColumn
     | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
+;
+
+/*----------------------------------------------------------------------------*/
+// Transaction Control Language
+/*----------------------------------------------------------------------------*/
+
+tclStatement:
+      commitStatement
+    | rollbackStatement
+    | savepointStatement
+    | setConstraintsStatement
+    | setTransactionStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Commit
+/*----------------------------------------------------------------------------*/
+
+commitStatement:
+    commit sqlEnd
+;
+
+// undocumented in 23c: write options can have any order, force options, force with comment
+commit:
+    K_COMMIT K_WORK?
+    (K_COMMENT commentValue=expression)?
+    (K_WRITE
+        (
+              K_WAIT (K_IMMEDIATE | K_BATCH)?
+            | K_NOWAIT (K_IMMEDIATE | K_BATCH)?
+            | K_IMMEDIATE
+            | K_BATCH
+        )?
+    )?
+    (
+        K_FORCE (
+              transactionId=expression (COMMA scn=expression)?
+            | K_CORRUPT_XID corruptXid=expression
+            | K_CORRUPT_XID_ALL
+        )
+    )?
+;
+
+/*----------------------------------------------------------------------------*/
+// Rollback
+/*----------------------------------------------------------------------------*/
+
+rollbackStatement:
+    rollback sqlEnd
+;
+
+rollback:
+    K_ROLLBACK K_WORK? (
+          K_TO K_SAVEPOINT? savepointName=sqlName
+        | K_FORCE transactionId=expression
+    )?
+;
+
+/*----------------------------------------------------------------------------*/
+// Savepoint
+/*----------------------------------------------------------------------------*/
+
+savepointStatement:
+    savepoint sqlEnd
+;
+
+savepoint:
+    K_SAVEPOINT savepointName=sqlName
+;
+
+/*----------------------------------------------------------------------------*/
+// Set Constraint(s)
+/*----------------------------------------------------------------------------*/
+
+setConstraintsStatement:
+    setConstraints sqlEnd
+;
+
+setConstraints:
+    K_SET (K_CONSTRAINT | K_CONSTRAINTS)
+    (
+          K_ALL
+        | constraints+=constraint (COMMA constraints+=constraint)*
+    ) (K_IMMEDIATE | K_DEFERRED) SEMI
+;
+
+constraint:
+    name=qualifiedName (K_AT dblink=qualifiedName)?
+;
+
+/*----------------------------------------------------------------------------*/
+// Set Transaction
+/*----------------------------------------------------------------------------*/
+
+setTransactionStatement:
+    setTransaction sqlEnd
+;
+
+setTransaction:
+    K_SET K_TRANSACTION (
+          K_READ (K_ONLY | K_WRITE) (K_NAME name=expression)?
+        | K_ISOLATION K_LEVEL (K_SERIALIZABLE | K_READ K_COMMITTED) (K_NAME name=expression)?
+        | K_USE K_ROLLBACK K_SEGMENT rollbackSegment=sqlName (K_NAME name=expression)?
+        | K_NAME name=expression
+    )
 ;
 
 /*----------------------------------------------------------------------------*/
