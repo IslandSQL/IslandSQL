@@ -1294,7 +1294,7 @@ emptyStatement:
 
 // top level statement, expected to end on new line, slash
 plsqlBlockStatement:
-    labels+=label* plsqlBlock sqlEnd
+    labels+=label* plsqlBlock sqlEnd?
 ;
 
 label:
