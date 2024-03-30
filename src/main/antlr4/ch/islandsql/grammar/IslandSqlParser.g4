@@ -3716,11 +3716,14 @@ keywordAsId:
     | K_BYTEA
     | K_C
     | K_CALL
+    | K_CALLED
     | K_CASE
     | K_CASE_SENSITIVE
     | K_CAST
+    | K_CHAIN
     | K_CHAR
     | K_CHARACTER
+    | K_CHARACTERISTICS
     | K_CHARSETFORM
     | K_CHARSETID
     | K_CHAR_CS
@@ -3774,6 +3777,7 @@ keywordAsId:
     | K_DECREMENT
     | K_DEFAULT
     | K_DEFAULTS
+    | K_DEFERRABLE
     | K_DEFERRED
     | K_DEFINE
     | K_DEFINER
@@ -3792,6 +3796,7 @@ keywordAsId:
     | K_DOMAIN
     | K_DOUBLE
     | K_DURATION
+    | K_EDITIONABLE
     | K_EDIT_TOLERANCE
     | K_ELSE
     | K_ELSIF
@@ -3875,6 +3880,7 @@ keywordAsId:
     | K_INET
     | K_INFINITE
     | K_INNER
+    | K_INPUT
     | K_INSERT
     | K_INT2
     | K_INT4
@@ -3885,6 +3891,7 @@ keywordAsId:
     | K_INTERVAL
     | K_INTO
     | K_INVISIBLE
+    | K_INVOKER
     | K_IS
     | K_ISNULL
     | K_ISOLATION
@@ -3921,6 +3928,7 @@ keywordAsId:
     | K_LEADING
     | K_LEAD_DIFF
     | K_LEAD_DIFF_PERCENT
+    | K_LEAKPROOF
     | K_LEFT
     | K_LENGTH
     | K_LEVEL
@@ -3956,6 +3964,7 @@ keywordAsId:
     | K_MEASURES
     | K_MEMBER
     | K_MERGE
+    | K_METADATA
     | K_MINUS
     | K_MINUTE
     | K_MISMATCH
@@ -3984,6 +3993,8 @@ keywordAsId:
     | K_NOCOPY
     | K_NOCYCLE
     | K_NOENTITYESCAPING
+    | K_NONE
+    | K_NONEDITIONABLE
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
@@ -4019,6 +4030,7 @@ keywordAsId:
     | K_OVERRIDING
     | K_PACKAGE
     | K_PAIRS
+    | K_PARALLEL
     | K_PARALLEL_ENABLE
     | K_PARAMETERS
     | K_PARENT
@@ -4047,6 +4059,7 @@ keywordAsId:
     | K_PREDICTION
     | K_PREDICTION_COST
     | K_PREDICTION_DETAILS
+    | K_PREPARED
     | K_PREPEND
     | K_PRESENT
     | K_PRESERVE
@@ -4074,9 +4087,11 @@ keywordAsId:
     | K_REPLACE
     | K_RESERVABLE
     | K_RESPECT
+    | K_RESTRICTED
     | K_RESULT_CACHE
     | K_RETURN
     | K_RETURNING
+    | K_RETURNS
     | K_REVERSE
     | K_RIGHT
     | K_ROLLBACK
@@ -4087,15 +4102,18 @@ keywordAsId:
     | K_ROW_NUMBER
     | K_RULES
     | K_RUNNING
+    | K_SAFE
     | K_SAMPLE
     | K_SAVE
     | K_SAVEPOINT
+    | K_SCALAR
     | K_SCALARS
     | K_SCHEMACHECK
     | K_SCN
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
+    | K_SECURITY
     | K_SEED
     | K_SEGMENT
     | K_SELECT
@@ -4107,11 +4125,15 @@ keywordAsId:
     | K_SERIAL8
     | K_SERIAL
     | K_SERIALIZABLE
+    | K_SESSION
     | K_SESSIONTIMEZONE
     | K_SET
+    | K_SETOF
     | K_SETS
+    | K_SHARD_ENABLE
     | K_SHARE
     | K_SHARE_OF
+    | K_SHARING
     | K_SHOW
     | K_SIBLINGS
     | K_SIGNATURE
@@ -4121,9 +4143,12 @@ keywordAsId:
     | K_SKIP
     | K_SMALLINT
     | K_SMALLSERIAL
+    | K_SNAPSHOT
     | K_SOME
     | K_SORT
     | K_SQL
+    | K_SQL_MACRO
+    | K_STABLE
     | K_STANDALONE
     | K_START
     | K_STATEMENT_ID
@@ -4135,6 +4160,7 @@ keywordAsId:
     | K_SUBSTRING
     | K_SUBTYPE
     | K_SUMMARY
+    | K_SUPPORT
     | K_SYMMETRIC
     | K_SYSTEM
     | K_TABLE
@@ -4155,6 +4181,7 @@ keywordAsId:
     | K_TO
     | K_TRAILING
     | K_TRANSACTION
+    | K_TRANSFORM
     | K_TREAT
     | K_TRIGGER
     | K_TRIGRAM
@@ -4168,6 +4195,7 @@ keywordAsId:
     | K_TYPENAME
     | K_UESCAPE
     | K_UNBOUNDED
+    | K_UNCOMMITTED
     | K_UNCONDITIONAL
     | K_UNION
     | K_UNIQUE
@@ -4176,6 +4204,7 @@ keywordAsId:
     | K_UNLOGGED
     | K_UNMATCHED
     | K_UNPIVOT
+    | K_UNSAFE
     | K_UNSCALED
     | K_UNTIL
     | K_UPDATE
@@ -4200,6 +4229,7 @@ keywordAsId:
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
+    | K_VOLATILE
     | K_WAIT
     | K_WAL
     | K_WELLFORMED
