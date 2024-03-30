@@ -281,6 +281,22 @@ CALL:
     'call' {isBeginOfStatement("call")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
+COMMIT:
+    'commit' {isBeginOfStatement("commit")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+// handles also functions with unquoted sql_body
+CREATE_FUNCTION_POSTGRESQL:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+?
+    'language'  COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+CREATE_FUNCTION:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+? PLSQL_END
+;
+
 DELETE:
     'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
@@ -304,6 +320,18 @@ MERGE:
 PLSQL_BLOCK:
       (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
     | (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+;
+
+ROLLBACK:
+    'rollback' {isBeginOfStatement("rollback")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+SAVEPOINT:
+    'savepoint' {isBeginOfStatement("savepoint")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+SET_CONSTRAINTS:
+    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'contstraints') COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 // TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
