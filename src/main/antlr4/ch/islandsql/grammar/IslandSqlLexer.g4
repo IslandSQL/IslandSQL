@@ -696,6 +696,7 @@ COMMAT_MINUS_COMMAT: '@-@';
 COMMAT_QUEST: '@?';
 DOLLAR: '$';
 EQUALS: '=';
+EQUALS_GT: '=>';
 EXCL: '!';
 EXCL_EXCL: '!!';
 EXCL_TILDE: '!~';

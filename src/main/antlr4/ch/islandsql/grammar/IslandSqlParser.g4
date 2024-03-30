@@ -3349,7 +3349,7 @@ positionalChoiceList:
 ;
 
 sequenceIteratorChoice:
-    K_FOR iteratorName=sqlName K_SEQUENCE EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName K_SEQUENCE EQUALS_GT expr=expression
 ;
 
 explicitChoiceList:
@@ -3360,19 +3360,19 @@ explicitChoiceList:
 ;
 
 namedChoiceList:
-    identifiers+=sqlName (VERBAR identifiers+=sqlName)* EQUALS GT expr=expression
+    identifiers+=sqlName (VERBAR identifiers+=sqlName)* EQUALS_GT expr=expression
 ;
 
 indexedChoiceList:
-    indexes+=expression (VERBAR indexes+=expression)* EQUALS GT expr=expression
+    indexes+=expression (VERBAR indexes+=expression)* EQUALS_GT expr=expression
 ;
 
 basicIteratorChoice:
-    K_FOR iteratorName=sqlName EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName EQUALS_GT expr=expression
 ;
 
 indexIteratorChoice:
-    K_FOR iteratorName=sqlName K_INDEX EQUALS GT expr=expression
+    K_FOR iteratorName=sqlName K_INDEX EQUALS_GT expr=expression
 ;
 
 placeholderExpression:
