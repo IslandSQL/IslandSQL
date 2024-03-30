@@ -32,10 +32,110 @@ file: statement* EOF;
 /*----------------------------------------------------------------------------*/
 
 statement:
-      dmlStatement
+      ddlStatement
+    | dmlStatement
     | emptyStatement
     | plsqlBlockStatement
     | tclStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Data Definition Language
+/*----------------------------------------------------------------------------*/
+
+ddlStatement:
+    createFunctionStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Function
+/*----------------------------------------------------------------------------*/
+
+createFunctionStatement:
+      createFunction sqlEnd?
+;
+
+createFunction:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_FUNCTION
+    (K_IF K_NOT K_EXISTS)? (plsqlFunctionSource | postgresFunctionSource)
+;
+
+plsqlFunctionSource:
+    (schema=sqlName PERIOD)? functionName=sqlName
+        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+        K_RETURN returnType=plsqlDataType options+=plsqlFunctionOption*
+        (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+;
+
+plsqlFunctionOption:
+      sharingClause
+    | invokerRightsclause
+    | accessibleByClause
+    | defaultCollationClause
+    | deterministicClause
+    | shardEnableClause
+    | parallelEnableClause
+    | resultCacheClause
+    | aggreagateClause
+    | pipelinedClause
+    | sqlMacroClause
+;
+
+sharingClause:
+    K_SHARING EQUALS (K_METADATA | K_NONE)
+;
+
+shardEnableClause:
+    K_SHARD_ENABLE
+;
+
+aggreagateClause:
+    K_AGGREGATE K_USING (schema=sqlName PERIOD)? implementationtype=sqlName
+;
+
+// space is not allowed between '=>'
+sqlMacroClause:
+    K_SQL_MACRO (LPAR (K_TYPE EQUALS_GT)? (K_SCALAR | K_TABLE)  RPAR)?
+;
+
+postgresFunctionSource:
+    (schema=sqlName PERIOD)? functionName=sqlName
+        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+        K_RETURNS
+        (
+              K_SETOF? (returnSchema=sqlName PERIOD)? returnType=plsqlDataType
+            | K_TABLE LPAR columns+=postgresqlColumnDefinition (COMMA columns+=postgresqlColumnDefinition)* RPAR
+        )
+        postgresqlFunctionOption+
+;
+
+postgresqlFunctionOption:
+      K_LANGUAGE languageName=sqlName
+    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)
+    | K_IMMUTABLE
+    | K_STABLE
+    | K_VOLATILE
+    | K_NOT? K_LEAKPROOF
+    | K_CALLED K_ON K_NULL K_INPUT
+    | K_RETURNS K_NULL K_ON K_NULL K_INPUT
+    | K_STRICT
+    | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
+    | K_PARALLEL (K_UNSAFE | K_RESTRICTED | K_SAFE)
+    | K_COST executionCost=expression
+    | K_ROWS resultRows=expression
+    | K_SUPPORT (supportSchema=sqlName PERIOD)? supportFunction=sqlName
+    | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
+    | K_AS definition=expression
+    | K_AS objFile=expression COMMA linkSymbol=expression
+    | sqlBody
+;
+
+transformItem:
+    K_FOR K_TYPE (typeSchema=sqlName PERIOD)? typeName=dataType
+;
+
+sqlBody:
+    K_RETURN expr=expression
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1743,11 +1843,24 @@ whileLoopStatement:
 /*----------------------------------------------------------------------------*/
 
 tclStatement:
-      commitStatement
+      beginStatement
+    | commitStatement
     | rollbackStatement
     | savepointStatement
     | setConstraintsStatement
     | setTransactionStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Begin (PostgreSQL)
+/*----------------------------------------------------------------------------*/
+
+beginStatement:
+    begin sqlEnd
+;
+
+begin:
+    K_BEGIN (K_WORK | K_TRANSACTION)? (modes+=transactionMode (COMMA modes+=transactionMode)*)?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1760,7 +1873,13 @@ commitStatement:
 
 // undocumented in 23c: write options can have any order, force options, force with comment
 commit:
-    K_COMMIT K_WORK?
+    K_COMMIT
+    (
+          K_WORK
+        | K_TRANSACTION // PostgreSQL
+        | K_PREPARED transactionId=expression // PostgreSQL
+    )?
+    (K_AND K_NO? K_CHAIN)?  // PostgreSQL
     (K_COMMENT commentValue=expression)?
     (K_WRITE
         (
@@ -1788,7 +1907,14 @@ rollbackStatement:
 ;
 
 rollback:
-    K_ROLLBACK K_WORK? (
+    K_ROLLBACK
+    (
+          K_WORK
+        | K_TRANSACTION // PostgreSQL
+        | K_PREPARED transactionId=expression // PostgreSQL
+    )?
+    (K_AND K_NO? K_CHAIN)? // PostgreSQL
+    (
           K_TO K_SAVEPOINT? savepointName=sqlName
         | K_FORCE transactionId=expression
     )?
@@ -1835,12 +1961,23 @@ setTransactionStatement:
 ;
 
 setTransaction:
-    K_SET K_TRANSACTION (
-          K_READ (K_ONLY | K_WRITE) (K_NAME name=expression)?
-        | K_ISOLATION K_LEVEL (K_SERIALIZABLE | K_READ K_COMMITTED) (K_NAME name=expression)?
-        | K_USE K_ROLLBACK K_SEGMENT rollbackSegment=sqlName (K_NAME name=expression)?
-        | K_NAME name=expression
+    K_SET
+    (K_SESSION K_CHARACTERISTICS K_AS)? // PostgreSQL
+    K_TRANSACTION
+    (
+          transactionMode (K_NAME name=expression)? // OracleDB: name
+        | K_SNAPSHOT snapshotId=expression // PostgreSQL: accepted also for "set session characteristics as"
+        | K_USE K_ROLLBACK K_SEGMENT rollbackSegment=sqlName (K_NAME name=expression)? // OracleDB
+        | K_NAME name=expression // OracleDB
     )
+;
+
+// PostgreSQL modes, subset supported by OracleDB
+transactionMode:
+      K_ISOLATION K_LEVEL (K_SERIALIZABLE | K_REPEATABLE K_READ | K_READ K_COMMITTED | K_READ K_UNCOMMITTED)
+    | K_READ K_WRITE
+    | K_READ K_ONLY
+    | K_NOT? K_DEFERRABLE
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3304,7 +3441,8 @@ functionExpression:
 
 functionParameter:
     // PostgreSQL := is older syntax supported for backward compatiblity only
-    (name=sqlName (EQUALS GT | COLON EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
+    // OracleDB: no space between '=>' allowed
+    (name=sqlName (EQUALS_GT | COLON EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
 ;
 
 functionParameterPrefix:
