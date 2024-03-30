@@ -1456,7 +1456,7 @@ resultCacheClause:
 
 functionHeading:
     K_FUNCTION functionName=sqlName
-        (LPAR parameters+=parameterDeclaration (parameters+=parameterDeclaration)* RPAR)?
+        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         K_RETURN returnType=plsqlDataType
 ;
 
