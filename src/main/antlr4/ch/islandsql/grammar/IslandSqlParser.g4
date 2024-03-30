@@ -878,11 +878,11 @@ fromItem:
 // Handle all kind of table alias, allows more cominatqion than the underlyinging DBMSs
 tableAlias:
       K_AS? tAlias=sqlName (LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR)? // OracleDB, PostgreSQL
-    | K_AS? talias=sqlName LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
-    | K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR // PostgreSQL (function)
+    | K_AS? talias=sqlName LPAR cdefs+=postgresqlColumnDefinition (COMMA cdfs+=postgresqlColumnDefinition)* RPAR // PostgreSQL (function)
+    | K_AS LPAR cdefs+=postgresqlColumnDefinition (COMMA cdfs+=postgresqlColumnDefinition)* RPAR // PostgreSQL (function)
 ;
 
-postresqlColumnDefinition:
+postgresqlColumnDefinition:
     columnName=sqlName dataType
 ;
 
@@ -922,7 +922,7 @@ postgresqlTableExpression:
 ;
 
 rowsFromFunction:
-    expr=functionExpression (K_AS LPAR cdefs+=postresqlColumnDefinition (COMMA cdfs+=postresqlColumnDefinition)* RPAR)?
+    expr=functionExpression (K_AS LPAR cdefs+=postgresqlColumnDefinition (COMMA cdfs+=postgresqlColumnDefinition)* RPAR)?
 ;
 
 // grammar definition in SQL Language Reference 19c/21c/23c is wrong, added LPAR/RPAR
