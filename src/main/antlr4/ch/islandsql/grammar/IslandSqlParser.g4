@@ -1610,7 +1610,7 @@ assignmentStatement:
 ;
 
 basicLoopStatement:
-    K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+    K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 caseStatement:
@@ -1649,7 +1649,7 @@ cursorForLoopStatement:
     K_FOR record=sqlName K_IN (
           K_CURSOR LPAR params+=cursorParameterDec (COMMA params+=cursorParameterDec)* RPAR
         | LPAR select RPAR
-    ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+    ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 executeImmediateStatement:
@@ -1688,7 +1688,7 @@ fetchStatement:
 ;
 
 forLoopStatement:
-    K_FOR iterator K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+    K_FOR iterator K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 iterator:
@@ -1835,7 +1835,7 @@ sqlStatement:
 ;
 
 whileLoopStatement:
-    K_WHILE cond=condition K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+    K_WHILE cond=condition K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 /*----------------------------------------------------------------------------*/
