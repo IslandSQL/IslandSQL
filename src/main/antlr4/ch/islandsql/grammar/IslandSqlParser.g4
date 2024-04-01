@@ -1368,6 +1368,7 @@ itemlistItem:
     | functionDefinition
     | procedureDeclaration
     | procedureDefinition
+    | selectionDirective
 ;
 
 typeDefinition:
@@ -1653,6 +1654,7 @@ plsqlStatement:
         | procedureCall
         | raiseStatement
         | returnStatement
+        | selectionDirective
         | selectIntoStatement
         | sqlStatement
         | whileLoopStatement
@@ -1868,6 +1870,27 @@ raiseStatement:
 
 returnStatement:
     K_RETURN value=condition SEMI
+;
+
+selectionDirective:
+    DOLLAR_IF conditionToStmts+=selectionDirectiveConditionToStatements
+    (DOLLAR_ELSIF conditionToStmts+=selectionDirectiveConditionToStatements)*
+    (DOLLAR_ELSE elseTexts=selectionDirectiveText*)?
+    DOLLAR_END
+;
+
+// artificial clause
+selectionDirectiveConditionToStatements:
+    cond=condition DOLLAR_THEN texts+=selectionDirectiveText*
+;
+
+selectionDirectiveText:
+      errorDirective
+    | .+?
+;
+
+errorDirective:
+    DOLLAR_ERROR expr=expression DOLLAR_END
 ;
 
 selectIntoStatement:
@@ -2201,6 +2224,7 @@ expression:
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList                // also parenthesisCondition
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
+    | expr=selectionDirective                                   # selectionDirectiveExpression
     | expr=jsonObjectAccessExpression                           # jsonObjectAccessExpressionParent
     | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 0, must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
