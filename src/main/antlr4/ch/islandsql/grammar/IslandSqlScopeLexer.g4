@@ -289,7 +289,7 @@ COMMIT:
 CREATE_FUNCTION_POSTGRESQL:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+?
-    'language'  COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'returns' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
 CREATE_FUNCTION:
