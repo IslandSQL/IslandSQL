@@ -107,6 +107,7 @@ K_BINARY_FLOAT: 'binary_float';
 K_BIT: 'bit';
 K_BLOB: 'blob';
 K_BLOCK: 'block';
+K_BODY: 'body';
 K_BOOL: 'bool';
 K_BOOLEAN: 'boolean';
 K_BOTH: 'both';

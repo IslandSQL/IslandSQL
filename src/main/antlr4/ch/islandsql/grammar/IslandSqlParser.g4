@@ -3842,6 +3842,7 @@ keywordAsId:
     | K_BIT
     | K_BLOB
     | K_BLOCK
+    | K_BODY
     | K_BOOL
     | K_BOOLEAN
     | K_BOTH
