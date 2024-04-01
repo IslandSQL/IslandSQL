@@ -1524,7 +1524,6 @@ parameterDeclaration:
     )?
 ;
 
-// TODO: complete PL/SQL support, see https://github.com/IslandSQL/IslandSQL/issues/29
 procedureDeclaration:
     procedureHeading options+=procedureOption* SEMI
 ;
