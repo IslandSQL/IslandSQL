@@ -151,7 +151,7 @@ createPackageStatement:
 createPackage:
     K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PACKAGE
     (K_IF K_NOT K_EXISTS)? plsqlPackageSource
-    (K_IS | K_AS) items+=listItem+ K_END name=sqlName? SEMI
+    (K_IS | K_AS) items+=itemlistItem+ K_END name=sqlName? SEMI
 ;
 
 plsqlPackageSource:
@@ -1355,11 +1355,11 @@ label:
 
 // simplified grammar, do not distinguish between item_list_1 and item_list_2
 declareSection:
-    items+=listItem+
+    items+=itemlistItem+
 ;
 
 // all items in item_list_1 and item_list_2 and package_item_list
-listItem:
+itemlistItem:
       typeDefinition
     | cursorDeclaration
     | cursorDefinition
