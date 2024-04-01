@@ -44,7 +44,9 @@ statement:
 /*----------------------------------------------------------------------------*/
 
 ddlStatement:
-    createFunctionStatement
+      createFunctionStatement
+    | createPackageStatement
+    | createPackageBodyStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -136,6 +138,55 @@ transformItem:
 
 sqlBody:
     K_RETURN expr=expression
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Package
+/*----------------------------------------------------------------------------*/
+
+createPackageStatement:
+      createPackage sqlEnd?
+;
+
+createPackage:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PACKAGE
+    (K_IF K_NOT K_EXISTS)? plsqlPackageSource
+    (K_IS | K_AS) items+=listItem+ K_END name=sqlName? SEMI
+;
+
+plsqlPackageSource:
+    (schema=sqlName PERIOD)? packageName=sqlName options+=plsqlPackageOption*
+;
+
+plsqlPackageOption:
+      sharingClause
+    | defaultCollationClause
+    | invokerRightsclause
+    | accessibleByClause
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Package Body
+/*----------------------------------------------------------------------------*/
+
+createPackageBodyStatement:
+      createPackageBody sqlEnd?
+;
+
+createPackageBody:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PACKAGE K_BODY
+    (K_IF K_NOT K_EXISTS)? plsqlPackageBodySource
+;
+
+plsqlPackageBodySource:
+    (schema=sqlName PERIOD)? packageName=sqlName sharingClause?
+    (K_IS | K_AS) declareSection initializeSection? K_END name=sqlName? SEMI
+;
+
+initializeSection:
+    K_BEGIN
+    stmts+=plsqlStatement+
+    (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1307,7 +1358,7 @@ declareSection:
     items+=listItem+
 ;
 
-// all items in item_list_1 and item_list_2
+// all items in item_list_1 and item_list_2 and package_item_list
 listItem:
       typeDefinition
     | cursorDeclaration
@@ -1414,9 +1465,12 @@ functionDeclaration:
     functionHeading options+=functionDeclarationOption* SEMI
 ;
 
+// contains also options in package_function_declaration
 functionDeclarationOption:
-      deterministicClause
+      accessibleByClause
+    | deterministicClause
     | pipelinedClause
+    | shardEnableClause
     | parallelEnableClause
     | resultCacheClause
 ;
@@ -1528,6 +1582,7 @@ procedureDeclaration:
     procedureHeading options+=procedureOption* SEMI
 ;
 
+// contains also options in package_procedure_declaration
 procedureOption:
       accessibleByClause
     | defaultCollationClause
