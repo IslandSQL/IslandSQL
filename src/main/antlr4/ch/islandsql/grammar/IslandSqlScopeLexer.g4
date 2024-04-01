@@ -297,6 +297,14 @@ CREATE_FUNCTION:
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
 ;
 
+// handles also package body
+CREATE_PACKAGE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'package' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+;
+
 DELETE:
     'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
