@@ -3949,6 +3949,7 @@ keywordAsId:
     | K_AGGREGATE
     | K_ALL
     | K_ALLOW
+    | K_ALTER
     | K_ANALYTIC
     | K_ANALYZE
     | K_ANCESTOR
@@ -3960,14 +3961,17 @@ keywordAsId:
     | K_AS
     | K_ASC
     | K_ASCII
+    | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
+    | K_AUDIT
     | K_AUTHID
     | K_AUTO
     | K_AUTOMATIC
     | K_AVERAGE_RANK
     | K_BADFILE
     | K_BATCH
+    | K_BEFORE
     | K_BEGIN
     | K_BEGINNING
     | K_BETWEEN
@@ -4008,6 +4012,7 @@ keywordAsId:
     | K_CIDR
     | K_CIRCLE
     | K_CLOB
+    | K_CLONE
     | K_CLOSE
     | K_CLUSTER
     | K_COLLATE
@@ -4017,6 +4022,7 @@ keywordAsId:
     | K_COMMENT
     | K_COMMIT
     | K_COMMITTED
+    | K_COMPOUND
     | K_CONDITIONAL
     | K_CONFLICT
     | K_CONNECT
@@ -4024,6 +4030,7 @@ keywordAsId:
     | K_CONSTANT
     | K_CONSTRAINT
     | K_CONSTRAINTS
+    | K_CONTAINER
     | K_CONTAINERS_DEFAULT
     | K_CONTAINER_MAP
     | K_CONTENT
@@ -4038,6 +4045,7 @@ keywordAsId:
     | K_COUNT
     | K_CREATE
     | K_CROSS
+    | K_CROSSEDITION
     | K_CURRENT
     | K_CURRENT_USER
     | K_CURSOR
@@ -4045,9 +4053,12 @@ keywordAsId:
     | K_DAMERAU_LEVENSHTEIN
     | K_DANGLING
     | K_DATA
+    | K_DATABASE
     | K_DATE
     | K_DAY
     | K_DBTIMEZONE
+    | K_DB_ROLE_CHANGE
+    | K_DDL
     | K_DEC
     | K_DECIMAL
     | K_DECLARE
@@ -4065,19 +4076,24 @@ keywordAsId:
     | K_DETERMINISTIC
     | K_DIMENSION
     | K_DIRECTORY
+    | K_DISABLE
     | K_DISALLOW
+    | K_DISASSOCIATE
     | K_DISCARD
     | K_DISTINCT
     | K_DO
     | K_DOCUMENT
     | K_DOMAIN
     | K_DOUBLE
+    | K_DROP
     | K_DURATION
+    | K_EACH
     | K_EDITIONABLE
     | K_EDIT_TOLERANCE
     | K_ELSE
     | K_ELSIF
     | K_EMPTY
+    | K_ENABLE
     | K_ENCODING
     | K_END
     | K_ENTITYESCAPING
@@ -4110,16 +4126,19 @@ keywordAsId:
     | K_FLOAT8
     | K_FLOAT
     | K_FOLLOWING
+    | K_FOLLOWS
     | K_FOR
     | K_FORALL
     | K_FORCE
     | K_FORMAT
+    | K_FORWARD
     | K_FROM
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
     | K_GENERIC_PLAN
     | K_GOTO
+    | K_GRANT
     | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
@@ -4156,9 +4175,11 @@ keywordAsId:
     | K_INDICES
     | K_INET
     | K_INFINITE
+    | K_INITIALLY
     | K_INNER
     | K_INPUT
     | K_INSERT
+    | K_INSTEAD
     | K_INT2
     | K_INT4
     | K_INT8
@@ -4224,6 +4245,8 @@ keywordAsId:
     | K_LOCKED
     | K_LOG
     | K_LOGFILE
+    | K_LOGOFF
+    | K_LOGON
     | K_LONG
     | K_LONGEST_COMMON_SUBSTRING
     | K_LOOP
@@ -4267,6 +4290,7 @@ keywordAsId:
     | K_NEW
     | K_NEXT
     | K_NO
+    | K_NOAUDIT
     | K_NOCOPY
     | K_NOCYCLE
     | K_NOENTITYESCAPING
@@ -4327,10 +4351,12 @@ keywordAsId:
     | K_PIVOT
     | K_PLACING
     | K_PLAN
+    | K_PLUGGABLE
     | K_POINT
     | K_POLYGON
     | K_POLYMORPHIC
     | K_POSITION
+    | K_PRECEDES
     | K_PRECEDING
     | K_PRECISION
     | K_PREDICTION
@@ -4354,6 +4380,7 @@ keywordAsId:
     | K_RECURSIVE
     | K_REF
     | K_REFERENCE
+    | K_REFERENCING
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELIES_ON
@@ -4370,6 +4397,7 @@ keywordAsId:
     | K_RETURNING
     | K_RETURNS
     | K_REVERSE
+    | K_REVOKE
     | K_RIGHT
     | K_ROLLBACK
     | K_ROW
@@ -4385,6 +4413,7 @@ keywordAsId:
     | K_SAVEPOINT
     | K_SCALAR
     | K_SCALARS
+    | K_SCHEMA
     | K_SCHEMACHECK
     | K_SCN
     | K_SDO_GEOMETRY
@@ -4402,6 +4431,7 @@ keywordAsId:
     | K_SERIAL8
     | K_SERIAL
     | K_SERIALIZABLE
+    | K_SERVERERROR
     | K_SESSION
     | K_SESSIONTIMEZONE
     | K_SET
@@ -4412,6 +4442,7 @@ keywordAsId:
     | K_SHARE_OF
     | K_SHARING
     | K_SHOW
+    | K_SHUTDOWN
     | K_SIBLINGS
     | K_SIGNATURE
     | K_SIMILAR
@@ -4428,7 +4459,10 @@ keywordAsId:
     | K_STABLE
     | K_STANDALONE
     | K_START
+    | K_STARTUP
+    | K_STATEMENT
     | K_STATEMENT_ID
+    | K_STATISTICS
     | K_STRICT
     | K_STRUCT
     | K_SUBMULTISET
@@ -4438,6 +4472,7 @@ keywordAsId:
     | K_SUBTYPE
     | K_SUMMARY
     | K_SUPPORT
+    | K_SUSPEND
     | K_SYMMETRIC
     | K_SYSTEM
     | K_TABLE
@@ -4481,6 +4516,7 @@ keywordAsId:
     | K_UNLOGGED
     | K_UNMATCHED
     | K_UNPIVOT
+    | K_UNPLUG
     | K_UNSAFE
     | K_UNSCALED
     | K_UNTIL
