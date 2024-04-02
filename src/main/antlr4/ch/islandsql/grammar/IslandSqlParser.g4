@@ -129,14 +129,14 @@ postgresqlFunctionOption:
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
     | K_AS definition=expression
     | K_AS objFile=expression COMMA linkSymbol=expression
-    | sqlBody
+    | sqlFunctionBody
 ;
 
 transformItem:
     K_FOR K_TYPE (typeSchema=sqlName PERIOD)? typeName=dataType
 ;
 
-sqlBody:
+sqlFunctionBody:
     K_RETURN expr=expression
 ;
 
