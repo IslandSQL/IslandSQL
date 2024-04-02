@@ -200,7 +200,7 @@ createProcedureStatement:
 
 createProcedure:
     K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PROCEDURE
-    (K_IF K_NOT K_EXISTS)? (plsqlProcedureSource | postgresProcedureSource)
+    (K_IF K_NOT K_EXISTS)? (plsqlProcedureSource | postgresqlProcedureSource)
 ;
 
 plsqlProcedureSource:
@@ -217,7 +217,7 @@ plsqlProcedureOption:
     | accessibleByClause
 ;
 
-postgresProcedureSource:
+postgresqlProcedureSource:
     (schema=sqlName PERIOD)? functionName=sqlName
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         postgresqlProcedureOption+
