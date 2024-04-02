@@ -83,6 +83,7 @@ K_AS: 'as';
 K_ASC: 'asc';
 K_ASCII: 'ascii';
 K_AT: 'at';
+K_ATOMIC: 'atomic';
 K_AUTHID: 'authid';
 K_AUTO: 'auto';
 K_AUTOMATIC: 'automatic';

@@ -3902,6 +3902,7 @@ keywordAsId:
     | K_ASC
     | K_ASCII
     | K_AT
+    | K_ATOMIC
     | K_AUTHID
     | K_AUTO
     | K_AUTOMATIC
