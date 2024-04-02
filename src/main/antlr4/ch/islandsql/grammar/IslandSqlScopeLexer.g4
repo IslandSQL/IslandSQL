@@ -43,6 +43,11 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment DOLLAR_QUOTE: '$' ID? '$';
+fragment ANY_EXCEPT_DOLLAR_DOLLAR:
+    (
+          '$' ~'$'
+        | ~'$'
+    )+;
 fragment ANY_EXCEPT_FOR_AND_SEMI:
     (
           'f' 'o' ~[r;]
@@ -191,7 +196,7 @@ STRING:
           'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
         | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
-        | '$$' .*? '$$'                                         // PostgreSQL dollar-quoted string constant
+        | '$$' ANY_EXCEPT_DOLLAR_DOLLAR? '$$'                   // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
         | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
         | 'n'? 'q' ['] '[' .*? ']' [']
