@@ -165,13 +165,6 @@ CREATE_TABLE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN);
 
-// hide keyword: insert, update, delete (everything up to the first semicolon)
-CREATE_TRIGGER:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'trigger'
-        COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
 // hide keyword: with
 CREATE_USER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
@@ -324,6 +317,22 @@ CREATE_PROCEDURE:
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'procedure' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+;
+
+CREATE_TRIGGER_POSTGRESQL:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    ('constraint' COMMENT_OR_WS+)?
+    'trigger' COMMENT_OR_WS+ SQL_TEXT+?
+    'execute' COMMENT_OR_WS+ ('function' | 'procedure') COMMENT_OR_WS+
+    SQL_TEXT+? SQL_END
+;
+
+CREATE_TRIGGER:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'trigger' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
 ;
 
 DELETE:
