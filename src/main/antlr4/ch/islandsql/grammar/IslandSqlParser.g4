@@ -48,6 +48,7 @@ ddlStatement:
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
+    | createTriggerStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -246,6 +247,180 @@ sqlProcedureStatement:
 
 otherProcedureStatement:
     ~SEMI+ SEMI
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Trigger
+/*----------------------------------------------------------------------------*/
+
+createTriggerStatement:
+      createTrigger sqlEnd?
+;
+
+createTrigger:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE | K_CONSTRAINT)? K_TRIGGER
+    (K_IF K_NOT K_EXISTS)? (plsqlTriggerSource | postgresqlTriggerSource)
+;
+
+plsqlTriggerSource:
+    (schema=sqlName PERIOD)? triggerName=sqlName sharingClause? defaultCollationClause?
+    (
+          simpleDmlTrigger
+        | insteadOfDmlTrigger
+        | compoundDmlTrigger
+        | systemTrigger
+    )
+;
+
+simpleDmlTrigger:
+    (K_BEFORE | K_AFTER) dmlEventClause referencingClause? (K_FOR K_EACH K_ROW)?
+    triggerEditionClause? triggerOrderingClause? (K_ENABLE | K_DISABLE)?
+    (K_WHEN LPAR cond=condition RPAR)? triggerBody
+;
+
+dmlEventClause:
+    events+=dmlEvent (K_OR events+=dmlEvent)* K_ON (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+dmlEvent:
+      K_DELETE
+    | K_INSERT
+    | K_UPDATE (K_OF columns+=sqlName (COMMA columns+=sqlName)*)?
+;
+
+referencingClause:
+    K_REFERENCING items+=refercingClauseItem+
+;
+
+refercingClauseItem:
+      K_OLD K_AS? oldName=sqlName           # referencingClauseItemOld
+    | K_NEW K_AS? newName=sqlName           # referencingClauseItemNew
+    | K_PARENT K_AS? parentName=sqlName     # referencingClauseItemParent
+;
+
+triggerEditionClause:
+    (K_FORWARD | K_REVERSE)? K_CROSSEDITION
+;
+
+triggerOrderingClause:
+    (K_FOLLOWS | K_PRECEDES) triggers+=trigger
+;
+
+trigger:
+    (schema=sqlName PERIOD)? triggerName=sqlName
+;
+
+triggerBody:
+      plsqlBlock
+    | K_CALL routineClause SEMI
+;
+
+routineClause:
+    routine=expression
+;
+
+insteadOfDmlTrigger:
+    K_INSTEAD K_OF events+=dmlEvent (K_OR events+=dmlEvent)*
+    K_ON (K_NESTED K_TABLE nestedTableColumn=sqlName K_OF)? (schema=sqlName PERIOD)? viewName=sqlName
+    referencingClause? (K_FOR K_EACH K_ROW)? triggerEditionClause?
+    triggerOrderingClause? (K_ENABLE | K_DISABLE)? triggerBody
+;
+
+compoundDmlTrigger:
+    K_FOR dmlEventClause referencingClause? triggerEditionClause? triggerOrderingClause?
+    (K_ENABLE | K_DISABLE)? (K_WHEN LPAR cond=condition RPAR)? compoundTriggerBlock
+;
+
+compoundTriggerBlock:
+    K_COMPOUND K_TRIGGER declareSection? timingPointSections+=timingPointSection+
+;
+
+timingPointSection:
+    startTimingPoint=timingPoint K_IS K_BEGIN tpsBody K_END endTimingPoint=timingPoint
+;
+
+timingPoint:
+      K_BEFORE K_STATEMENT          # beforeStatementTimingPoint
+    | K_BEFORE K_EACH K_ROW         # beforeEachRowTimingPoint
+    | K_AFTER K_STATEMENT           # afterStatementTimingPoint
+    | K_AFTER K_EACH K_ROW          # afterEachRowTimingPoint
+    | K_INSTEAD K_OF K_EACH K_ROW   # insteadOfEachRowTimingPoint
+;
+
+tpsBody:
+    stmts+=plsqlStatement+ (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
+;
+
+systemTrigger:
+    (K_BEFORE | K_AFTER | K_INSTEAD K_OF)
+    (
+          ddlEvents+=ddlEvent (K_OR ddlEvents+=ddlEvent)*
+        | dbEvents+=databaseEvent (K_OR dbEvents+=databaseEvent)*
+    )
+    K_ON
+    (
+          (schema=sqlName PERIOD)? K_SCHEMA
+        | K_PLUGGABLE? K_DATABASE
+    )
+    triggerOrderingClause? (K_ENABLE | K_DISABLE)? triggerBody
+;
+
+ddlEvent:
+      K_ALTER                       # alterDdlEvent
+    | K_ANALYZE                     # analyzeDdlEvent
+    | K_ASSOCIATE K_STATISTICS      # associateStatisticsDdlEvent
+    | K_AUDIT                       # auditDdlEvent
+    | K_COMMENT                     # commentDdlEvent
+    | K_CREATE                      # createDdlEvent
+    | K_DISASSOCIATE K_STATISTICS   # disassociateStatisticsDdlEvent
+    | K_DROP                        # dropDdlEvent
+    | K_GRANT                       # grantDdlEvent
+    | K_NOAUDIT                     # noAuditDdlEvent
+    | K_RENAME                      # renameDdlEvent
+    | K_REVOKE                      # revokeDdlEvent
+    | K_TRUNCATE                    # truncateDdlEvent
+    | K_DDL                         # ddlDdlEvent
+;
+
+databaseEvent:
+      K_AFTER K_STARTUP             # afterStatupDatabaseEvent
+    | K_BEFORE K_SHUTDOWN           # beforeShutdownDatabaseEvent
+    | K_AFTER K_DB_ROLE_CHANGE      # afterDbRoleChangeDatabaseEvent
+    | K_AFTER K_SERVERERROR         # afterServererrorDatabaseEvent
+    | K_AFTER K_LOGON               # afterLogonDatabaseEvent
+    | K_BEFORE K_LOGOFF             # beforeLogoffDatabaseEvent
+    | K_AFTER K_SUSPEND             # afterSuspendDatabaseEvent
+    | K_AFTER K_CLONE               # afterCloneDatabaseEvent
+    | K_BEFORE K_UNPLUG             # beforeUnplugDatabaseEvent
+    | K_BEFORE K_SET K_CONTAINER    # beforeSetContainerDatabaseEvent
+    | K_AFTER K_SET K_CONTAINER     # afterSetContainerDatabaseEvent
+;
+
+postgresqlTriggerSource:
+    triggerName=sqlName (K_BEFORE | K_AFTER | K_INSTEAD K_OF)
+    events+=postgresqlTriggerEvent+ K_ON  (tableSchema=sqlName PERIOD)? tableName=sqlName
+    postgresqlTriggerOption* K_EXECUTE (K_FUNCTION | K_PROCEDURE)
+    LPAR (args+=expression (COMMA args+=expression)*)? RPAR
+;
+
+postgresqlTriggerEvent:
+      K_INSERT
+    | K_UPDATE (K_OF columns+=sqlName (COMMA columns+=sqlName)*)?
+    | K_DELETE
+    | K_TRUNCATE
+;
+
+postgresqlTriggerOption:
+      K_FROM (referencedSchema=sqlName PERIOD)? referecedTableName=sqlName
+    | K_NOT? K_DEFERRABLE
+    | K_INITIALLY (K_IMMEDIATE | K_DEFERRED)
+    | K_REFERENCING referencing+=postgresqlReferencing+
+    | K_FOR K_EACH? (K_ROW | K_STATEMENT)
+    | K_WHEN cond=condition
+;
+
+postgresqlReferencing:
+    (K_OLD | K_NEW) K_AS? transitionRelationName=sqlName
 ;
 
 /*----------------------------------------------------------------------------*/
