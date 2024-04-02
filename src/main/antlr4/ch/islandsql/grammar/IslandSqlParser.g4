@@ -47,6 +47,7 @@ ddlStatement:
       createFunctionStatement
     | createPackageStatement
     | createPackageBodyStatement
+    | createProcedureStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -187,6 +188,64 @@ initializeSection:
     K_BEGIN
     stmts+=plsqlStatement+
     (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Procedure
+/*----------------------------------------------------------------------------*/
+
+createProcedureStatement:
+      createProcedure sqlEnd?
+;
+
+createProcedure:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PROCEDURE
+    (K_IF K_NOT K_EXISTS)? (plsqlProcedureSource | postgresProcedureSource)
+;
+
+plsqlProcedureSource:
+    (schema=sqlName PERIOD)? proocedureName=sqlName
+        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+        options+=plsqlProcedureOption*
+        (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+;
+
+plsqlProcedureOption:
+      sharingClause
+    | defaultCollationClause
+    | invokerRightsclause
+    | accessibleByClause
+;
+
+postgresProcedureSource:
+    (schema=sqlName PERIOD)? functionName=sqlName
+        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+        postgresqlProcedureOption+
+;
+
+postgresqlProcedureOption:
+      K_LANGUAGE languageName=sqlName
+    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)
+    | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
+    | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
+    | K_AS definition=expression
+    | K_AS objFile=expression COMMA linkSymbol=expression
+    | sqlProcedureBody
+;
+
+sqlProcedureBody:
+    K_BEGIN K_ATOMIC
+        stmts+=sqlProcedureStatement+
+    K_END
+;
+
+sqlProcedureStatement:
+      statement
+    | otherProcedureStatement
+;
+
+otherProcedureStatement:
+    ~SEMI+ SEMI
 ;
 
 /*----------------------------------------------------------------------------*/
