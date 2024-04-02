@@ -29,6 +29,8 @@ fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
+fragment SQL_PROCEDURE_BODY: 'begin' COMMENT_OR_WS 'atomic' ANY_EXCEPT_END 'end';
+fragment SQL_TEXT_WITH_PGPLSQL: COMMENT_OR_WS|STRING|SQL_PROCEDURE_BODY|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment PLSQL_END: 'end' (COMMENT_OR_WS+ (ID|'"' ID '"'))? COMMENT_OR_WS* ';' COMMENT_OR_WS* (EOF|SLASH_END);
@@ -47,6 +49,12 @@ fragment ANY_EXCEPT_DOLLAR_DOLLAR:
     (
           '$' ~'$'
         | ~'$'
+    )+;
+fragment ANY_EXCEPT_END:
+    (
+          'e' 'n' ~'d'
+        | 'e' ~'n'
+        | ~'e'
     )+;
 fragment ANY_EXCEPT_FOR_AND_SEMI:
     (
@@ -301,6 +309,17 @@ CREATE_PACKAGE:
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'package' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+;
+
+// handles also procedures with unquoted sql_body
+CREATE_PROCEDURE_POSTGRESQL:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'procedure' COMMENT_OR_WS+ SQL_TEXT_WITH_PGPLSQL+ SQL_END
+;
+
+CREATE_PROCEDURE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'procedure' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
 ;
 
 DELETE:
