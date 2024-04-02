@@ -43,7 +43,6 @@ fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment DOLLAR_QUOTE: '$' ID? '$';
-fragment PLPGSQL_END: DOLLAR_QUOTE ~[;]* SQL_END;
 fragment ANY_EXCEPT_FOR_AND_SEMI:
     (
           'f' 'o' ~[r;]
