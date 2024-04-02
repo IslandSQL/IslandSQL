@@ -204,7 +204,7 @@ createProcedure:
 ;
 
 plsqlProcedureSource:
-    (schema=sqlName PERIOD)? proocedureName=sqlName
+    (schema=sqlName PERIOD)? procedureName=sqlName
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         options+=plsqlProcedureOption*
         (K_IS | K_AS) (declareSection? body | callSpec SEMI)
