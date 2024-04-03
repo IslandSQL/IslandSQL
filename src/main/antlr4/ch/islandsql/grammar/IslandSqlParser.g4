@@ -464,7 +464,7 @@ objectTypeDef:
 ;
 
 attribute:
-    name=sqlName type=dataType
+    name=sqlName type=plsqlDataType
 ;
 
 // wrong documentation in 23.3: repeating subprogram_spec, constructor_spec, map_order_function_spec
