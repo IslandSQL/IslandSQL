@@ -33,6 +33,7 @@ fragment SQL_PROCEDURE_BODY: 'begin' COMMENT_OR_WS 'atomic' ANY_EXCEPT_END 'end'
 fragment SQL_TEXT_WITH_PGPLSQL: COMMENT_OR_WS|STRING|SQL_PROCEDURE_BODY|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
+fragment LABEL: '<<' WS* ID WS* '>>';
 fragment PLSQL_END: 'end' (COMMENT_OR_WS+ (ID|'"' ID '"'))? COMMENT_OR_WS* ';' COMMENT_OR_WS* (EOF|SLASH_END);
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment SQL_END:
@@ -56,12 +57,6 @@ fragment ANY_EXCEPT_END:
         | 'e' ~'n'
         | ~'e'
     )+;
-fragment ANY_EXCEPT_FOR_AND_SEMI:
-    (
-          'f' 'o' ~[r;]
-        | 'f' ~[o;]
-        | ~[f;]
-    )+;
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]
@@ -75,6 +70,37 @@ fragment ANY_EXCEPT_AS_WS:
 /*----------------------------------------------------------------------------*/
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// String
+/*----------------------------------------------------------------------------*/
+
+STRING:
+    (
+          'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
+        | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
+        | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
+        | '$$' ANY_EXCEPT_DOLLAR_DOLLAR? '$$'                   // PostgreSQL dollar-quoted string constant
+        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
+        | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
+        | 'n'? 'q' ['] '[' .*? ']' [']
+        | 'n'? 'q' ['] '(' .*? ')' [']
+        | 'n'? 'q' ['] '{' .*? '}' [']
+        | 'n'? 'q' ['] '<' .*? '>' [']
+        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+    ) -> channel(HIDDEN)
+;
+
+/*----------------------------------------------------------------------------*/
+// Identifier
+/*----------------------------------------------------------------------------*/
+
+ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// Comments
+/*----------------------------------------------------------------------------*/
+
 ML_COMMENT: '/*' ~'*'* ({!isText("*/")}? .)* '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
@@ -172,6 +198,7 @@ CREATE_USER:
 ;
 
 // hide keyword: with (everything up to the as keyword)
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/35
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view'
@@ -186,90 +213,6 @@ GRANT:
 // hide keywords: select, insert, update, delete
 REVOKE:
     'revoke' {isBeginOfStatement("revoke")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
-;
-
-/*----------------------------------------------------------------------------*/
-// Data types
-/*----------------------------------------------------------------------------*/
-
-STRING:
-    (
-          'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
-        | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
-        | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
-        | '$$' ANY_EXCEPT_DOLLAR_DOLLAR? '$$'                   // PostgreSQL dollar-quoted string constant
-        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
-        | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
-        | 'n'? 'q' ['] '[' .*? ']' [']
-        | 'n'? 'q' ['] '(' .*? ')' [']
-        | 'n'? 'q' ['] '{' .*? '}' [']
-        | 'n'? 'q' ['] '<' .*? '>' [']
-        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
-    ) -> channel(HIDDEN)
-;
-
-/*----------------------------------------------------------------------------*/
-// Identifier
-/*----------------------------------------------------------------------------*/
-
-ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Label statement
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-LABEL: '<<' WS* ID WS* '>>' -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Cursor for loop
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-CURSOR_FOR_LOOP_START:
-    'for' {isBeginOfStatement("for")}? COMMENT_OR_WS+ ~[\t\r\n ]+ COMMENT_OR_WS+ 'in' COMMENT_OR_WS* {isText("(")}?
-    -> channel(HIDDEN), pushMode(CURSOR_FOR_LOOP)
-;
-
-/*----------------------------------------------------------------------------*/
-// Cursor definition
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-CURSOR_START:
-    'cursor' {isBeginOfStatement("cursor")}? COMMENT_OR_WS+ SQL_TEXT+? (COMMENT_OR_WS|')')+ 'is' COMMENT_OR_WS*
-    -> channel(HIDDEN), pushMode(SUBQUERY)
-;
-
-/*----------------------------------------------------------------------------*/
-// Open cursor for
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-OPEN_CURSOR_FOR_START:
-    'open' {isBeginOfStatement("open")}? COMMENT_OR_WS+
-    ANY_EXCEPT_FOR_AND_SEMI 'for' (COMMENT_OR_WS+|{isText("(")}?)
-    -> channel(HIDDEN), pushMode(SUBQUERY)
-;
-
-/*----------------------------------------------------------------------------*/
-// Forall statement
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-FORALL_IGNORE:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ WS
-        'execute' WS 'immediate' .+? SQL_END -> channel(HIDDEN);
-
-FORALL_START:
-    'forall' {isBeginOfStatement("forall")}? COMMENT_OR_WS+ SQL_TEXT+? WS
-    (
-          {isText("insert")}?
-        | {isText("update")}?
-        | {isText("delete")}?
-        | {isText("merge")}?
-    )
-    -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -335,6 +278,21 @@ CREATE_TRIGGER:
     'trigger' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
 ;
 
+// OracleDB and PostgreSQL type specifications
+CREATE_TYPE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'type' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+;
+
+CREATE_TYPE_BODY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
+    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+;
+
 DELETE:
     'delete' {isBeginOfStatement("delete")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
@@ -373,7 +331,6 @@ SET_CONSTRAINTS:
 ;
 
 // TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
-// - https://github.com/IslandSQL/IslandSQL/issues/29
 // - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
     (
@@ -393,41 +350,3 @@ UPDATE:
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: . -> channel(HIDDEN);
-
-/*----------------------------------------------------------------------------*/
-// Cursor for loop mode to identify select statement
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-mode CURSOR_FOR_LOOP;
-
-CFL_ML_COMMENT: ML_COMMENT -> channel(HIDDEN), type(ML_COMMENT);
-CFL_SL_COMMENT: SL_COMMENT -> channel(HIDDEN), type(SL_COMMENT);
-CFL_WS: WS -> channel(HIDDEN), type(WS);
-CFL_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
-
-CFL_SELECT:
-    ('(' COMMENT_OR_WS*)+
-    ('select'|'with') .*? (')' COMMENT_OR_WS*)+ {isText("loop")}? -> type(SELECT)
-;
-
-CFL_END_OF_SELECT:
-    'loop' -> type(ID), channel(HIDDEN), popMode
-;
-
-/*----------------------------------------------------------------------------*/
-// Subquery mode to identify select statement
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/29
-/*----------------------------------------------------------------------------*/
-
-mode SUBQUERY;
-
-SQ_END: ';' -> channel(HIDDEN), type(ANY_OTHER), popMode;
-SQ_ID: ID -> channel(HIDDEN), type(ID);
-SQ_STRING: STRING  -> channel(HIDDEN), type(STRING);
-SQ_ANY_OTHER: . -> channel(HIDDEN), type(ANY_OTHER);
-
-SQ_SELECT:
-    ('('|COMMENT_OR_WS)*
-    ('select'|'with') COMMENT_OR_WS+ SQL_TEXT+? ';' SINGLE_NL? -> type(SELECT), popMode
-;
