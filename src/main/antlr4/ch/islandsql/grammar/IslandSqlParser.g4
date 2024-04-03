@@ -4205,6 +4205,7 @@ keywordAsId:
     | K_CONSTANT
     | K_CONSTRAINT
     | K_CONSTRAINTS
+    | K_CONSTRUCTOR
     | K_CONTAINER
     | K_CONTAINERS_DEFAULT
     | K_CONTAINER_MAP
@@ -4272,6 +4273,7 @@ keywordAsId:
     | K_ENCODING
     | K_END
     | K_ENTITYESCAPING
+    | K_ENUM
     | K_ENV
     | K_ERROR
     | K_ERRORS
@@ -4354,6 +4356,7 @@ keywordAsId:
     | K_INNER
     | K_INPUT
     | K_INSERT
+    | K_INSTANTIABLE
     | K_INSTEAD
     | K_INT2
     | K_INT4
@@ -4429,6 +4432,7 @@ keywordAsId:
     | K_MACADDR8
     | K_MACADDR
     | K_MAIN
+    | K_MAP
     | K_MAPPING
     | K_MATCH
     | K_MATCHED
@@ -4486,6 +4490,7 @@ keywordAsId:
     | K_OBJECT
     | K_OF
     | K_OFFSET
+    | K_OID
     | K_OLD
     | K_OMIT
     | K_ON
@@ -4519,6 +4524,7 @@ keywordAsId:
     | K_PERCENT
     | K_PERIOD
     | K_PERMUTE
+    | K_PERSISTABLE
     | K_PG_LSN
     | K_PG_SNAPSHOT
     | K_PIPE
@@ -4531,6 +4537,7 @@ keywordAsId:
     | K_POLYGON
     | K_POLYMORPHIC
     | K_POSITION
+    | K_PRAGMA
     | K_PRECEDES
     | K_PRECEDING
     | K_PRECISION
@@ -4567,6 +4574,8 @@ keywordAsId:
     | K_RESERVABLE
     | K_RESPECT
     | K_RESTRICTED
+    | K_RESTRICT_REFERENCES
+    | K_RESULT
     | K_RESULT_CACHE
     | K_RETURN
     | K_RETURNING
@@ -4574,6 +4583,8 @@ keywordAsId:
     | K_REVERSE
     | K_REVOKE
     | K_RIGHT
+    | K_RNDS
+    | K_RNPS
     | K_ROLLBACK
     | K_ROW
     | K_ROWID
@@ -4637,6 +4648,7 @@ keywordAsId:
     | K_STARTUP
     | K_STATEMENT
     | K_STATEMENT_ID
+    | K_STATIC
     | K_STATISTICS
     | K_STRICT
     | K_STRUCT
@@ -4675,6 +4687,7 @@ keywordAsId:
     | K_TRIM
     | K_TRUE
     | K_TRUNCATE
+    | K_TRUST
     | K_TSQUERY
     | K_TSVECTOR
     | K_TXID_SNAPSHOT
@@ -4684,6 +4697,7 @@ keywordAsId:
     | K_UNBOUNDED
     | K_UNCOMMITTED
     | K_UNCONDITIONAL
+    | K_UNDER
     | K_UNION
     | K_UNIQUE
     | K_UNKNOWN
@@ -4729,6 +4743,8 @@ keywordAsId:
     | K_WITH
     | K_WITHIN
     | K_WITHOUT
+    | K_WNDS
+    | K_WNPS
     | K_WORK
     | K_WRAPPER
     | K_WRITE
