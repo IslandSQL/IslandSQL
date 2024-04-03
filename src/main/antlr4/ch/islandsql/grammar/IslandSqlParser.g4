@@ -66,11 +66,12 @@ createFunction:
     (K_IF K_NOT K_EXISTS)? (plsqlFunctionSource | postgresFunctionSource)
 ;
 
+// supporting function without body, e.g. when using aggregate_clause
 plsqlFunctionSource:
     (schema=sqlName PERIOD)? functionName=sqlName
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         K_RETURN returnType=plsqlDataType options+=plsqlFunctionOption*
-        (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+        ((K_IS | K_AS) (declareSection? body | callSpec SEMI) | SEMI)
 ;
 
 plsqlFunctionOption:
