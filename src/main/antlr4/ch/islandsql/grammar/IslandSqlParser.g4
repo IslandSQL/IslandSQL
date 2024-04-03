@@ -1816,7 +1816,8 @@ declareSection:
 
 // all items in item_list_1 and item_list_2 and package_item_list
 itemlistItem:
-      typeDefinition
+      pragma SEMI
+    | typeDefinition
     | cursorDeclaration
     | cursorDefinition
     | itemDeclaration
@@ -1825,7 +1826,6 @@ itemlistItem:
     | procedureDeclaration
     | procedureDefinition
     | selectionDirective
-    | pragma SEMI
 ;
 
 typeDefinition:
