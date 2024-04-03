@@ -518,20 +518,6 @@ mapOrderFunctionSpec:
     (K_MAP | K_ORDER) K_MEMBER functionSpec
 ;
 
-// simplified: subprogram, method and DEFAULT handled as sqlName
-restrictReferencesPragma:
-    K_PRAGMA K_RESTRICT_REFERENCES LPAR name=sqlName
-    COMMA states+=pragmaState (COMMA states+=pragmaState)* RPAR
-;
-
-pragmaState:
-      K_RNDS    # readsNoDatabaseState
-    | K_WNDS    # writesNoDatabaseState
-    | K_RNPS    # readsNoPackageState
-    | K_WNPS    # writesNoPackageState
-    | K_TRUST   # trustedState
-;
-
 inheritanceClauses:
     items=inheritanceClauseItem+
 ;
@@ -1839,6 +1825,7 @@ itemlistItem:
     | procedureDeclaration
     | procedureDefinition
     | selectionDirective
+    | pragma SEMI
 ;
 
 typeDefinition:
@@ -2128,6 +2115,7 @@ plsqlStatement:
         | selectIntoStatement
         | sqlStatement
         | whileLoopStatement
+        | pragma SEMI
     )
 ;
 
@@ -2347,6 +2335,72 @@ selectionDirective:
     (DOLLAR_ELSIF conditionToStmts+=selectionDirectiveConditionToStatements)*
     (DOLLAR_ELSE elseTexts=selectionDirectiveText*)?
     DOLLAR_END
+;
+
+// unterminated pragma (not ending on semicolon)
+pragma:
+      autonomousTransPragma
+    | coveragePragma
+    | deprecatePragma
+    | exceptionInitPragma
+    | inlinePragma
+    | restrictReferencesPragma
+    | seriallyReusablePragma
+    | supressesWarning6009Pragma
+    | udfPragma
+    | namedPragma
+;
+
+autonomousTransPragma:
+    K_PRAGMA K_AUTONOMOUS_TRANSACTION
+;
+
+coveragePragma:
+    K_PRAGMA K_COVERAGE LPAR argument=string RPAR
+;
+
+deprecatePragma:
+    K_PRAGMA K_DEPRECATE LPAR plsIdentifier=sqlName (COMMA warning=string)? RPAR
+;
+
+exceptionInitPragma:
+    K_PRAGMA K_EXCEPTION_INIT LPAR exceptionName=sqlName COMMA errorNumber=expression RPAR
+;
+
+inlinePragma:
+    K_PRAGMA K_INLINE LPAR subprogram=sqlName COMMA value=string RPAR
+;
+
+// simplified: subprogram, method and DEFAULT handled as sqlName
+restrictReferencesPragma:
+    K_PRAGMA K_RESTRICT_REFERENCES LPAR name=sqlName
+    COMMA states+=pragmaState (COMMA states+=pragmaState)* RPAR
+;
+
+pragmaState:
+      K_RNDS    # readsNoDatabaseState
+    | K_WNDS    # writesNoDatabaseState
+    | K_RNPS    # readsNoPackageState
+    | K_WNPS    # writesNoPackageState
+    | K_TRUST   # trustedState
+;
+
+seriallyReusablePragma:
+    K_PRAGMA K_SERIALLY_REUSABLE
+;
+
+supressesWarning6009Pragma:
+    K_PRAGMA K_SUPPRESSES_WARNING_6009 LPAR plsIdentifier=sqlName RPAR
+;
+
+udfPragma:
+    K_PRAGMA K_UDF
+;
+
+// undocumented pragmes such as unsupported, interface, supplemental_log_data, builtin, fipsflag, new_names, timestamp
+// better support them in a generic way than to cause a parse error
+namedPragma:
+	K_PRAGMA name=sqlName (LPAR params+=expression (COMMA params+=expression) RPAR)?
 ;
 
 // artificial clause
