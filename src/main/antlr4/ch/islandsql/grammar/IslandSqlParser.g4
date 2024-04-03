@@ -49,6 +49,7 @@ ddlStatement:
     | createPackageBodyStatement
     | createProcedureStatement
     | createTriggerStatement
+    | createTypeStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -422,6 +423,181 @@ postgresqlTriggerOption:
 postgresqlReferencing:
     (K_OLD | K_NEW) K_AS? transitionRelationName=sqlName
 ;
+
+/*----------------------------------------------------------------------------*/
+// Create Type
+/*----------------------------------------------------------------------------*/
+
+createTypeStatement:
+      createType sqlEnd
+;
+
+createType:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_TYPE
+    (K_IF K_NOT K_EXISTS)? (plsqlTypeSource | postgresqlTypeSource)
+;
+
+plsqlTypeSource:
+    (schema=sqlName PERIOD)? typeName=sqlName options+=plsqlTypeOption*
+    (objectBaseTypeDef | objectSubtypeDef)
+;
+
+plsqlTypeOption:
+      K_FORCE
+    | K_OID objectIdentifier=STRING
+    | shareClause
+    | defaultCollationClause
+    | invokerRightsclause
+    | accessibleByClause
+;
+
+objectBaseTypeDef:
+    (K_IS | K_AS) (objectTypeDef | varayTypeSpec | nestedTableTypeSpec)
+;
+
+// wrong documentation in 23.3: optional attributes
+objectTypeDef:
+    K_OBJECT LPAR attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)* RPAR
+    (K_NOT? (K_FINAL | K_INSTANTIABLE | K_PERSISTABLE))?
+;
+
+attribute:
+    name=sqlName type=dataType
+;
+
+// wrong documentation in 23.3: repeating subprogram_spec, constructor_spec, map_order_function_spec
+elementSpec:
+    inheritanceClauses? (subprogramSpec | constructorSpec | mapOrderFunctionSpec)
+    (COMMA restrictReferencesPragma)?
+;
+
+subprogramSpec:
+    (K_MEMBER | K_STATIC) (procedureSpec | functionSpec)
+;
+
+// wrong documentation in 23.3: mandatory parameters and parentheses,
+// parameter direction missing (in/out), default values missing
+procedureSpec:
+    K_PROCEDURE name=sqlName
+    (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+    ((K_IS | K_AS) callSpec)?
+;
+
+// wrong documentation in 23.3: mandatory parameters and parentheses,
+// parameter direction missing (in/out), default values missing
+functionSpec:
+    K_FUNCTION name=sqlName
+    (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+    returnClause
+;
+
+returnClause:
+    K_RETURN type=dataType ((K_IS | K_AS) callSpec)?
+;
+
+// undocumented in 23.3: final/instantiable is an unordered group,
+// wrong documentation in 23.3: mandatory parameters and parentheses,
+// parameter direction missing (in/out), default values missing
+constructorSpec:
+    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=dataType
+    (
+        LPAR (K_SELF K_IN K_OUT selfType=dataType COMMA)?
+        parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR
+    )?
+    K_RETURN K_SELF K_AS K_RESULT ((K_IS | K_AS) callSpec)?
+;
+
+constructorSpecOption:
+      K_FINAL           # finalConstructor
+    | K_INSTANTIABLE    # instantiableConstructor
+;
+
+mapOrderFunctionSpec:
+    (K_MAP | K_ORDER) K_MEMBER functionSpec
+;
+
+// simplified: subprogram, method and DEFAULT handled as sqlName
+restrictReferencesPragma:
+    K_PRAGMA K_RESTRICT_REFERENCES LPAR name=sqlName
+    COMMA states+=pragmaState (COMMA states+=pragmaState)* RPAR
+;
+
+pragmaState:
+      K_RNDS    # readsNoDatabaseState
+    | K_WNDS    # writesNoDatabaseState
+    | K_RNPS    # readsNoPackageState
+    | K_WNPS    # writesNoPackageState
+    | K_TRUST   # trustedState
+;
+
+inheritanceClauses:
+    items=inheritanceClauseItem+
+;
+
+inheritanceClauseItem:
+      K_NOT? K_OVERRIDING       # overridingInheritanceClauseItem
+    | K_NOT? K_FINAL            # finalInheritanceClauseItem
+    | K_NOT? K_INSTANTIABLE     # instantiableInheritanceClauseItem
+;
+
+varayTypeSpec:
+    (K_VARRAY | K_VARYING? K_ARRAY) LPAR sizeLimit=expression RPAR K_OF
+    (
+          dataType (K_NOT K_NULL)?
+        | LPAR dataType (K_NOT K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
+    )
+;
+
+nestedTableTypeSpec:
+    K_TABLE K_OF
+    (
+          dataType (K_NOT K_NULL)?
+        | LPAR dataType (K_NOT K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
+    )
+;
+
+objectSubtypeDef:
+    K_UNDER (schema=sqlName PERIOD)? superType=sqlName
+    (LPAR attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)* RPAR)?
+    (K_NOT? (K_FINAL | K_INSTANTIABLE | K_PERSISTABLE))?
+;
+
+postgresqlTypeSource:
+    (schema=sqlName PERIOD)? typeName=sqlName
+    (
+          postgresqlType
+        | postgresqlEnumType
+        | postgresqlRangeType
+        | postgresqlFunctionType
+    )?
+;
+
+postgresqlType:
+    K_AS LPAR attributes+=postgresqlAttribute (COMMA attributes+=postgresqlAttribute)* RPAR
+;
+
+postgresqlAttribute:
+    name=sqlName dataType (K_COLLATE collation=qualifiedName)?
+;
+
+postgresqlEnumType:
+    K_AS K_ENUM LPAR labels+=STRING (COMMA labels+=STRING)* RPAR
+;
+
+// simplified (making all options optional even if subtype is mandatory) to support arbitrary order
+postgresqlRangeType:
+    K_AS K_RANGE LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
+;
+
+postgresqlTypeOption:
+    name=sqlName EQUALS value=expression
+;
+
+// simplified (making all options optional even if input, output are mandatory) to support arbitrary order
+postgresqlFunctionType:
+    LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
+;
+
 
 /*----------------------------------------------------------------------------*/
 // Data Manipulation Language
