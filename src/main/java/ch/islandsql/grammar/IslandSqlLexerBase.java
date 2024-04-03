@@ -49,9 +49,9 @@ public abstract class IslandSqlLexerBase extends Lexer {
     @Override
     public void emit(Token token) {
         super.emit(token);
-        if (scopeLexer && token.getType() > 6) {
-            // token that is not a WS (1),  ML_COMMENT (2), SL_COMMENT (3),
-            // REMARK_COMMAND (4), PROMPT_COMMAND (5), CONDITIONAL_COMPILATION_DIRECTIVE (6)
+        if (scopeLexer && (token.getType() == 3 || token.getType() > 3 && token.getStopIndex() == token.getStartIndex())) {
+            // ID (3) and ANY_OTHER (last token, single character) are the only tokens of interest
+            // WS (1) must be ignored and STRING (2) is not relevant
             this.lastToken = token;
         }
     }
