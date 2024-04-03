@@ -4378,6 +4378,7 @@ keywordAsId:
     | K_AUTHID
     | K_AUTO
     | K_AUTOMATIC
+    | K_AUTONOMOUS_TRANSACTION
     | K_AVERAGE_RANK
     | K_BADFILE
     | K_BATCH
@@ -4454,6 +4455,7 @@ keywordAsId:
     | K_COST
     | K_COSTS
     | K_COUNT
+    | K_COVERAGE
     | K_CREATE
     | K_CROSS
     | K_CROSSEDITION
@@ -4482,6 +4484,7 @@ keywordAsId:
     | K_DEFINER
     | K_DELETE
     | K_DENSE_RANK
+    | K_DEPRECATE
     | K_DEPTH
     | K_DESC
     | K_DETERMINISTIC
@@ -4517,6 +4520,7 @@ keywordAsId:
     | K_EXCEPT
     | K_EXCEPTION
     | K_EXCEPTIONS
+    | K_EXCEPTION_INIT
     | K_EXCLUDE
     | K_EXCLUSIVE
     | K_EXECUTE
@@ -4588,6 +4592,7 @@ keywordAsId:
     | K_INET
     | K_INFINITE
     | K_INITIALLY
+    | K_INLINE
     | K_INNER
     | K_INPUT
     | K_INSERT
@@ -4852,6 +4857,7 @@ keywordAsId:
     | K_SERIAL8
     | K_SERIAL
     | K_SERIALIZABLE
+    | K_SERIALLY_REUSABLE
     | K_SERVERERROR
     | K_SESSION
     | K_SESSIONTIMEZONE
@@ -4894,6 +4900,7 @@ keywordAsId:
     | K_SUBTYPE
     | K_SUMMARY
     | K_SUPPORT
+    | K_SUPPRESSES_WARNING_6009
     | K_SUSPEND
     | K_SYMMETRIC
     | K_SYSTEM
@@ -4928,6 +4935,7 @@ keywordAsId:
     | K_TXID_SNAPSHOT
     | K_TYPE
     | K_TYPENAME
+    | K_UDF
     | K_UESCAPE
     | K_UNBOUNDED
     | K_UNCOMMITTED
