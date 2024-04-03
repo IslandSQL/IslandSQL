@@ -50,6 +50,7 @@ ddlStatement:
     | createProcedureStatement
     | createTriggerStatement
     | createTypeStatement
+    | createTypeBodyStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -598,6 +599,65 @@ postgresqlFunctionType:
     LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
 ;
 
+/*----------------------------------------------------------------------------*/
+// Create Type Body
+/*----------------------------------------------------------------------------*/
+
+createTypeBodyStatement:
+      createTypeBody sqlEnd?
+;
+
+createTypeBody:
+    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_TYPE K_BODY
+    (K_IF K_NOT K_EXISTS)? plsqlTypeBodySource
+;
+
+plsqlTypeBodySource:
+    (schema=sqlName PERIOD)? typeName=sqlName sharingClause?
+    (K_IS | K_AS) items+=plsqlTypeBodyItem+ K_END SEMI
+;
+
+// wrong documentation in 23.3 type body: missing inheritanceClauses
+plsqlTypeBodyItem:
+    inheritanceClauses? (subprogDeclInType| mapOrderFuncDeclaration)
+;
+
+subprogDeclInType:
+      subprogramDecl
+    | constructorDeclaration
+;
+
+// wrong documenation in 23.3 type body: missing member, static
+subprogramDecl:
+    (K_MEMBER | K_STATIC) (procDeclInType | funcDeclInType)
+;
+
+procDeclInType:
+    K_PROCEDURE name=sqlName
+    (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+    (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+;
+
+funcDeclInType:
+    K_FUNCTION name=sqlName
+    (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
+    K_RETURN returnType=dataType options+=plsqlFunctionOption*
+    (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+;
+
+constructorDeclaration:
+    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=dataType
+    (
+        LPAR (K_SELF K_IN K_OUT selfType=dataType COMMA)?
+        parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR
+    )?
+    K_RETURN K_SELF K_AS K_RESULT
+    (K_IS | K_AS) (declareSection? body | callSpec SEMI)
+;
+
+mapOrderFuncDeclaration:
+    (K_MAP | K_ORDER) K_MEMBER funcDeclInType
+;
 
 /*----------------------------------------------------------------------------*/
 // Data Manipulation Language
