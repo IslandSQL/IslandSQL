@@ -2486,8 +2486,8 @@ commit:
         (
               K_WAIT (K_IMMEDIATE | K_BATCH)?
             | K_NOWAIT (K_IMMEDIATE | K_BATCH)?
-            | K_IMMEDIATE
-            | K_BATCH
+            | K_IMMEDIATE (K_WAIT | K_NOWAIT)?
+            | K_BATCH (K_WAIT | K_NOWAIT)?
         )?
     )?
     (
