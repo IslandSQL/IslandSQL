@@ -4034,7 +4034,7 @@ xmlTableColumn:
 ;
 
 functionExpression:
-    name=sqlName (COMMAT dblink=qualifiedName)? LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR
+    name=sqlName (COMMAT dblink=qualifiedName)? LPAR ((params+=functionParameter (COMMA params+=functionParameter)*)? | functionParameterSuffix?) RPAR
     withinClause?               // e.g. approx_percentile
     postgresfilterClause?       // e.g. count, sum
     keepClause?                 // e.g. first, last
