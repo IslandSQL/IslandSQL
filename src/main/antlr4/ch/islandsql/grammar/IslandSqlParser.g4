@@ -2245,7 +2245,15 @@ singleExpressionControl:
 ;
 
 valuesOfControl:
-    K_VALUES K_OF expr=expression
+    K_VALUES K_OF
+    (
+          expr=expression
+        | LPAR (stmt=sqlStatement | dynStmt=dynamicSql) RPAR
+    )
+;
+
+dynamicSql:
+    K_EXECUTE K_IMMEDIATE dynamicSqlStmt=expression usingClause?
 ;
 
 indicesOfControl:
