@@ -335,7 +335,7 @@ compoundDmlTrigger:
 ;
 
 compoundTriggerBlock:
-    K_COMPOUND K_TRIGGER declareSection? timingPointSections+=timingPointSection+
+    K_COMPOUND K_TRIGGER declareSection? timingPointSections+=timingPointSection+ K_END name=sqlName?
 ;
 
 timingPointSection:
