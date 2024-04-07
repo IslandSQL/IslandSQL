@@ -857,7 +857,7 @@ NQ_STRING:
 ;
 
 DOLLAR_STRING:
-    '$$' .*? '$$'
+    '$$' -> more, pushMode(DOLLAR_DOLLAR_MODE)
 ;
 
 DOLLAR_ID_STRING:
@@ -885,7 +885,7 @@ NUMBER:
 UQUOTED_ID: ('u&') '"' ~["]* '"';
 QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
 ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]*;
-PLSQL_INQUIRY_DIRECTIVE: '$$' ID;
+PLSQL_INQUIRY_DIRECTIVE: '$$' -> pushMode(DOLLAR_DOLLAR_MODE);
 POSITIONAL_PARAMETER: '$'[0-9]+;
 
 /*----------------------------------------------------------------------------*/
@@ -899,3 +899,29 @@ PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]+;
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: .;
+
+/*----------------------------------------------------------------------------*/
+// Dollar Dollar Mode - PostgreSQL String or PL/SQL Inquiry Directive
+/*----------------------------------------------------------------------------*/
+
+mode DOLLAR_DOLLAR_MODE;
+
+// end of PostgreSQL dollar quoted string
+DD_DOLLAR_STRING: '$$' -> popMode, type(DOLLAR_STRING);
+
+// known PL/SQL inquiry directives, custom inquiry directives are not supported
+DD_PLSQL_INQUIRY_DIRECTIVE:
+    (
+          'plsql_line'
+        | 'plsql_unit'
+        | 'plsql_unit_owner'
+        | 'plsql_unit_type'
+        | 'plscope_settings'
+        | 'plsql_ccflags'
+        | 'plsql_code_type'
+        | 'plsql_optimize_level'
+        | 'plsql_warnings'
+        | 'nls_length_semantics'
+        | 'permit_92_wrap_format'
+    ) -> popMode, type(PLSQL_INQUIRY_DIRECTIVE);
+DD_ANY_OTHER: . -> more;
