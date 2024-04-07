@@ -909,7 +909,7 @@ mode DOLLAR_DOLLAR_MODE;
 // end of PostgreSQL dollar quoted string
 DD_DOLLAR_STRING: '$$' -> popMode, type(DOLLAR_STRING);
 
-// known PL/SQL inquiry directives, custom inquiry directives are not supported
+// known PL/SQL inquiry directives work with any SQL dialect
 DD_PLSQL_INQUIRY_DIRECTIVE:
     (
           'plsql_line'
@@ -923,5 +923,11 @@ DD_PLSQL_INQUIRY_DIRECTIVE:
         | 'plsql_warnings'
         | 'nls_length_semantics'
         | 'permit_92_wrap_format'
-    ) -> popMode, type(PLSQL_INQUIRY_DIRECTIVE);
+    ) -> popMode, type(PLSQL_INQUIRY_DIRECTIVE)
+;
+
+DD_CUSTOM_PLSQL_INQUIRY_DIRECTIVE:
+    ID {getDialect() == IslandSqlDialect.ORACLEDB}? -> popMode, type(PLSQL_INQUIRY_DIRECTIVE)
+;
+
 DD_ANY_OTHER: . -> more;
