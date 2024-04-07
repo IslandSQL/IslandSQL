@@ -28,13 +28,8 @@ options {
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
-fragment SQL_TEXT_WITH_PLSQL: COMMENT_OR_WS|STRING|.;
-fragment SQL_PROCEDURE_BODY: 'begin' COMMENT_OR_WS 'atomic' ANY_EXCEPT_END 'end';
-fragment SQL_TEXT_WITH_PGPLSQL: COMMENT_OR_WS|STRING|SQL_PROCEDURE_BODY|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
-fragment PLSQL_DECLARATION_END: ';'? [ \t]* (EOF|SLASH_END);
 fragment LABEL: '<<' WS* ID WS* '>>';
-fragment PLSQL_END: 'end' (COMMENT_OR_WS+ (ID|'"' ID '"'))? COMMENT_OR_WS* ';' COMMENT_OR_WS* (EOF|SLASH_END);
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment SQL_END:
       EOF
@@ -45,24 +40,26 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment DOLLAR_QUOTE: '$' ID? '$';
 fragment ANY_EXCEPT_DOLLAR_DOLLAR:
     (
           '$' ~'$'
         | ~'$'
-    )+;
-fragment ANY_EXCEPT_END:
-    (
-          'e' 'n' ~'d'
-        | 'e' ~'n'
-        | ~'e'
-    )+;
+    )
+;
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]
         | 'a' ~'s'
         | ~'a'
-    )+
+    )
+;
+fragment ANY_EXCEPT_BODY:
+    (
+          'b' 'o' 'd' ~'y'
+        | 'b' 'o' ~'d'
+        | 'b' ~'o'
+        | ~'b'
+    )
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -80,7 +77,7 @@ STRING:
           'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
         | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
-        | '$$' ANY_EXCEPT_DOLLAR_DOLLAR? '$$'                   // PostgreSQL dollar-quoted string constant
+        | '$$' ANY_EXCEPT_DOLLAR_DOLLAR*? '$$'                  // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
         | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
         | 'n'? 'q' ['] '[' .*? ']' [']
@@ -96,6 +93,7 @@ STRING:
 /*----------------------------------------------------------------------------*/
 
 ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
+QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
 // Comments
@@ -208,7 +206,7 @@ CREATE_USER:
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view'
-        ANY_EXCEPT_AS_WS -> channel(HIDDEN)
+        ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
@@ -237,14 +235,14 @@ COMMIT:
 CREATE_FUNCTION_POSTGRESQL:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+?
-    'returns' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'returns' COMMENT_OR_WS+ SQL_TEXT+ SQL_END
 ;
 
 CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'function' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+    'function' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
 ;
 
 // handles also package body
@@ -252,20 +250,14 @@ CREATE_PACKAGE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'package' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
-;
-
-// handles also procedures with unquoted sql_body
-CREATE_PROCEDURE_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'procedure' COMMENT_OR_WS+ SQL_TEXT_WITH_PGPLSQL+ SQL_END
+    'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
 ;
 
 CREATE_PROCEDURE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'procedure' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+    'procedure' COMMENT_OR_WS+ -> pushMode(PROCEDURE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
@@ -274,14 +266,14 @@ CREATE_TRIGGER_POSTGRESQL:
     ('constraint' COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ SQL_TEXT+?
     'execute' COMMENT_OR_WS+ ('function' | 'procedure') COMMENT_OR_WS+
-    SQL_TEXT+? SQL_END
+    SQL_TEXT+ SQL_END
 ;
 
 CREATE_TRIGGER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'trigger' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+    'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
 ;
 
 // OracleDB and PostgreSQL type specifications
@@ -289,14 +281,14 @@ CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'type' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+    'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
 ;
 
 DELETE:
@@ -319,9 +311,12 @@ MERGE:
     'merge' {isBeginOfStatement("merge")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
 ;
 
-PLSQL_BLOCK:
-      (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
-    | (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ SQL_TEXT_WITH_PLSQL+? PLSQL_END
+PLSQL_BLOCK_DECLARE:
+    (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
+;
+
+PLSQL_BLOCK_BEGIN:
+    (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
 ;
 
 ROLLBACK:
@@ -340,10 +335,8 @@ SET_CONSTRAINTS:
 // - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
     (
-        ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ ('function'|'procedure') SQL_TEXT_WITH_PLSQL+? PLSQL_DECLARATION_END)
-      | ('with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | ('select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
-      | (('(' COMMENT_OR_WS*)+ 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END)
+        'select' {isBeginOfStatement("select")}? COMMENT_OR_WS+ SQL_TEXT+? SQL_END
+      | ('(' COMMENT_OR_WS*)+ 'select' COMMENT_OR_WS+ SQL_TEXT+? SQL_END
     )
 ;
 
@@ -351,8 +344,123 @@ UPDATE:
     'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' (COMMENT_OR_WS|'(')+ SQL_TEXT+? SQL_END
 ;
 
+// part of select (OracleDB, PostgreSQL) and insert, update, delete (PostgreSQL)
+WITH:
+    'with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE)
+;
+
 /*----------------------------------------------------------------------------*/
 // Any other token
 /*----------------------------------------------------------------------------*/
 
 ANY_OTHER: . -> channel(HIDDEN);
+
+/*----------------------------------------------------------------------------*/
+// Procedure
+/*----------------------------------------------------------------------------*/
+
+mode PROCEDURE;
+
+// variants ending on semicolon
+PROC_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+PROC_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+PROC_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+PROC_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
+PROC: SQL_END -> popMode;
+
+// variants ending with a code block
+PROC_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION);
+
+PROC_ML_COMMENT: ML_COMMENT -> more;
+PROC_SL_COMMENT: SL_COMMENT -> more;
+PROC_WS: WS -> more;
+PROC_STRING: STRING -> more;
+PROC_ID: ID -> more;
+PROC_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// Declare Section
+/*----------------------------------------------------------------------------*/
+
+mode DECLARE_SECTION;
+
+DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK);
+DS: 'begin' -> more, mode(CODE_BLOCK);
+
+DS_ML_COMMENT: ML_COMMENT -> more;
+DS_SL_COMMENT: SL_COMMENT -> more;
+DS_WS: WS -> more;
+DS_STRING: STRING -> more;
+DS_ID: ID -> more;
+DS_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+DS_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// With Clause
+/*----------------------------------------------------------------------------*/
+
+mode WITH_CLAUSE;
+
+WC: SQL_END -> popMode;
+
+WC_UNIT_START: ('function'|'procedure') COMMENT_OR_WS+ -> more, pushMode(DECLARE_SECTION);
+WC_UNIT_START_TEMP_WORKAROUND_NESTED: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK);
+
+WC_ML_COMMENT: ML_COMMENT -> more;
+WC_SL_COMMENT: SL_COMMENT -> more;
+WC_WS: WS -> more;
+WC_STRING: STRING -> more;
+WC_ID: ID -> more;
+WC_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+WC_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// PL/SQL and PL/pgsql Code Block, Loop, If, Case
+/*----------------------------------------------------------------------------*/
+
+mode CODE_BLOCK;
+
+CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
+CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
+CB_COMPOUND_TRIGGER:
+    (
+          'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'statement' COMMENT_OR_WS* ';'
+        | 'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
+        | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
+    ) -> popMode;
+CB_STMT: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
+CB_EXPR: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? -> popMode; // including PostgreSQL atomic block
+
+CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION);
+
+// handle everything that has end keyword as nested code block
+CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK);
+CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK);
+CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK);
+CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK);
+
+CB_POSITION_FROM_END: 'position' COMMENT_OR_WS+ 'from' COMMENT_OR_WS+ 'end' -> more; // lead_lag_clause, av_level_ref
+CB_ML_COMMENT: ML_COMMENT -> more;
+CB_SL_COMMENT: SL_COMMENT -> more;
+CB_WS: WS -> more;
+CB_STRING: STRING -> more;
+CB_ID: ID -> more;
+CB_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+CB_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// Conditional Compilation Directive
+/*----------------------------------------------------------------------------*/
+
+mode CONDITIONAL_COMPILATION;
+
+// always part of CB
+CC: '$end' -> more, popMode;
+
+// error directive has an $end keyword, treat as a nested conditional compilation directive
+CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION);
+
+CC_WS: WS -> more;
+CC_ID: ID -> more;
+CC_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+CC_ANY_OTHER: . -> more;
