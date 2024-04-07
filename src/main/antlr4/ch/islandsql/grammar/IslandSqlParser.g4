@@ -2309,8 +2309,9 @@ pipeRowStatement:
     K_PIPE K_ROW LPAR row=expression RPAR SEMI
 ;
 
+// wrong documentation of in 23.3: declere_section is not mandatory
 plsqlBlock:
-    (K_DECLARE declareSection)? body
+    (K_DECLARE declareSection?)? body
 ;
 
 // others is handled as normal exception name
