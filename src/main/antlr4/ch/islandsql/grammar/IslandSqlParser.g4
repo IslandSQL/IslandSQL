@@ -2754,6 +2754,7 @@ expression:
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
     | expr=plsqlQualifiedExpression                             # plsqlQualifiedExpressionParent
+    | expr=plsqlMultiDimensionalExpression                      # plsqlMultiDimensionalExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=AST                                                  # allColumnWildcardExpression
     | type=dataType expr=string                                 # postgresqlStringCast
@@ -4113,6 +4114,10 @@ basicIteratorChoice:
 
 indexIteratorChoice:
     K_FOR iteratorName=sqlName K_INDEX EQUALS_GT expr=expression
+;
+
+plsqlMultiDimensionalExpression:
+    name=sqlName LPAR dims+=expression RPAR (LPAR dims+=expression RPAR)+
 ;
 
 placeholderExpression:
