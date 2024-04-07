@@ -1913,11 +1913,11 @@ itemDeclaration:
 ;
 
 constantDeclaration:
-    constant=sqlName K_CONSTANT type=dataType (K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+    constant=sqlName K_CONSTANT type=dataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
 ;
 
 variableDeclaration:
-    variable=sqlName type=plsqlDataType ((K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)? SEMI
+    variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)? SEMI
 ;
 
 functionDeclaration:
