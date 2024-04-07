@@ -339,7 +339,7 @@ compoundTriggerBlock:
 ;
 
 timingPointSection:
-    startTimingPoint=timingPoint K_IS K_BEGIN tpsBody K_END endTimingPoint=timingPoint
+    startTimingPoint=timingPoint K_IS K_BEGIN tpsBody K_END endTimingPoint=timingPoint SEMI
 ;
 
 timingPoint:
