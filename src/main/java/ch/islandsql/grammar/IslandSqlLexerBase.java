@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.misc.Interval;
  */
 public abstract class IslandSqlLexerBase extends Lexer {
     private final boolean scopeLexer;
+    private final IslandSqlDialect dialect;
     private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
     private String dollarIdentifier1;
@@ -39,6 +40,13 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public IslandSqlLexerBase(CharStream input) {
         super(input);
         this.scopeLexer = this.getClass().getCanonicalName().equals("ch.islandsql.grammar.IslandSqlScopeLexer");
+        IslandSqlDialect dialect;
+        try {
+            dialect = IslandSqlDialect.valueOf(System.getProperty("islandsql.dialect"));
+        } catch (IllegalArgumentException | NullPointerException e) {
+            dialect = IslandSqlDialect.GENERIC;
+        }
+        this.dialect = dialect;
     }
 
     /**
@@ -54,6 +62,15 @@ public abstract class IslandSqlLexerBase extends Lexer {
             // WS (1) must be ignored and STRING (2) is not relevant
             this.lastToken = token;
         }
+    }
+
+    /**
+     * Gets the SQL dialect to be used for this lexer.
+     *
+     * @return Returns the SQL dialect.
+     */
+    public IslandSqlDialect getDialect() {
+        return this.dialect;
     }
 
     /**
