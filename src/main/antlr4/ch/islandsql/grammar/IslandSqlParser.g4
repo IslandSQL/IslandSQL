@@ -2013,7 +2013,7 @@ cDeclaration:
         )
         (K_AGENT K_IN LPAR args+=sqlName (COMMA args+=sqlName)* RPAR)?
         (K_WITH K_CONTEXT)?
-        (K_PARAMETERS LPAR params+=externalParameter (COMMA params+=externalParameter) RPAR)?
+        (K_PARAMETERS LPAR params+=externalParameter (COMMA params+=externalParameter)* RPAR)?
 ;
 
 externalParameter:
