@@ -468,9 +468,9 @@ attribute:
 ;
 
 // wrong documentation in 23.3: repeating subprogram_spec, constructor_spec, map_order_function_spec
+// only pragma restrict_references is documented, but others such as pragma deprecate work as well
 elementSpec:
-    inheritanceClauses? (subprogramSpec | constructorSpec | mapOrderFunctionSpec)
-    (COMMA restrictReferencesPragma)?
+    inheritanceClauses? (subprogramSpec | constructorSpec | mapOrderFunctionSpec | pragma)
 ;
 
 subprogramSpec:
