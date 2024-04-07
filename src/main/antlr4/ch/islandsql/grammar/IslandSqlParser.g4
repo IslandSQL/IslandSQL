@@ -2756,6 +2756,8 @@ expression:
     | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
     | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList                // also parenthesisCondition
+    | LPAR expr=expression K_AS
+        (schema=sqlName PERIOD)? typeName=sqlName RPAR          # typeCastExpression            // undocumented in 23.3, see example 14-22
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
     | expr=caseExpression                                       # caseExpressionParent
     | expr=selectionDirective                                   # selectionDirectiveExpression
