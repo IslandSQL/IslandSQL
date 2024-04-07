@@ -150,6 +150,12 @@ ALTER_TABLE:
         'table' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
 ;
 
+// hide keyword: begin
+ALTER_TABLESPACE:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'tablespace' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 CREATE_AUDIT_POLICY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
