@@ -531,16 +531,16 @@ inheritanceClauseItem:
 varayTypeSpec:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR sizeLimit=expression RPAR K_OF
     (
-          dataType (K_NOT K_NULL)?
-        | LPAR dataType (K_NOT K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
+          plsqlDataType (K_NOT? K_NULL)?
+        | LPAR plsqlDataType (K_NOT? K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
     )
 ;
 
 nestedTableTypeSpec:
     K_TABLE K_OF
     (
-          dataType (K_NOT K_NULL)?
-        | LPAR dataType (K_NOT K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
+          plsqlDataType (K_NOT? K_NULL)?
+        | LPAR plsqlDataType (K_NOT? K_NULL)? RPAR (K_NOT? K_PERSISTABLE)?
     )
 ;
 
@@ -1844,7 +1844,7 @@ collectionTypeDefinition:
 ;
 
 assocArrayTypeDef:
-    K_TABLE K_OF type=plsqlDataType (K_NOT K_NULL)? K_INDEX K_BY indexType=dataType
+    K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)? K_INDEX K_BY indexType=dataType
 ;
 
 plsqlDataType:
@@ -1855,31 +1855,32 @@ plsqlDataType:
 ;
 
 varrayTypeDef:
-    (K_VARRAY | K_VARYING K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT K_NULL)?
+    (K_VARRAY | K_VARYING K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
 
 nestedTableTypeDef:
-    K_TABLE K_OF type=plsqlDataType (K_NOT K_NULL)?
+    K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
 
 recordTypeDefinition:
     K_TYPE name=sqlName K_IS K_RECORD LPAR
         fieldDefinitions+=fieldDefinition (COMMA fieldDefinitions+=fieldDefinition)*
-    LPAR SEMI
+    RPAR SEMI
 ;
 
 // no space allowed between ':' and '=' in OracleDB 23.3
 fieldDefinition:
-    field=sqlName type=dataType ((K_NOT K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
+    field=sqlName type=dataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
 ;
 
 refCursorTypeDefinition:
     K_TYPE type=sqlName K_IS K_REF K_CURSOR (K_RETURN returnType=plsqlDataType)? SEMI
 ;
 
+// not documented in 23.3: optionality of "not"
 subtypeDefinition:
     K_SUBTYPE subtype=sqlName K_IS baseType=plsqlDataType
-    (subtypeConstraint | K_CHARACTER K_SET characterSet=sqlName) SEMI
+    (subtypeConstraint | K_CHARACTER K_SET characterSet=sqlName)? (K_NOT? K_NULL)? SEMI
 ;
 
 // precision, scaled are handled by plsqlDataType for baseType, require parentheses which is not documented anyway
