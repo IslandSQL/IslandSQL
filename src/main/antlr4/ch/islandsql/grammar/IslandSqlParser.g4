@@ -385,18 +385,18 @@ ddlEvent:
     | K_DDL                         # ddlDdlEvent
 ;
 
+// wrong documenation in 23.3: timepoint is not part of database_event
 databaseEvent:
-      K_AFTER K_STARTUP             # afterStatupDatabaseEvent
-    | K_BEFORE K_SHUTDOWN           # beforeShutdownDatabaseEvent
-    | K_AFTER K_DB_ROLE_CHANGE      # afterDbRoleChangeDatabaseEvent
-    | K_AFTER K_SERVERERROR         # afterServererrorDatabaseEvent
-    | K_AFTER K_LOGON               # afterLogonDatabaseEvent
-    | K_BEFORE K_LOGOFF             # beforeLogoffDatabaseEvent
-    | K_AFTER K_SUSPEND             # afterSuspendDatabaseEvent
-    | K_AFTER K_CLONE               # afterCloneDatabaseEvent
-    | K_BEFORE K_UNPLUG             # beforeUnplugDatabaseEvent
-    | K_BEFORE K_SET K_CONTAINER    # beforeSetContainerDatabaseEvent
-    | K_AFTER K_SET K_CONTAINER     # afterSetContainerDatabaseEvent
+      K_STARTUP                     # statupDatabaseEvent
+    | K_SHUTDOWN                    # shutdownDatabaseEvent
+    | K_DB_ROLE_CHANGE              # dbRoleChangeDatabaseEvent
+    | K_SERVERERROR                 # servererrorDatabaseEvent
+    | K_LOGON                       # logonDatabaseEvent
+    | K_LOGOFF                      # logoffDatabaseEvent
+    | K_SUSPEND                     # suspendDatabaseEvent
+    | K_CLONE                       # cloneDatabaseEvent
+    | K_UNPLUG                      # unplugDatabaseEvent
+    | K_SET K_CONTAINER             # setContainerDatabaseEvent
 ;
 
 postgresqlTriggerSource:
