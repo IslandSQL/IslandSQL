@@ -153,10 +153,11 @@ createPackageStatement:
       createPackage sqlEnd?
 ;
 
+// wrong documenation in 23.3: package_item_list is not mandatory
 createPackage:
     K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_PACKAGE
     (K_IF K_NOT K_EXISTS)? plsqlPackageSource
-    (K_IS | K_AS) items+=itemlistItem+ K_END name=sqlName? SEMI
+    (K_IS | K_AS) items+=itemlistItem* K_END name=sqlName? SEMI
 ;
 
 plsqlPackageSource:
@@ -183,9 +184,10 @@ createPackageBody:
     (K_IF K_NOT K_EXISTS)? plsqlPackageBodySource
 ;
 
+// wrong documentation in 23.3: declare_section is not mandatory
 plsqlPackageBodySource:
     (schema=sqlName PERIOD)? packageName=sqlName sharingClause?
-    (K_IS | K_AS) declareSection initializeSection? K_END name=sqlName? SEMI
+    (K_IS | K_AS) declareSection? initializeSection? K_END name=sqlName? SEMI
 ;
 
 initializeSection:
