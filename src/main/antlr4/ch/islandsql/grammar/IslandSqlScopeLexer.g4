@@ -28,18 +28,19 @@ options {
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
-fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
+fragment HSPACE: [ \t]+;
+fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS* NAME WS* '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+?;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment SQL_END:
       EOF
-    | ';' [ \t]* SINGLE_NL?
+    | ';' HSPACE? SINGLE_NL?
     | SLASH_END
     | PSQL_EXEC
 ;
-fragment CONTINUE_LINE: '-' [ \t]* SINGLE_NL;
+fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_AS_WS:
@@ -104,12 +105,12 @@ SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
-        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
     'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
-       ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+       (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -119,7 +120,7 @@ PROMPT_COMMAND:
 // hide keyword: insert, select
 COPY_COMMAND:
     'copy' {isBeginOfCommand("copy")}?
-        ([ \t]+ SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
