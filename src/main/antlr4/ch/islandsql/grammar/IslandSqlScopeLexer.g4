@@ -236,7 +236,7 @@ CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'function' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
+    'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 // handles also package body
@@ -251,7 +251,7 @@ CREATE_PROCEDURE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'procedure' COMMENT_OR_WS+ -> pushMode(PROCEDURE_MODE)
+    'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
@@ -350,28 +350,28 @@ WITH:
 ANY_OTHER: . -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Procedure Mode
+// Unit Mode (standalone function and procedure)
 /*----------------------------------------------------------------------------*/
 
-mode PROCEDURE_MODE;
+mode UNIT_MODE;
 
 // variants ending on semicolon
-PROC_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
-PROC_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
-PROC_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
-PROC_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
-PROC: SQL_END -> popMode;
+UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
+UNIT_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
+UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
-PROC_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
+UNIT_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
 
-PROC_ML_COMMENT: ML_COMMENT -> more;
-PROC_SL_COMMENT: SL_COMMENT -> more;
-PROC_WS: WS -> more;
-PROC_STRING: STRING -> more;
-PROC_ID: ID -> more;
-PROC_QUOTED_ID: QUOTED_ID -> more;
-PROC_ANY_OTHER: . -> more;
+UNIT_ML_COMMENT: ML_COMMENT -> more;
+UNIT_SL_COMMENT: SL_COMMENT -> more;
+UNIT_WS: WS -> more;
+UNIT_STRING: STRING -> more;
+UNIT_ID: ID -> more;
+UNIT_QUOTED_ID: QUOTED_ID -> more;
+UNIT_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
 // Declare Section Mode
@@ -380,7 +380,7 @@ PROC_ANY_OTHER: . -> more;
 mode DECLARE_SECTION_MODE;
 
 DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK_MODE);
-DS: 'begin' -> more, mode(CODE_BLOCK_MODE);
+DS_BEGIN: 'begin' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
 
 DS_ML_COMMENT: ML_COMMENT -> more;
 DS_SL_COMMENT: SL_COMMENT -> more;
