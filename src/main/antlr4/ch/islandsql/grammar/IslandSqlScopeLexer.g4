@@ -236,7 +236,7 @@ CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'function' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
+    'function' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 // handles also package body
@@ -244,14 +244,14 @@ CREATE_PACKAGE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
+    'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 CREATE_PROCEDURE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'procedure' COMMENT_OR_WS+ -> pushMode(PROCEDURE)
+    'procedure' COMMENT_OR_WS+ -> pushMode(PROCEDURE_MODE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
@@ -267,7 +267,7 @@ CREATE_TRIGGER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
+    'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 // OracleDB and PostgreSQL type specifications
@@ -282,7 +282,7 @@ CREATE_TYPE_BODY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
-    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
+    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 DELETE:
@@ -306,11 +306,11 @@ MERGE:
 ;
 
 PLSQL_BLOCK_DECLARE:
-    (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION)
+    (LABEL COMMENT_OR_WS*)* 'declare' {isBeginOfStatement("declare")}? COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 PLSQL_BLOCK_BEGIN:
-    (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ -> pushMode(CODE_BLOCK)
+    (LABEL COMMENT_OR_WS*)* 'begin' {isBeginOfStatement("begin")}? COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 ROLLBACK:
@@ -340,7 +340,7 @@ UPDATE:
 
 // part of select (OracleDB, PostgreSQL) and insert, update, delete (PostgreSQL)
 WITH:
-    'with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE)
+    'with' {isBeginOfStatement("with")}? COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -350,10 +350,10 @@ WITH:
 ANY_OTHER: . -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Procedure
+// Procedure Mode
 /*----------------------------------------------------------------------------*/
 
-mode PROCEDURE;
+mode PROCEDURE_MODE;
 
 // variants ending on semicolon
 PROC_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' COMMENT_OR_WS+ SQL_TEXT+? SQL_END -> popMode;
@@ -363,7 +363,7 @@ PROC_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
 PROC: SQL_END -> popMode;
 
 // variants ending with a code block
-PROC_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION);
+PROC_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
 
 PROC_ML_COMMENT: ML_COMMENT -> more;
 PROC_SL_COMMENT: SL_COMMENT -> more;
@@ -373,13 +373,13 @@ PROC_ID: ID -> more;
 PROC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// Declare Section
+// Declare Section Mode
 /*----------------------------------------------------------------------------*/
 
-mode DECLARE_SECTION;
+mode DECLARE_SECTION_MODE;
 
-DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK);
-DS: 'begin' -> more, mode(CODE_BLOCK);
+DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK_MODE);
+DS: 'begin' -> more, mode(CODE_BLOCK_MODE);
 
 DS_ML_COMMENT: ML_COMMENT -> more;
 DS_SL_COMMENT: SL_COMMENT -> more;
@@ -390,15 +390,15 @@ DS_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
 DS_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// With Clause
+// With Clause Mode
 /*----------------------------------------------------------------------------*/
 
-mode WITH_CLAUSE;
+mode WITH_CLAUSE_MODE;
 
 WC: SQL_END -> popMode;
 
-WC_UNIT_START: ('function'|'procedure') COMMENT_OR_WS+ -> more, pushMode(DECLARE_SECTION);
-WC_UNIT_START_TEMP_WORKAROUND_NESTED: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK);
+WC_UNIT_START: ('function'|'procedure') COMMENT_OR_WS+ -> more, pushMode(DECLARE_SECTION_MODE);
+WC_UNIT_START_TEMP_WORKAROUND_NESTED: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
 
 WC_ML_COMMENT: ML_COMMENT -> more;
 WC_SL_COMMENT: SL_COMMENT -> more;
@@ -409,10 +409,10 @@ WC_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
 WC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// PL/SQL and PL/pgsql Code Block, Loop, If, Case
+// PL/SQL and PL/pgsql Code Block Mode
 /*----------------------------------------------------------------------------*/
 
-mode CODE_BLOCK;
+mode CODE_BLOCK_MODE;
 
 CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
 CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
@@ -425,13 +425,13 @@ CB_COMPOUND_TRIGGER:
 CB_STMT: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
 CB_EXPR: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? -> popMode; // including PostgreSQL atomic block
 
-CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION);
+CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 // handle everything that has end keyword as nested code block
-CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK);
-CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK);
-CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK);
-CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK);
+CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
+CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
+CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
+CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
 
 CB_POSITION_FROM_END: 'position' COMMENT_OR_WS+ 'from' COMMENT_OR_WS+ 'end' -> more; // lead_lag_clause, av_level_ref
 CB_ML_COMMENT: ML_COMMENT -> more;
@@ -443,16 +443,16 @@ CB_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
 CB_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// Conditional Compilation Directive
+// Conditional Compilation Directive Mode
 /*----------------------------------------------------------------------------*/
 
-mode CONDITIONAL_COMPILATION;
+mode CONDITIONAL_COMPILATION_MODE;
 
 // always part of CB
 CC: '$end' -> more, popMode;
 
 // error directive has an $end keyword, treat as a nested conditional compilation directive
-CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION);
+CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 CC_WS: WS -> more;
 CC_ID: ID -> more;
