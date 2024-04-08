@@ -29,7 +29,8 @@ fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
-fragment LABEL: '<<' WS* ID WS* '>>';
+fragment NAME: ID|QUOTED_ID;
+fragment LABEL: '<<' WS* NAME WS* '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment SQL_END:
@@ -417,16 +418,16 @@ WC_ANY_OTHER: . -> more;
 
 mode CODE_BLOCK_MODE;
 
-CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
-CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
+CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
+CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 CB_COMPOUND_TRIGGER:
     (
           'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'statement' COMMENT_OR_WS* ';'
         | 'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
-CB_STMT: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? COMMENT_OR_WS* ';' -> popMode;
-CB_EXPR: 'end' (COMMENT_OR_WS+ (CB_ID|'"' CB_ID '"'))? -> popMode; // including PostgreSQL atomic block
+CB_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
+CB_EXPR: 'end' (COMMENT_OR_WS+ NAME)? -> popMode; // including PostgreSQL atomic block
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
