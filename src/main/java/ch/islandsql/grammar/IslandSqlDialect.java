@@ -15,10 +15,6 @@
  */
 package ch.islandsql.grammar;
 
-import org.antlr.v4.runtime.*;
-
-import java.util.List;
-
 /**
  * Supported SQL dialects.
  */
