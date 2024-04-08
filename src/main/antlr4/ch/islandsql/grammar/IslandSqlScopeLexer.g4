@@ -40,7 +40,7 @@ fragment SQL_END:
     | SLASH_END
     | PSQL_EXEC
 ;
-fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL;
+fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL?;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment ANY_EXCEPT_AS_WS:
@@ -105,12 +105,12 @@ SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
-        (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
     'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
-       (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -120,7 +120,7 @@ PROMPT_COMMAND:
 // hide keyword: insert, select
 COPY_COMMAND:
     'copy' {isBeginOfCommand("copy")}?
-        (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/

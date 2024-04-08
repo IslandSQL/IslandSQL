@@ -27,7 +27,7 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment HSPACE: [ \t]+;
-fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL;
+fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL?;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
@@ -48,12 +48,12 @@ SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 REMARK_COMMAND:
     'rem' {isBeginOfCommand("rem")}? ('a' ('r' 'k'?)?)?
-        (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 PROMPT_COMMAND:
     'pro' {isBeginOfCommand("pro")}? ('m' ('p' 't'?)?)?
-       (HSPACE SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
+        ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
