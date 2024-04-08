@@ -31,7 +31,7 @@ fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS* NAME WS* '>>';
-fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
+fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+?;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment SQL_END:
       EOF
