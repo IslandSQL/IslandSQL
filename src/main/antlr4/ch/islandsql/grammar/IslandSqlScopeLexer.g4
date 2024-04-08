@@ -370,6 +370,7 @@ PROC_SL_COMMENT: SL_COMMENT -> more;
 PROC_WS: WS -> more;
 PROC_STRING: STRING -> more;
 PROC_ID: ID -> more;
+PROC_QUOTED_ID: QUOTED_ID -> more;
 PROC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
@@ -386,7 +387,7 @@ DS_SL_COMMENT: SL_COMMENT -> more;
 DS_WS: WS -> more;
 DS_STRING: STRING -> more;
 DS_ID: ID -> more;
-DS_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+DS_QUOTED_ID: QUOTED_ID -> more;
 DS_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
@@ -405,7 +406,7 @@ WC_SL_COMMENT: SL_COMMENT -> more;
 WC_WS: WS -> more;
 WC_STRING: STRING -> more;
 WC_ID: ID -> more;
-WC_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+WC_QUOTED_ID: QUOTED_ID -> more;
 WC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
@@ -439,7 +440,7 @@ CB_SL_COMMENT: SL_COMMENT -> more;
 CB_WS: WS -> more;
 CB_STRING: STRING -> more;
 CB_ID: ID -> more;
-CB_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+CB_QUOTED_ID: QUOTED_ID -> more;
 CB_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
@@ -456,5 +457,5 @@ CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 CC_WS: WS -> more;
 CC_ID: ID -> more;
-CC_QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> more;
+CC_QUOTED_ID: QUOTED_ID -> more;
 CC_ANY_OTHER: . -> more;
