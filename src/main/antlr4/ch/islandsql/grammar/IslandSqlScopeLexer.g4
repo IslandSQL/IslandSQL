@@ -31,6 +31,7 @@ fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? [ \t]* (EOF|SINGLE_NL);
 fragment LABEL: '<<' WS* ID WS* '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
+fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment SQL_END:
       EOF
     | ';' [ \t]* SINGLE_NL?
@@ -380,6 +381,7 @@ UNIT_ANY_OTHER: . -> more;
 mode DECLARE_SECTION_MODE;
 
 DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK_MODE);
+DS_UNIT_DEFINITION: UNIT_DEFINITION_START -> more, pushMode(DECLARE_SECTION_MODE);
 DS_BEGIN: 'begin' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
 
 DS_ML_COMMENT: ML_COMMENT -> more;
@@ -398,8 +400,8 @@ mode WITH_CLAUSE_MODE;
 
 WC: SQL_END -> popMode;
 
-WC_UNIT_START: ('function'|'procedure') COMMENT_OR_WS+ -> more, pushMode(DECLARE_SECTION_MODE);
-WC_UNIT_START_TEMP_WORKAROUND_NESTED: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
+WC_UNIT_DEFINITION: UNIT_DEFINITION_START -> more, pushMode(DECLARE_SECTION_MODE);
+WC_UNIT_BEGIN: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
 
 WC_ML_COMMENT: ML_COMMENT -> more;
 WC_SL_COMMENT: SL_COMMENT -> more;
