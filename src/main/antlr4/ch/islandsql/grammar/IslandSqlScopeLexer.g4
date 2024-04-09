@@ -52,6 +52,13 @@ fragment ANY_EXCEPT_AS_WS:
         | ~'a'
     )
 ;
+fragment ANY_EXCEPT_LOG:
+    (
+          'l' 'o' ~'g'
+        | 'l' ~'o'
+        | ~'l'
+    )
+;
 fragment ANY_EXCEPT_BODY:
     (
           'b' 'o' 'd' ~'y'
@@ -202,7 +209,7 @@ CREATE_USER:
 CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
         COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? ('materialized' COMMENT_OR_WS+)? 'view'
-        ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
+        COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
