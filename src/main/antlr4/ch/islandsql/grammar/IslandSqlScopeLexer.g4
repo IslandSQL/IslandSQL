@@ -189,8 +189,8 @@ CREATE_RULE:
 
 // hide keywords: select, insert, update, delete
 CREATE_SCHEMA:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'schema' COMMENT_OR_WS+ 'authorization' TO_SQL_END -> channel(HIDDEN)
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'schema'
+        TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
