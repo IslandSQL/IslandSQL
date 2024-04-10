@@ -35,7 +35,8 @@ fragment LABEL: '<<' WS? NAME WS? '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
-fragment TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
+fragment MORE_TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
+fragment TO_SQL_END: (COMMENT_OR_WS+ SQL_TEXT*?)? SQL_END;
 fragment SQL_END:
       EOF
     | ';' HSPACE? SINGLE_NL?
@@ -136,72 +137,72 @@ COPY_COMMAND:
 // hide keyword: with
 ADMINISTER_KEY_MANAGEMENT:
     'administer' {isBeginOfStatement("administer")}? COMMENT_OR_WS+
-        'key' COMMENT_OR_WS+ 'management' TO_SQL_END -> channel(HIDDEN)
+        'key' COMMENT_OR_WS+ 'management' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: select, insert, update, delete
 ALTER_AUDIT_POLICY:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' TO_SQL_END -> channel(HIDDEN)
+        'audit' COMMENT_OR_WS+ 'policy' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: merge
 ALTER_TABLE:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
-        'table' TO_SQL_END -> channel(HIDDEN)
+        'table' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: begin
 ALTER_TABLESPACE:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
-        'tablespace' TO_SQL_END -> channel(HIDDEN)
+        'tablespace' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
 CREATE_AUDIT_POLICY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' TO_SQL_END -> channel(HIDDEN)
+        'audit' COMMENT_OR_WS+ 'policy' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: with
 CREATE_DATABASE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        'database' TO_SQL_END -> channel(HIDDEN)
+        'database' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
 CREATE_MATERIALIZED_VIEW_LOG:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
-        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' TO_SQL_END -> channel(HIDDEN)
+        COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
 CREATE_OPERATOR:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' TO_SQL_END -> channel(HIDDEN)
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete (hides first command only)
 CREATE_RULE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'rule' TO_SQL_END -> channel(HIDDEN)
+        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'rule' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
 CREATE_SCHEMA:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'schema'
-        TO_SQL_END -> channel(HIDDEN)
+        MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with
 CREATE_TABLE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ SQL_TEXT*? 'table'
-        TO_SQL_END -> channel(HIDDEN);
+        MORE_TO_SQL_END -> channel(HIDDEN);
 
 // hide keyword: with
 CREATE_USER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
-        TO_SQL_END -> channel(HIDDEN)
+        MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: with (everything up to the as keyword)
@@ -213,12 +214,12 @@ CREATE_VIEW:
 
 // hide keywords: select, insert, update, delete
 GRANT:
-    'grant' {isBeginOfStatement("grant")}? TO_SQL_END -> channel(HIDDEN)
+    'grant' {isBeginOfStatement("grant")}? MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
 REVOKE:
-    'revoke' {isBeginOfStatement("revoke")}? TO_SQL_END -> channel(HIDDEN)
+    'revoke' {isBeginOfStatement("revoke")}? MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -226,7 +227,7 @@ REVOKE:
 /*----------------------------------------------------------------------------*/
 
 CALL:
-    'call' {isBeginOfStatement("call")}? TO_SQL_END
+    'call' {isBeginOfStatement("call")}? MORE_TO_SQL_END
 ;
 
 COMMIT:
@@ -237,7 +238,7 @@ COMMIT:
 CREATE_FUNCTION_POSTGRESQL:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+?
-    'returns' TO_SQL_END
+    'returns' MORE_TO_SQL_END
 ;
 
 CREATE_FUNCTION:
@@ -267,7 +268,7 @@ CREATE_TRIGGER_POSTGRESQL:
     COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     ('constraint' COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ SQL_TEXT+?
-    'execute' COMMENT_OR_WS+ ('function' | 'procedure') TO_SQL_END
+    'execute' COMMENT_OR_WS+ ('function' | 'procedure') MORE_TO_SQL_END
 ;
 
 CREATE_TRIGGER:
@@ -293,23 +294,23 @@ CREATE_TYPE_BODY:
 ;
 
 DELETE:
-    'delete' {isBeginOfStatement("delete")}? TO_SQL_END
+    'delete' {isBeginOfStatement("delete")}? MORE_TO_SQL_END
 ;
 
 EXPLAIN_PLAN:
-    'explain' {isBeginOfStatement("explain")}? TO_SQL_END
+    'explain' {isBeginOfStatement("explain")}? MORE_TO_SQL_END
 ;
 
 INSERT:
-    'insert' {isBeginOfStatement("insert")}? TO_SQL_END
+    'insert' {isBeginOfStatement("insert")}? MORE_TO_SQL_END
 ;
 
 LOCK_TABLE:
-    'lock' {isBeginOfStatement("lock")}? TO_SQL_END
+    'lock' {isBeginOfStatement("lock")}? MORE_TO_SQL_END
 ;
 
 MERGE:
-    'merge' {isBeginOfStatement("merge")}? TO_SQL_END
+    'merge' {isBeginOfStatement("merge")}? MORE_TO_SQL_END
 ;
 
 PLSQL_BLOCK_DECLARE:
@@ -325,19 +326,19 @@ ROLLBACK:
 ;
 
 SAVEPOINT:
-    'savepoint' {isBeginOfStatement("savepoint")}? TO_SQL_END
+    'savepoint' {isBeginOfStatement("savepoint")}? MORE_TO_SQL_END
 ;
 
 SET_CONSTRAINTS:
-    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'contstraints') TO_SQL_END
+    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'contstraints') MORE_TO_SQL_END
 ;
 
 // TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
 // - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
     (
-        'select' {isBeginOfStatement("select")}? TO_SQL_END
-      | ('(' COMMENT_OR_WS*)+ 'select' TO_SQL_END
+        'select' {isBeginOfStatement("select")}? MORE_TO_SQL_END
+      | ('(' COMMENT_OR_WS*)+ 'select' MORE_TO_SQL_END
     )
 ;
 
@@ -363,9 +364,9 @@ ANY_OTHER: . -> channel(HIDDEN);
 mode UNIT_MODE;
 
 // variants ending on semicolon
-UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' TO_SQL_END -> popMode;
-UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') TO_SQL_END -> popMode;
-UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') TO_SQL_END -> popMode;
+UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' MORE_TO_SQL_END -> popMode;
+UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
+UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
 UNIT_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
 UNIT: SQL_END -> popMode;
 
