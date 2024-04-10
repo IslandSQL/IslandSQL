@@ -195,8 +195,8 @@ CREATE_SCHEMA:
 
 // hide keyword: with
 CREATE_TABLE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'table' TO_SQL_END -> channel(HIDDEN);
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ SQL_TEXT*? 'table'
+        TO_SQL_END -> channel(HIDDEN);
 
 // hide keyword: with
 CREATE_USER:
