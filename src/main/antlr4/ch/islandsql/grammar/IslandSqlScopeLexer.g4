@@ -207,8 +207,7 @@ CREATE_USER:
 // hide keyword: with (everything up to the as keyword)
 // TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/35
 CREATE_VIEW:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? SQL_TEXT*? 'view'
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ SQL_TEXT*? 'view'
         COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
 ;
 
