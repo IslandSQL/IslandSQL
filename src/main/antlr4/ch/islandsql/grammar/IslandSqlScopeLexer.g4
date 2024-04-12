@@ -330,7 +330,7 @@ SAVEPOINT:
 ;
 
 SET_CONSTRAINTS:
-    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'contstraints') MORE_TO_SQL_END
+    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'constraints') MORE_TO_SQL_END
 ;
 
 // TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
