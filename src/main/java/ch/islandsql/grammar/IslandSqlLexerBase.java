@@ -216,10 +216,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
             } else {
                 // decide according previous token if it is a statement
                 String text = lastToken.getText().toLowerCase().trim();
-                if (text.endsWith(";") || text.endsWith("/") || text.equals("as")
-                        || text.equals("is") || text.equals("declare") || text.equals("begin")
-                        || text.equals("then") || text.equals("elsif") || text.equals("else") || text.equals("loop")
-                        || text.startsWith("forall") || text.startsWith("<<")) {
+                if (text.endsWith(";") || text.endsWith("/") || text.equals("as") || text.equals("is")) {
                     return true;
                 }
             }
