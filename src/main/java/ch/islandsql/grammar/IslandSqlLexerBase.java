@@ -242,6 +242,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * @param pos The position in the character stream.
      * @return Returns true if the character at pos matches the expected character.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isCharAt(String character, int pos) {
         if (pos < 0) {
             return false;
