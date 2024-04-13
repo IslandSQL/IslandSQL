@@ -333,12 +333,10 @@ SET_CONSTRAINTS:
     'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'constraints') MORE_TO_SQL_END
 ;
 
-// TODO: enforce select in parenthesis at begin of statement to to avoid identifying out-of-scope subqueries after implementing:
-// - https://github.com/IslandSQL/IslandSQL/issues/35
 SELECT:
     (
         'select' {isBeginOfStatement("select")}? MORE_TO_SQL_END
-      | ('(' COMMENT_OR_WS*)+ 'select' MORE_TO_SQL_END
+      | '(' {isBeginOfStatement("(")}? COMMENT_OR_WS* ('(' COMMENT_OR_WS*)* 'select' MORE_TO_SQL_END
     )
 ;
 
