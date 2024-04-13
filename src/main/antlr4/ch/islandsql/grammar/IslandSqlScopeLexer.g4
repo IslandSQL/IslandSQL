@@ -330,7 +330,7 @@ SAVEPOINT:
 ;
 
 SET_CONSTRAINTS:
-    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ ('constraint' | 'constraints') MORE_TO_SQL_END
+    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ 'constraint' 's'? MORE_TO_SQL_END
 ;
 
 SELECT:
