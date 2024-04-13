@@ -110,7 +110,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines the idenitifier in a dollar-quoted string constant.
+     * Determines the identifier in a dollar-quoted string constant.
      * Current index position is directly after the ending dollar sign.
      *
      * @return identifier in dollar-quoted string constant.
