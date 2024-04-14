@@ -2558,7 +2558,7 @@ setConstraints:
     (
           K_ALL
         | constraints+=constraint (COMMA constraints+=constraint)*
-    ) (K_IMMEDIATE | K_DEFERRED) SEMI
+    ) (K_IMMEDIATE | K_DEFERRED)
 ;
 
 constraint:
