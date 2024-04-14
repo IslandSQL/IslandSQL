@@ -196,8 +196,17 @@ CREATE_SCHEMA:
 
 // hide keyword: with
 CREATE_TABLE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ SQL_TEXT*? 'table'
-        MORE_TO_SQL_END -> channel(HIDDEN);
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    (
+          'global' COMMENT_OR_WS+ ('temporary'|'temp') COMMENT_OR_WS+
+        | ('private'|'local') COMMENT_OR_WS+ ('temporary'|'temp') COMMENT_OR_WS+
+        | 'unlogged' COMMENT_OR_WS+
+        | 'shared' COMMENT_OR_WS+
+        | 'duplicated' COMMENT_OR_WS+
+        | ('immutable' COMMENT_OR_WS+)? 'blockchain' COMMENT_OR_WS+
+        | 'immutable' COMMENT_OR_WS+
+    )?
+    'table' MORE_TO_SQL_END -> channel(HIDDEN);
 
 // hide keyword: with
 CREATE_USER:
