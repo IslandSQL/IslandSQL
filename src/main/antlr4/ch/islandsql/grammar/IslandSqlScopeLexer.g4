@@ -361,6 +361,9 @@ ANY_OTHER: . -> channel(HIDDEN);
 
 mode UNIT_MODE;
 
+// fail-safe, process tokens that are waiting to be assigned after "more"
+UNIT_EOF: EOF -> popMode;
+
 // variants ending on semicolon
 UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' MORE_TO_SQL_END -> popMode;
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
@@ -385,6 +388,9 @@ UNIT_ANY_OTHER: . -> more;
 
 mode DECLARE_SECTION_MODE;
 
+// fail-safe, process tokens that are waiting to be assigned after "more"
+DS_EOF: EOF -> popMode;
+
 DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK_MODE);
 DS_UNIT_DEFINITION: UNIT_DEFINITION_START -> more, pushMode(DECLARE_SECTION_MODE);
 DS_BEGIN: 'begin' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
@@ -402,6 +408,9 @@ DS_ANY_OTHER: . -> more;
 /*----------------------------------------------------------------------------*/
 
 mode WITH_CLAUSE_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+WC_EOF: EOF -> popMode;
 
 WC: SQL_END -> popMode;
 
@@ -421,6 +430,9 @@ WC_ANY_OTHER: . -> more;
 /*----------------------------------------------------------------------------*/
 
 mode CODE_BLOCK_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+CB_EOF: EOF -> popMode;
 
 CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
@@ -455,6 +467,9 @@ CB_ANY_OTHER: . -> more;
 /*----------------------------------------------------------------------------*/
 
 mode CONDITIONAL_COMPILATION_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+CC_EOF: EOF -> popMode;
 
 // always part of CB
 CC: '$end' -> more, popMode;
