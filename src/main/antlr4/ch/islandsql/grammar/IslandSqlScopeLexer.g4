@@ -217,8 +217,22 @@ CREATE_USER:
 // hide keyword: with (everything up to the as keyword)
 // TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/35
 CREATE_VIEW:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ SQL_TEXT*? 'view'
-        COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    (
+         (('temp'|'temporary') COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
+       | (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)?
+             (
+                 (
+                       'editioning'
+                     | 'editionable'
+                     | ('editionable' COMMENT_OR_WS+ 'editioning')
+                     | 'noneditionable'
+                 ) COMMENT_OR_WS+
+             )?
+    )
+    ('materialized' COMMENT_OR_WS+)? 'view'
+    COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
