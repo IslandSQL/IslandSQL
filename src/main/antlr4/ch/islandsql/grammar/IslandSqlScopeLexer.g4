@@ -448,7 +448,7 @@ CB_EXPR: 'end' (COMMENT_OR_WS+ NAME)? -> popMode; // including PostgreSQL atomic
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 // handle everything that has end keyword as nested code block
-CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
+CB_BEGIN_START: 'begin' {!isBeginOfInitializeSection()}? -> more, pushMode(CODE_BLOCK_MODE);
 CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
 CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
 CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
