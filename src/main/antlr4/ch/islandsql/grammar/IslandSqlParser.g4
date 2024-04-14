@@ -2562,7 +2562,7 @@ setConstraints:
 ;
 
 constraint:
-    name=qualifiedName (K_AT dblink=qualifiedName)?
+    name=qualifiedName (COMMAT dblink=qualifiedName)?
 ;
 
 /*----------------------------------------------------------------------------*/
