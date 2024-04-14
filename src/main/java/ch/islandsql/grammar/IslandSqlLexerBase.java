@@ -196,11 +196,8 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * A SQL statement starts after a semicolon or slash.
      * A SQL statement can start at begin-of-file.
      * Temporary solution to identify start of statement:
-     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
-     *     - after the keywords AS, IS, DECLARE, BEGIN, THEN, ELSIF, ELSE, LOOP
-     *     - after a forall statement
-     *     - after a new line
-     *     - after a label
+     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/35">Fully parse view statement</a>
+     *     - after the keywords AS, IS
      * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
