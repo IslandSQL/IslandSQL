@@ -198,8 +198,8 @@ CREATE_SCHEMA:
 CREATE_TABLE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     (
-          'global' COMMENT_OR_WS+ ('temporary'|'temp') COMMENT_OR_WS+
-        | ('private'|'local') COMMENT_OR_WS+ ('temporary'|'temp') COMMENT_OR_WS+
+          'global' COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
+        | ('private'|'local') COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
         | 'unlogged' COMMENT_OR_WS+
         | 'shared' COMMENT_OR_WS+
         | 'duplicated' COMMENT_OR_WS+
@@ -220,7 +220,7 @@ CREATE_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (
-         (('temp'|'temporary') COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
+         (('temp' 'orary'?) COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
        | (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)?
              (
                  (
