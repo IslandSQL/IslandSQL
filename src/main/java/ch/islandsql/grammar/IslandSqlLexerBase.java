@@ -230,19 +230,6 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if the position is valid for the start of an initialize section.
-     * Assumes that an initialize section starts with the "begin" keyword on a
-     * new line without leading spaces or tabs (which is usually true).
-     * This function must be called in the lexer after the "begin" keyword.
-     *
-     * @return Returns true if the current position is valid for begin of initialize section.
-     */
-    public boolean isBeginOfInitializeSection() {
-        int i = _input.index() - 5 - 1; // position before the "begin" keyword
-        return isCharOneOf("\r\n", i);
-    }
-
-    /**
      * Determines if the character at a position matches the expected character.
      *
      * @param character The expected character.

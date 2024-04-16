@@ -457,6 +457,9 @@ mode CODE_BLOCK_MODE;
 // fail-safe, process tokens that are waiting to be assigned after "more"
 CB_EOF: EOF -> popMode;
 
+// detects end of code block when initialize section is used in a package body
+CB_SLASH: SLASH_END -> popMode;
+
 CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 CB_COMPOUND_TRIGGER:
@@ -471,7 +474,7 @@ CB_EXPR: 'end' (COMMENT_OR_WS+ NAME)? -> popMode; // including PostgreSQL atomic
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 // handle everything that has end keyword as nested code block
-CB_BEGIN_START: 'begin' {!isBeginOfInitializeSection()}? -> more, pushMode(CODE_BLOCK_MODE);
+CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
 CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
 CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
 CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
