@@ -178,14 +178,16 @@ CREATE_MATERIALIZED_VIEW_LOG:
 
 // hide keyword: with
 CREATE_OPERATOR:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'operator' MORE_TO_SQL_END -> channel(HIDDEN)
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+        'operator' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete (hides first command only)
 CREATE_RULE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-        COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'rule' MORE_TO_SQL_END -> channel(HIDDEN)
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+        'rule' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
@@ -259,59 +261,60 @@ COMMIT:
 
 // handles also functions with unquoted sql_body
 CREATE_FUNCTION_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)? 'function' COMMENT_OR_WS+ SQL_TEXT+?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'function' COMMENT_OR_WS+ SQL_TEXT+?
     'returns' MORE_TO_SQL_END
 ;
 
 CREATE_FUNCTION:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 // handles also package body
 CREATE_PACKAGE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 CREATE_PROCEDURE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     ('constraint' COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ SQL_TEXT+?
     'execute' COMMENT_OR_WS+ ('function' | 'procedure') MORE_TO_SQL_END
 ;
 
 CREATE_TRIGGER:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ ('or'
-    COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
