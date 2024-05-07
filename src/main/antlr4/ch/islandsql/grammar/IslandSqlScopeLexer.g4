@@ -35,6 +35,7 @@ fragment LABEL: '<<' WS? NAME WS? '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment OR_REPLACE: ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?;
+fragment NON_EDITIONABLE: (('editionable' | 'noneditionable') COMMENT_OR_WS+)?;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
 fragment MORE_TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
 fragment TO_SQL_END: (COMMENT_OR_WS+ SQL_TEXT*?)? SQL_END;
@@ -265,21 +266,18 @@ CREATE_FUNCTION_POSTGRESQL:
 ;
 
 CREATE_FUNCTION:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 // handles also package body
 CREATE_PACKAGE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 CREATE_PROCEDURE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
@@ -291,21 +289,18 @@ CREATE_TRIGGER_POSTGRESQL:
 ;
 
 CREATE_TRIGGER:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
