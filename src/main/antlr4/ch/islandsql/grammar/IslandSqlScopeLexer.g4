@@ -34,6 +34,7 @@ fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS? NAME WS? '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
 fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
+fragment OR_REPLACE: ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
 fragment MORE_TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
 fragment TO_SQL_END: (COMMENT_OR_WS+ SQL_TEXT*?)? SQL_END;
@@ -178,15 +179,13 @@ CREATE_MATERIALIZED_VIEW_LOG:
 
 // hide keyword: with
 CREATE_OPERATOR:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
         'operator' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete (hides first command only)
 CREATE_RULE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-        ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
         'rule' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
@@ -219,8 +218,7 @@ CREATE_USER:
 // hide keyword: with (everything up to the as keyword)
 // TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/35
 CREATE_VIEW:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (
          (('temp' 'orary'?) COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
        | (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)?
@@ -261,60 +259,52 @@ COMMIT:
 
 // handles also functions with unquoted sql_body
 CREATE_FUNCTION_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     'function' COMMENT_OR_WS+ SQL_TEXT+?
     'returns' MORE_TO_SQL_END
 ;
 
 CREATE_FUNCTION:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 // handles also package body
 CREATE_PACKAGE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
 
 CREATE_PROCEDURE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     ('constraint' COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ SQL_TEXT+?
     'execute' COMMENT_OR_WS+ ('function' | 'procedure') MORE_TO_SQL_END
 ;
 
 CREATE_TRIGGER:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
     (('editionable' | 'noneditionable') COMMENT_OR_WS+)?
     'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
 ;
