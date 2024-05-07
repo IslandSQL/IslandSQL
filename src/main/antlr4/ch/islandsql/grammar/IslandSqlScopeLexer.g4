@@ -364,7 +364,7 @@ SELECT:
 ;
 
 UPDATE:
-    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? 'set' (COMMENT_OR_WS|'(')+ SQL_TEXT+? SQL_END
+    'update' {isBeginOfStatement("update")}? COMMENT_OR_WS+ SQL_TEXT+? COMMENT_OR_WS+ 'set' (COMMENT_OR_WS|'(')+ SQL_TEXT+? SQL_END
 ;
 
 // part of select (OracleDB, PostgreSQL) and insert, update, delete (PostgreSQL)
