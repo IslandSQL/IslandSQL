@@ -437,7 +437,7 @@ WC_QUOTED_ID: QUOTED_ID -> more;
 WC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// PL/SQL and PL/pgsql Code Block Mode
+// PL/SQL Code Block Mode
 /*----------------------------------------------------------------------------*/
 
 mode CODE_BLOCK_MODE;
