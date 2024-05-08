@@ -27,7 +27,7 @@ import org.antlr.v4.runtime.misc.Interval;
  */
 public abstract class IslandSqlLexerBase extends Lexer {
     private final boolean scopeLexer;
-    private IslandSqlDialect dialect;
+    private IslandSqlDialect dialect = IslandSqlDialect.GENERIC;
     private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
     private String dollarIdentifier1;
