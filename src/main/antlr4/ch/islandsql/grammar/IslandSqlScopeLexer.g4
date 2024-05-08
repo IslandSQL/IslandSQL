@@ -86,7 +86,7 @@ STRING:
           'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
         | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
-        | '$$' .*? '$$'                                         // PostgreSQL dollar-quoted string constant
+        | '$$' .*? '$$' {!isInquiryDirective()}?                // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
         | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
         | 'n'? 'q' ['] '[' .*? ']' [']
