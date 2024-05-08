@@ -86,6 +86,25 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
+     * Determines if the start of the current lexer token looks like a PL/SQL inquiry directive.
+     *
+     * @return Returns true if the current texts starts with a PL/SQL inquiry directive.
+     */
+    public boolean isInquiryDirective() {
+        String text = getText().toLowerCase();
+        return (dialect == IslandSqlDialect.ORACLEDB
+                || text.startsWith("$$plsql_line")
+                || text.startsWith("$$plsql_unit") // handles also plsql_unit_owner, plsql_unit_type
+                || text.startsWith("$$plscope_settings")
+                || text.startsWith("$$plsql_ccflags")
+                || text.startsWith("$$plsql_code_type")
+                || text.startsWith("$$plsql_optimize_level")
+                || text.startsWith("$$plsql_warnings")
+                || text.startsWith("$$nls_length_semantics")
+                || text.startsWith("$$permit_92_wrap_format"));
+    }
+
+    /**
      * Saves the character at the previous position as "quoteDelimiter1".
      * Must be implemented as function returning a boolean value to ensure
      * it is executed.
