@@ -2146,7 +2146,7 @@ simpleCaseStatementWhenClause:
 
 searchedCaseStatement:
     K_CASE whens+=searchedCaseStatementWhenClause+
-    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName SEMI
+    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
 ;
 
 searchedCaseStatementWhenClause:
