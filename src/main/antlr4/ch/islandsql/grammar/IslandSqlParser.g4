@@ -2051,7 +2051,7 @@ procedureOption:
 ;
 
 accessibleByClause:
-    K_ACCESSIBLE K_BY LPAR accessors+=accessor RPAR
+    K_ACCESSIBLE K_BY LPAR accessors+=accessor (COMMA accessors+=accessor)* RPAR
 ;
 
 accessor:
