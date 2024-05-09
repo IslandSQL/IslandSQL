@@ -1954,7 +1954,7 @@ parallelEnableClause:
             LPAR K_PARTITION arg=sqlName K_BY
                 (
                       K_ANY
-                    | (K_HASH | K_RANGE) LPAR columns+=sqlName (COMMA columns+=sqlName)* streamingClause? RPAR
+                    | (K_HASH | K_RANGE) LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR streamingClause?
                     | K_VALUE LPAR columns+=sqlName RPAR
                 )
             RPAR
