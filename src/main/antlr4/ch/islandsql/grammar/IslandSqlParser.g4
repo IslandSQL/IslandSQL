@@ -2055,7 +2055,7 @@ accessibleByClause:
 ;
 
 accessor:
-    unitKind? (schema=sqlName PERIOD) unitName=sqlName
+    unitKind? (schema=sqlName PERIOD)? unitName=sqlName
 ;
 
 unitKind:
