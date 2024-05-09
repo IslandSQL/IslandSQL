@@ -1966,7 +1966,7 @@ streamingClause:
 ;
 
 resultCacheClause:
-    K_RESULT_CACHE (K_RELIES_ON LPAR dataSources+=qualifiedName (COMMA dataSources+=qualifiedName)* RPAR)?
+    K_RESULT_CACHE (K_RELIES_ON LPAR (dataSources+=qualifiedName (COMMA dataSources+=qualifiedName)*)? RPAR)?
 ;
 
 functionHeading:
