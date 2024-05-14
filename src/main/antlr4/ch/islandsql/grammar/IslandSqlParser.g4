@@ -1857,8 +1857,9 @@ plsqlDataType:
     | dataType                  # simplePlsqlDataType
 ;
 
+// wrong documenation in 23.4: "null" is valid besides "not null"
 varrayTypeDef:
-    (K_VARRAY | K_VARYING K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT? K_NULL)?
+    (K_VARRAY | K_VARYING? K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
 
 nestedTableTypeDef:
