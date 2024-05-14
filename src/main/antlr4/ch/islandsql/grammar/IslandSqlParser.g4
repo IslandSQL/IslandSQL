@@ -1845,8 +1845,9 @@ collectionTypeDefinition:
     ) SEMI
 ;
 
+// wrong documenation in 23.4: "null" is valid besides "not null"
 assocArrayTypeDef:
-    K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)? K_INDEX K_BY indexType=dataType
+    K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)? K_INDEX K_BY indexType=plsqlDataType
 ;
 
 plsqlDataType:
