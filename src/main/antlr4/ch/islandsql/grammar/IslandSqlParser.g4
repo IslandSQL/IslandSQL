@@ -1862,6 +1862,7 @@ varrayTypeDef:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
 
+// wrong documenation in 23.4: "null" is valid besides "not null"
 nestedTableTypeDef:
     K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
@@ -4106,7 +4107,7 @@ positionalChoiceList:
 ;
 
 sequenceIteratorChoice:
-    K_FOR iteratorName=sqlName K_SEQUENCE EQUALS_GT expr=expression
+    K_FOR iterator K_SEQUENCE EQUALS_GT expr=expression
 ;
 
 explicitChoiceList:
@@ -4125,11 +4126,11 @@ indexedChoiceList:
 ;
 
 basicIteratorChoice:
-    K_FOR iteratorName=sqlName EQUALS_GT expr=expression
+    K_FOR iterator EQUALS_GT expr=expression
 ;
 
 indexIteratorChoice:
-    K_FOR iteratorName=sqlName K_INDEX EQUALS_GT expr=expression
+    K_FOR iterator K_INDEX indexExpr=expression EQUALS_GT valueExpr=expression
 ;
 
 plsqlMultiDimensionalExpression:
