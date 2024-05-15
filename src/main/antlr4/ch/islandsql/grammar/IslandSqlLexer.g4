@@ -738,6 +738,7 @@ AMP_LT_VERBAR: '&<|';
 AMP_GT: '&>';
 AMP_SOL_AMP: '&/&';
 AST: '*';
+AST_AST: '**';
 BSOL: '\\';
 COLON: ':';
 COLON_EQUALS: ':=';    // no WS allowed between chars in field_definition of OracleDB
