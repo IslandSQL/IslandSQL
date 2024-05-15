@@ -2798,7 +2798,12 @@ expression:
                    | right=expression
                 )
         )                                                       # datetimeExpression            // precedence 6
-    | left=expression operator=HAT right=expression             # exponentiationExpression      // precedence 7, PostgreSQL
+    | left=expression
+        (
+              operator=HAT      // PostgreSQL
+            | operator=AST_AST  // OracleDB (PL/SQL only)
+        )
+        right=expression                                        # exponentiationExpression      // precedence 7, PostgreSQL
     | left=expression operator=AST right=expression             # multiplicationExpression      // precedence 8
     | left=expression operator=SOL right=expression             # divisionExpression            // precedence 8
     | left=expression operator=PERCNT right=expression          # moduloExpression              // precedence 8, PostgreSQL
