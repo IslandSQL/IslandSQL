@@ -2246,6 +2246,7 @@ predClauseSeq:
     (K_WHILE whileExpr=expression)? (K_WHEN whenExpr=expression)?
 ;
 
+// no space allowed between periods, however we allow it to avoid conflict with substitugion variable ending on period
 steppedControl:
     lowerBound=expression PERIOD PERIOD upperBound=expression (K_BY step=expression)?
 ;
@@ -2282,6 +2283,7 @@ forallStatement:
     K_FORALL index=expression K_IN boundsClause (K_SAVE K_EXCEPTIONS)? stmt=forallDmlStatement SEMI
 ;
 
+// no space allowed between periods, however we allow it to avoid conflict with substitugion variable ending on period
 boundsClause:
       lowerBound=expression PERIOD PERIOD upperBound=expression                                                 # simpleBoundClause
     | K_INDICES K_OF collection=qualifiedName (K_BETWEEN lowerBound=expression K_AND upperBound=expression)?    # indicesBoundClause
@@ -5126,6 +5128,9 @@ psqlVariable:
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
+// we have to distinguish between period as end of a substition variable and
+// a subsequent period as identifier separator, therefere we must not introduce
+// a dedicated PL/SQL range operator
 substitionVariable:
     (AMP|AMP_AMP) name=substitionVariableName period=PERIOD?
 ;
