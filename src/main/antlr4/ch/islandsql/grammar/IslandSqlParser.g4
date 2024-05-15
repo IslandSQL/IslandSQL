@@ -706,7 +706,7 @@ dmlTableExpressionClause:
     | expr=expression
 ;
 
-// introduced in OracleDB 23ai, re-use grammar in select statement
+// introduced in OracleDB 23.2, re-use grammar in select statement
 // it's similar to the fromClause, the only difference is that you can use K_USING instead of K_FROM
 fromUsingClause:
     (K_FROM | K_USING) items+=fromItem (COMMA items+=fromItem)*
@@ -720,7 +720,7 @@ returningClause:
     )?  // required in OracleDB but not allowed in PostgreSQL
 ;
 
-// OLD and NEW are introduced in OracleDB 23ai
+// OLD and NEW are introduced in OracleDB 23.2
 sourceItem:
     (K_OLD | K_NEW)? expr=expression (K_AS? alias=sqlName)? // PostgreSQL allows to define an alias
 ;
@@ -1060,7 +1060,7 @@ queryBlock:
     queryBlockSetOperator?
     selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
     (intoClause | bulkCollectIntoClause | postgresqlIntoClause)? // in PL/SQL only
-    fromClause? // starting with OracleDB 23ai the from clause is optional
+    fromClause? // starting with OracleDB 23.2 the from clause is optional
     whereClause?
     hierarchicalQueryClause?
     groupByClause?
@@ -1434,13 +1434,13 @@ rowsFromFunction:
     expr=functionExpression (K_AS LPAR cdefs+=postgresqlColumnDefinition (COMMA cdfs+=postgresqlColumnDefinition)* RPAR)?
 ;
 
-// grammar definition in SQL Language Reference 19c/21c/23ai is wrong, added LPAR/RPAR
+// grammar definition in SQL Language Reference 19c/21c/23.3 is wrong, added LPAR/RPAR
 modifiedExternalTable:
     K_EXTERNAL K_MODIFY LPAR properties+=modifyExternalTableProperties+ RPAR
 ;
 
 // implemented as alternatives, all are technically optional
-// grammar definition in SQL Language Reference 19c/21c/23ai is wrong regarding "access parameters"
+// grammar definition in SQL Language Reference 19c/21c/23.3 is wrong regarding "access parameters"
 // it the similar as in externalTableDataProps. We use it here with the same restrictions.
 modifyExternalTableProperties:
       K_DEFAULT K_DIRECTORY dir=sqlName                     # defaultDirectoryModifyExternalTableProperty
@@ -2487,7 +2487,7 @@ commitStatement:
     commit sqlEnd
 ;
 
-// undocumented in 23ai: write options can have any order, force options, force with comment
+// undocumented in 23.4: write options can have any order, force options, force with comment
 commit:
     K_COMMIT
     (
@@ -2814,7 +2814,7 @@ expression:
         (K_ALL|K_DISTINCT)? right=expression                    # multisetExpression
     | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
     | expr=sqlName                                              # simpleExpressionName
-    // starting with 23ai a condition is treated as a synonym to an expression
+    // starting with 23.2 a condition is treated as a synonym to an expression
     | operator=K_NOT cond=expression                            # notCondition
     | left=expression operator=K_AND right=expression           # logicalCondition
     | left=expression operator=K_OR right=expression            # logicalCondition
@@ -4232,7 +4232,7 @@ windowingClause:
         K_EXCLUDE
         (
               excludeCurrentRow=K_CURRENT K_ROW
-            | excludeGroup=K_GROUP // wrong documentation in OracleDB 23ai (groups instead of group)
+            | excludeGroup=K_GROUP // wrong documentation in OracleDB 23.3 (groups instead of group)
             | excludeTies=K_TIES
             | excludeNoOthers=K_NO K_OTHERS
         )
@@ -4329,7 +4329,7 @@ postgresqlArrayElement:
 // Condition
 /*----------------------------------------------------------------------------*/
 
-// starting with 23ai a condition is treated as a synonym to an expression
+// starting with 23.2 a condition is treated as a synonym to an expression
 // therefore condition is implementend in expression
 condition:
       cond=expression
