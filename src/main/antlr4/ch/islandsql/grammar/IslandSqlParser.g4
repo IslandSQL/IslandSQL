@@ -530,6 +530,7 @@ inheritanceClauseItem:
     | K_NOT? K_INSTANTIABLE     # instantiableInheritanceClauseItem
 ;
 
+// not documented in 23.4: optionality of "not"
 varayTypeSpec:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR sizeLimit=expression RPAR K_OF
     (
@@ -538,6 +539,7 @@ varayTypeSpec:
     )
 ;
 
+// not documented in 23.4: optionality of "not"
 nestedTableTypeSpec:
     K_TABLE K_OF
     (
@@ -1845,7 +1847,7 @@ collectionTypeDefinition:
     ) SEMI
 ;
 
-// wrong documenation in 23.4: "null" is valid besides "not null"
+// not documented in 23.4: optionality of "not"
 assocArrayTypeDef:
     K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)? K_INDEX K_BY indexType=plsqlDataType
 ;
@@ -1857,12 +1859,12 @@ plsqlDataType:
     | dataType                  # simplePlsqlDataType
 ;
 
-// wrong documenation in 23.4: "null" is valid besides "not null"
+// not documented in 23.4: optionality of "not"
 varrayTypeDef:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR size=expression RPAR K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
 
-// wrong documenation in 23.4: "null" is valid besides "not null"
+// not documented in 23.4: optionality of "not"
 nestedTableTypeDef:
     K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)?
 ;
@@ -1874,6 +1876,7 @@ recordTypeDefinition:
 ;
 
 // no space allowed between ':' and '=' in OracleDB 23.3
+// not documented in 23.4: optionality of "not"
 fieldDefinition:
     field=sqlName type=dataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
 ;
@@ -1917,10 +1920,12 @@ itemDeclaration:
     | variableDeclaration
 ;
 
+// not documented in 23.4: optionality of "not"
 constantDeclaration:
     constant=sqlName K_CONSTANT type=dataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
 ;
 
+// not documented in 23.4: optionality of "not"
 variableDeclaration:
     variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)? SEMI
 ;
