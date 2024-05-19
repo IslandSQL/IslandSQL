@@ -2172,7 +2172,7 @@ continueStatement:
 // wrong documentation in 23.3 regarding parentheses for cursor parameters
 cursorForLoopStatement:
     K_FOR record=sqlName K_IN (
-          K_CURSOR LPAR params+=cursorParameterDec (COMMA params+=cursorParameterDec)* RPAR
+          cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
     ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
