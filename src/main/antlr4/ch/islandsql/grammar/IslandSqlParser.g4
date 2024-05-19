@@ -1878,7 +1878,7 @@ recordTypeDefinition:
 // no space allowed between ':' and '=' in OracleDB 23.3
 // not documented in 23.4: optionality of "not"
 fieldDefinition:
-    field=sqlName type=dataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
+    field=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)?
 ;
 
 refCursorTypeDefinition:
