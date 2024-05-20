@@ -2004,13 +2004,25 @@ javaDeclaration:
     K_LANGUAGE K_JAVA K_NAME javaName=string
 ;
 
+// code is valid for 23.2 onwards (quoted-strings in 23.2, 23.3, unquoted strings, PostgreSQL strings in 23.4 onwards)
+// scriptBody is valid for 23.4 onwards
 javascriptDeclaration:
     K_MLE
         (
               K_MODULE (schema=sqlName PERIOD)? moduleName=sqlName
                 (K_ENV (envSchema=sqlName PERIOD)? envName=sqlName)? K_SIGNATURE signature=string
-            | K_LANGUAGE languageName=sqlName code=string
+            | K_LANGUAGE languageName=sqlName (code=string|scriptBody)
         )
+;
+
+// new syntax introduced in 23.4 (breaking change)
+scriptBody:
+      LSQB+ script=.*? RSQB+
+    | LPAR+ script=.*? RPAR+
+    | LCUB+ script=.*? RCUB+
+    | (LT_LT|LT)+ script=.*? (GT_GT|GT)+
+    | sqlName script=.*? sqlName
+    | script=.*? // handles all other kind of delimiters such as ~, @, £, etc.
 ;
 
 cDeclaration:
