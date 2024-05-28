@@ -4790,6 +4790,7 @@ keywordAsId:
     | K_MISMATCH
     | K_MISSING
     | K_MLE
+    | K_MOD
     | K_MODE
     | K_MODEL
     | K_MODIFY

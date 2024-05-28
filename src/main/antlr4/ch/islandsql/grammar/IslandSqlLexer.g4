@@ -401,6 +401,7 @@ K_MINUTE: 'minute';
 K_MISMATCH: 'mismatch';
 K_MISSING: 'missing';
 K_MLE: 'mle';
+K_MOD: 'mod';
 K_MODE: 'mode';
 K_MODEL: 'model';
 K_MODIFY: 'modify';
