@@ -2821,6 +2821,7 @@ expression:
     | left=expression operator=AST right=expression             # multiplicationExpression      // precedence 8
     | left=expression operator=SOL right=expression             # divisionExpression            // precedence 8
     | left=expression operator=PERCNT right=expression          # moduloExpression              // precedence 8, PostgreSQL
+    | left=expression operator=K_MOD right=expression           # moduloExpression              // precedence 8, PL/SQL
     | left=expression operator=PLUS right=expression            # additionExpression            // precedence 9
     | left=expression operator=MINUS right=expression           # substractionExpression        // precedence 9
     | left=expression
