@@ -2275,7 +2275,18 @@ valuesOfControl:
     K_VALUES K_OF
     (
           expr=expression
-        | LPAR (stmt=sqlStatement | dynStmt=dynamicSql) RPAR
+        | LPAR (stmt=staticSql | dynStmt=dynamicSql) RPAR
+    )
+;
+
+// artifical clause, not all unterminated SQL statements are valid here
+staticSql:
+    (
+          select
+        | insert
+        | update
+        | delete
+        | merge
     )
 ;
 
