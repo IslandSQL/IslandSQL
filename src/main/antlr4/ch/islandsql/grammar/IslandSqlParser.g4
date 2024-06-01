@@ -2233,7 +2233,11 @@ iterator:
 ;
 
 iterandDecl:
-    identifier=sqlName (K_MUTABLE | K_IMMUTABLE)? dataType?
+    identifier=sqlName (K_MUTABLE | K_IMMUTABLE)? constrainedType?
+;
+
+constrainedType:
+    dataType (K_NOT? K_NULL)?
 ;
 
 iterationCtlSeq:
