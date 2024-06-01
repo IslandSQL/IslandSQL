@@ -3568,8 +3568,13 @@ jsonTableOnEmptyClause:
     (K_ERROR|K_NULL) K_ON K_EMPTY
 ;
 
+// undocumented in 23.4: parenthesis around condition are documented, but not necessary
 jsonColumnsClause:
-    K_COLUMNS LPAR columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)* RPAR
+    K_COLUMNS
+    (
+          LPAR columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)* RPAR
+        | columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)*
+    )
 ;
 
 jsonColumnDefinition:
