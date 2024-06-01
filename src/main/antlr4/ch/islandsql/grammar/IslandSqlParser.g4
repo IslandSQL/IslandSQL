@@ -2295,15 +2295,24 @@ dynamicSql:
 ;
 
 indicesOfControl:
-    K_INDICES K_OF expr=expression
+    K_INDICES K_OF
+    (
+          expr=expression
+        | LPAR (stmt=staticSql | dynStmt=dynamicSql) RPAR
+    )
+
 ;
 
 pairsOfControl:
-    K_PAIRS K_OF expr=expression
+    K_PAIRS K_OF
+    (
+          expr=expression
+        | LPAR (stmt=staticSql | dynStmt=dynamicSql) RPAR
+    )
 ;
 
 cursorIterationControl:
-    LPAR expr=expression RPAR
+    LPAR (expr=expression | stmt=staticSql | dynStmt=dynamicSql) RPAR
 ;
 
 forallStatement:
