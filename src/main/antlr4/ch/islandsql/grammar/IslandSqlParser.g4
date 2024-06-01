@@ -2354,8 +2354,9 @@ nullStatement:
     K_NULL SEMI
 ;
 
+// undocumented in 23.3: parenthesis are allowed without parameters
 openStatement:
-    K_OPEN cursor=qualifiedName (LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR)? SEMI
+    K_OPEN cursor=qualifiedName (LPAR (params+=functionParameter (COMMA params+=functionParameter)*)? RPAR)? SEMI
 ;
 
 openForStatement:
