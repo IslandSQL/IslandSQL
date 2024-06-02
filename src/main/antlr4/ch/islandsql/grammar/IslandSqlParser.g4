@@ -1927,8 +1927,9 @@ constantDeclaration:
 ;
 
 // not documented in 23.4: optionality of "not"
+// not documented in 23.4: use of null without assignment
 variableDeclaration:
-    variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression)? SEMI
+    variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression | K_NULL)? SEMI
 ;
 
 functionDeclaration:
@@ -2432,6 +2433,7 @@ inlinePragma:
 ;
 
 // simplified: subprogram, method and DEFAULT handled as sqlName
+// wrong documentation in 23.4: optionality of comma between pragma states
 restrictReferencesPragma:
     K_PRAGMA K_RESTRICT_REFERENCES LPAR name=sqlName
     COMMA states+=pragmaState (COMMA states+=pragmaState)* RPAR
