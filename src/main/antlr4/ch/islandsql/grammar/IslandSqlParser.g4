@@ -317,7 +317,7 @@ trigger:
 
 triggerBody:
       plsqlBlock
-    | K_CALL routineClause SEMI
+    | K_CALL routineClause
 ;
 
 routineClause:
