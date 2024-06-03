@@ -449,7 +449,7 @@ plsqlTypeSource:
 plsqlTypeOption:
       K_FORCE
     | K_OID objectIdentifier=STRING
-    | shareClause
+    | sharingClause
     | defaultCollationClause
     | invokerRightsclause
     | accessibleByClause
