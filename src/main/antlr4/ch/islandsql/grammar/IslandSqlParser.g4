@@ -358,10 +358,7 @@ tpsBody:
 
 systemTrigger:
     (K_BEFORE | K_AFTER | K_INSTEAD K_OF)
-    (
-          ddlEvents+=ddlEvent (K_OR ddlEvents+=ddlEvent)*
-        | dbEvents+=databaseEvent (K_OR dbEvents+=databaseEvent)*
-    )
+    (ddlEvents+=ddlEvent | dbEvents+=databaseEvent) (K_OR (ddlEvents+=ddlEvent | dbEvents+=databaseEvent))*
     K_ON
     (
           (schema=sqlName PERIOD)? K_SCHEMA
