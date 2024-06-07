@@ -1031,7 +1031,6 @@ mergeInsert:
 
 selectStatement:
       select sqlEnd
-    | LPAR select RPAR // in cursor for loop - TODO: remove with PL/SQL block support, see https://github.com/IslandSQL/IslandSQL/issues/29
 ;
 
 select:
