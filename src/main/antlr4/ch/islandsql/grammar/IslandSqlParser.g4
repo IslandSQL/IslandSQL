@@ -136,7 +136,7 @@ argmode:
 
 postgresqlFunctionOption:
       K_LANGUAGE languageName=sqlName
-    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)
+    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_IMMUTABLE
     | K_STABLE
     | K_VOLATILE
