@@ -161,7 +161,8 @@ transformItem:
 ;
 
 sqlFunctionBody:
-    K_RETURN expr=expression
+      K_RETURN expr=expression
+    | sqlProcedureBody
 ;
 
 /*----------------------------------------------------------------------------*/
