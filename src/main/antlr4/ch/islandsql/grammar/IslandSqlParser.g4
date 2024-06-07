@@ -107,13 +107,31 @@ sqlMacroClause:
 
 postgresqlFunctionSource:
     (schema=sqlName PERIOD)? functionName=sqlName
-        (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
-        K_RETURNS
+        (LPAR parameters+=postgresqlParameterDeclaration (COMMA parameters+=postgresqlParameterDeclaration)* RPAR)?
         (
-              K_SETOF? (returnSchema=sqlName PERIOD)? returnType=plsqlDataType
-            | K_TABLE LPAR columns+=postgresqlColumnDefinition (COMMA columns+=postgresqlColumnDefinition)* RPAR
-        )
+            K_RETURNS
+            (
+                  K_SETOF? (returnSchema=sqlName PERIOD)? returnType=plsqlDataType
+                | K_TABLE LPAR columns+=postgresqlColumnDefinition (COMMA columns+=postgresqlColumnDefinition)* RPAR
+            )
+        )?
         postgresqlFunctionOption+
+;
+
+postgresqlParameterDeclaration:
+    (
+          argmode parameter=sqlName? type=plsqlDataType
+        | parameter=sqlName argmode? type=plsqlDataType
+        | type=plsqlDataType
+    )
+    ((K_DEFAULT | EQUALS) expr=expression)?
+;
+
+argmode:
+      K_IN
+    | K_OUT
+    | K_INOUT
+    | K_VARIADIC
 ;
 
 postgresqlFunctionOption:
