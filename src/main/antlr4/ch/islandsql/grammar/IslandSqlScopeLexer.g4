@@ -258,13 +258,6 @@ COMMIT:
     'commit' {isBeginOfStatement("commit")}? TO_SQL_END
 ;
 
-// handles also functions with unquoted sql_body
-CREATE_FUNCTION_POSTGRESQL:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    'function' COMMENT_OR_WS+ SQL_TEXT+?
-    'returns' MORE_TO_SQL_END
-;
-
 CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
@@ -380,6 +373,7 @@ UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_O
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
 UNIT_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
+UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
