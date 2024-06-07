@@ -107,7 +107,7 @@ sqlMacroClause:
 
 postgresqlFunctionSource:
     (schema=sqlName PERIOD)? functionName=sqlName
-        (LPAR parameters+=postgresqlParameterDeclaration (COMMA parameters+=postgresqlParameterDeclaration)* RPAR)?
+        LPAR parameters+=postgresqlParameterDeclaration (COMMA parameters+=postgresqlParameterDeclaration)* RPAR
         (
             K_RETURNS
             (
