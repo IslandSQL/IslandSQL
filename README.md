@@ -27,16 +27,23 @@ The HTML reference shows the latest version of the document. However, the latest
 
 The current islands of interests are:
 
-| Statement      | Notes                                                       |
-|----------------|-------------------------------------------------------------|
-| `call`         | complete statement                                          |
-| `delete`       | complete statement                                          |
-| `explain plan` | complete statement                                          |
-| `insert`       | complete statement                                          |
-| `lock table`   | complete statement                                          |
-| `merge`        | complete statement                                          |
-| `select`       | complete statement (embedded PL/SQL only as list of tokens) |
-| `update`       | complete statement                                          |
+| Statement             | Notes                                                    |
+|-----------------------|----------------------------------------------------------|
+| `call`                | complete statement                                       |
+| `create function`     | complete statement (PostgreSQL implementation as string) |
+| `create package`      | complete statement                                       |
+| `create package body` | complete statement                                       |
+| `create procedure`    | complete statement (PostgreSQL implementation as string) |
+| `create trigger`      | complete statement (PostgreSQL implementation as string) |
+| `create type`         | complete statement                                       |
+| `create type body`    | complete statement                                       |
+| `delete`              | complete statement                                       |
+| `explain plan`        | complete statement                                       |
+| `insert`              | complete statement                                       |
+| `lock table`          | complete statement                                       |
+| `merge`               | complete statement                                       |
+| `select`              | complete statement                                       |
+| `update`              | complete statement                                       |
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
 
