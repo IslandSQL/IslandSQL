@@ -4725,6 +4725,7 @@ keywordAsId:
     | K_INITIALLY
     | K_INLINE
     | K_INNER
+    | K_INOUT
     | K_INPUT
     | K_INSERT
     | K_INSTANTIABLE
@@ -5099,6 +5100,7 @@ keywordAsId:
     | K_VARBIT
     | K_VARCHAR2
     | K_VARCHAR
+    | K_VARIADIC
     | K_VARRAY
     | K_VARYING
     | K_VERBOSE
