@@ -63,7 +63,7 @@ createFunctionStatement:
 
 createFunction:
     K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_FUNCTION
-    (K_IF K_NOT K_EXISTS)? (plsqlFunctionSource | postgresFunctionSource)
+    (K_IF K_NOT K_EXISTS)? (plsqlFunctionSource | postgresqlFunctionSource)
 ;
 
 // supporting function without body, e.g. when using aggregate_clause
@@ -105,7 +105,7 @@ sqlMacroClause:
     K_SQL_MACRO (LPAR (K_TYPE EQUALS_GT)? (K_SCALAR | K_TABLE)  RPAR)?
 ;
 
-postgresFunctionSource:
+postgresqlFunctionSource:
     (schema=sqlName PERIOD)? functionName=sqlName
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         K_RETURNS
