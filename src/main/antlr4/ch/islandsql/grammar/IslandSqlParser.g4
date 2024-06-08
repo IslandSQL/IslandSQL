@@ -245,7 +245,7 @@ plsqlProcedureOption:
 
 postgresqlProcedureSource:
     (schema=sqlName PERIOD)? procedureName=sqlName
-        (LPAR parameters+=postgresqlParameterDeclaration (COMMA parameters+=postgresqlParameterDeclaration)* RPAR)?
+        LPAR (parameters+=postgresqlParameterDeclaration (COMMA parameters+=postgresqlParameterDeclaration)*)? RPAR
         postgresqlProcedureOption+
 ;
 
