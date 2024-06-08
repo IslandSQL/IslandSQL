@@ -420,8 +420,9 @@ databaseEvent:
 ;
 
 postgresqlTriggerSource:
-    triggerName=sqlName (K_BEFORE | K_AFTER | K_INSTEAD K_OF)
-    events+=postgresqlTriggerEvent+ K_ON  (tableSchema=sqlName PERIOD)? tableName=sqlName
+    (triggerSchema=sqlName PERIOD)? triggerName=sqlName (K_BEFORE | K_AFTER | K_INSTEAD K_OF)
+    events+=postgresqlTriggerEvent (K_OR events+=postgresqlTriggerEvent)*
+    K_ON  (tableSchema=sqlName PERIOD)? tableName=sqlName
     postgresqlTriggerOption* K_EXECUTE (K_FUNCTION | K_PROCEDURE)
     (functionSchema=sqlName PERIOD)? functionName=sqlName
     LPAR (args+=expression (COMMA args+=expression)*)? RPAR
