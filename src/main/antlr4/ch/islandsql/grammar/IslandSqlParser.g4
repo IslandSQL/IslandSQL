@@ -251,7 +251,7 @@ postgresqlProcedureSource:
 
 postgresqlProcedureOption:
       K_LANGUAGE languageName=sqlName
-    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)
+    | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
     | K_AS definition=expression
