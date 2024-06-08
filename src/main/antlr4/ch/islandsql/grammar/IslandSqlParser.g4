@@ -444,7 +444,7 @@ postgresqlTriggerOption:
 ;
 
 postgresqlReferencing:
-    (K_OLD | K_NEW) K_AS? transitionRelationName=sqlName
+    (K_OLD | K_NEW) K_TABLE K_AS? transitionRelationName=sqlName
 ;
 
 /*----------------------------------------------------------------------------*/
