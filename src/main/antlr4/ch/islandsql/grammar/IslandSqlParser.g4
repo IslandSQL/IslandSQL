@@ -2648,7 +2648,7 @@ setTransaction:
     (K_SESSION K_CHARACTERISTICS K_AS)? // PostgreSQL
     K_TRANSACTION
     (
-          transactionMode (K_NAME name=expression)? // OracleDB: name
+          modes+=transactionMode (COMMA modes+=transactionMode)* (K_NAME name=expression)? // OracleDB: name
         | K_SNAPSHOT snapshotId=expression // PostgreSQL: accepted also for "set session characteristics as"
         | K_USE K_ROLLBACK K_SEGMENT rollbackSegment=sqlName (K_NAME name=expression)? // OracleDB
         | K_NAME name=expression // OracleDB
