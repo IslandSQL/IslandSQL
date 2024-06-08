@@ -153,16 +153,16 @@ postgresqlFunctionOption:
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
     | K_AS definition=expression
     | K_AS objFile=expression COMMA linkSymbol=expression
-    | sqlFunctionBody
+    | sqlBody
 ;
 
 transformItem:
     K_FOR K_TYPE (typeSchema=sqlName PERIOD)? typeName=dataType
 ;
 
-sqlFunctionBody:
+sqlBody:
       K_RETURN expr=expression
-    | sqlProcedureBody
+    | atomicBlock
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -256,21 +256,22 @@ postgresqlProcedureOption:
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
     | K_AS definition=expression
     | K_AS objFile=expression COMMA linkSymbol=expression
-    | sqlProcedureBody
+    | atomicBlock // subset of sql_body used in PostgreSQL function
 ;
 
-sqlProcedureBody:
+atomicBlock:
     K_BEGIN K_ATOMIC
-        stmts+=sqlProcedureStatement+
+        stmts+=atomicStatement+
     K_END
 ;
 
-sqlProcedureStatement:
+atomicStatement:
       statement
-    | otherProcedureStatement
+    | otherAtomicStatement
 ;
 
-otherProcedureStatement:
+// SQL statement not fully parsed by this grammar
+otherAtomicStatement:
     ~SEMI+ SEMI
 ;
 
