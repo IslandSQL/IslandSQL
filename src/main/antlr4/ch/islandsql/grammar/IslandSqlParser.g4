@@ -585,7 +585,7 @@ postgresqlTypeSource:
 ;
 
 postgresqlType:
-    K_AS LPAR attributes+=postgresqlAttribute (COMMA attributes+=postgresqlAttribute)* RPAR
+    K_AS LPAR (attributes+=postgresqlAttribute (COMMA attributes+=postgresqlAttribute)*)? RPAR
 ;
 
 postgresqlAttribute:
