@@ -27,23 +27,30 @@ The HTML reference shows the latest version of the document. However, the latest
 
 The current islands of interests are:
 
-| Statement             | Notes                                                    |
-|-----------------------|----------------------------------------------------------|
-| `call`                | complete statement                                       |
-| `create function`     | complete statement (PostgreSQL implementation as string) |
-| `create package`      | complete statement                                       |
-| `create package body` | complete statement                                       |
-| `create procedure`    | complete statement (PostgreSQL implementation as string) |
-| `create trigger`      | complete statement (PostgreSQL implementation as string) |
-| `create type`         | complete statement                                       |
-| `create type body`    | complete statement                                       |
-| `delete`              | complete statement                                       |
-| `explain plan`        | complete statement                                       |
-| `insert`              | complete statement                                       |
-| `lock table`          | complete statement                                       |
-| `merge`               | complete statement                                       |
-| `select`              | complete statement                                       |
-| `update`              | complete statement                                       |
+| Type  | Statement                |      OracleDB      |     PostgreSQL     |
+|-------|--------------------------|:------------------:|:------------------:|
+| DDL   | `create function`        | :white_check_mark: | :white_check_mark: |
+|       | `create package`         | :white_check_mark: |        n/a         |
+|       | `create package body`    | :white_check_mark: |        n/a         |
+|       | `create procedure`       | :white_check_mark: | :white_check_mark: |
+|       | `create trigger`         | :white_check_mark: | :white_check_mark: |
+|       | `create type`            | :white_check_mark: | :white_check_mark: |
+|       | `create type body`       | :white_check_mark: |        n/a         |
+| DML   | `call`                   | :white_check_mark: | :white_check_mark: |
+|       | `delete`                 | :white_check_mark: | :white_check_mark: |
+|       | `explain plan`           | :white_check_mark: | :white_check_mark: |
+|       | `insert`                 | :white_check_mark: | :white_check_mark: |
+|       | `lock table`             | :white_check_mark: | :white_check_mark: |
+|       | `merge`                  | :white_check_mark: | :white_check_mark: |
+|       | `select`                 | :white_check_mark: | :white_check_mark: |
+|       | `update`                 | :white_check_mark: | :white_check_mark: |
+| TCL   | `begin`                  |        n/a         | :white_check_mark: |
+|       | `commit`                 | :white_check_mark: | :white_check_mark: |
+|       | `rollback`               | :white_check_mark: | :white_check_mark: |
+|       | `savepoint`              | :white_check_mark: | :white_check_mark: |
+|       | `set constraints`        | :white_check_mark: | :white_check_mark: |
+|       | `set transaction`        | :white_check_mark: | :white_check_mark: |
+| other | `anonymous PL/SQL block` | :white_check_mark: |        n/a         |
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
 
