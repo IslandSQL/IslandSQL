@@ -2275,7 +2275,6 @@ iterationControl:
     | cursorIterationControl
 ;
 
-// TODO: check optionality
 predClauseSeq:
     (K_WHILE whileExpr=expression)? (K_WHEN whenExpr=expression)?
 ;
