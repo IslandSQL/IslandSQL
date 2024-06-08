@@ -593,7 +593,7 @@ postgresqlAttribute:
 ;
 
 postgresqlEnumType:
-    K_AS K_ENUM LPAR labels+=STRING (COMMA labels+=STRING)* RPAR
+    K_AS K_ENUM LPAR (labels+=STRING (COMMA labels+=STRING)*)? RPAR
 ;
 
 // simplified (making all options optional even if subtype is mandatory) to support arbitrary order
