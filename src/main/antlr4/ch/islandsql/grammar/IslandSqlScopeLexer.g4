@@ -250,6 +250,15 @@ REVOKE:
 // Islands of interest on DEFAULT_CHANNEL
 /*----------------------------------------------------------------------------*/
 
+BEGIN:
+    'begin' {isBeginOfStatement("begin")}?
+    (
+          COMMENT_OR_WS* SQL_END
+        | COMMENT_OR_WS+ ('work'|'transaction') TO_SQL_END
+        | COMMENT_OR_WS+ ('isolation'|'read'|'not'|'deferrable') TO_SQL_END
+    )
+;
+
 CALL:
     'call' {isBeginOfStatement("call")}? MORE_TO_SQL_END
 ;
