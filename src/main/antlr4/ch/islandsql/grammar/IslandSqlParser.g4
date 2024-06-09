@@ -2944,6 +2944,10 @@ expression:
     | expr=expression K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR              # isOfTypeCondition
+    | left=expression
+        K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
+    | left=expression
+        K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
 ;
 
 intervalExpression:
@@ -4456,6 +4460,8 @@ danglingCondition:
     | K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeConditionDangling
+    | K_IS K_NOT? K_SOURCE K_OF right=expression        # sourcePredicateDangling
+    | K_IS K_NOT? K_DESTINATION K_OF right=expression   # destinationPredicateDangling
 ;
 
 jsonPassingClause:
