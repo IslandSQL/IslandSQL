@@ -2039,13 +2039,9 @@ javascriptDeclaration:
 ;
 
 // new syntax introduced in 23.4 (breaking change)
+// script contains also the start and end delimiters, e.g. {{, }}
 scriptBody:
-      LSQB+ script=.*? RSQB+
-    | LPAR+ script=.*? RPAR+
-    | LCUB+ script=.*? RCUB+
-    | (LT_LT|LT)+ script=.*? (GT_GT|GT)+
-    | sqlName script=.*? sqlName
-    | script=.*? // handles all other kind of delimiters such as ~, @, £, etc.
+    script=.*? // handles all kind of delimiters
 ;
 
 cDeclaration:
