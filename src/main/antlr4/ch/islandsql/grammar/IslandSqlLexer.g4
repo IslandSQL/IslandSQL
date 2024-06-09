@@ -688,6 +688,7 @@ K_VARIADIC: 'variadic';
 K_VARRAY: 'varray';
 K_VARYING: 'varying';
 K_VECTOR: 'vector';
+K_VECTOR_SERIALIZE: 'vector_serialize';
 K_VERBOSE: 'verbose';
 K_VERSION: 'version';
 K_VERSIONS: 'versions';

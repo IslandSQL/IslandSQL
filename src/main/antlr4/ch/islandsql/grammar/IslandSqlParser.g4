@@ -5147,6 +5147,7 @@ keywordAsId:
     | K_VARRAY
     | K_VARYING
     | K_VECTOR
+    | K_VECTOR_SERIALIZE
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
