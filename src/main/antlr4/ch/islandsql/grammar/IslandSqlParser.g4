@@ -3071,6 +3071,7 @@ specialFunctionExpression:
     | treat
     | trim
     | validateConversion
+    | vectorSerialize
     | xmlcast
     | xmlcolattval
     | xmlelement
@@ -4014,6 +4015,10 @@ trim:
 validateConversion:
     K_VALIDATE_CONVERSION LPAR expr=expression K_AS typeName=dataType
         (COMMA fmt=expression (COMMA nlsparam=expression)?)? RPAR
+;
+
+vectorSerialize:
+    K_VECTOR_SERIALIZE LPAR expr=expression (K_RETURNING dataType)? RPAR
 ;
 
 xmlcast:
