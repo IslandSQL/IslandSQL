@@ -3071,6 +3071,7 @@ specialFunctionExpression:
     | treat
     | trim
     | validateConversion
+    | vectorChunks
     | vectorSerialize
     | xmlcast
     | xmlcolattval
@@ -4015,6 +4016,58 @@ trim:
 validateConversion:
     K_VALIDATE_CONVERSION LPAR expr=expression K_AS typeName=dataType
         (COMMA fmt=expression (COMMA nlsparam=expression)?)? RPAR
+;
+
+vectorChunks:
+    K_VECTOR_CHUNKS LPAR chunkTableArguments RPAR
+;
+
+// all components of chunking_spec are optional, therfore it is here mandatory
+chunkTableArguments:
+    textDocument=expression chunkingSpec
+;
+
+chunkingSpec:
+    (K_BY chunkingMode)? (K_MAX max=expression)? (K_OVERLAP overlap=expression)?
+    (K_SPLIT K_BY? splitCharactersList)? (K_LANGUAGE languageName=expression)?
+    (K_NORMALIZE normalizationSpec)? K_EXTENDED?
+;
+
+chunkingMode:
+      K_WORDS                                       # chunkingModeWords
+    | K_CHARS                                       # chunkingModeChars
+    | K_CHARACTERS                                  # chunkingModeChars
+    | K_VOCABULARY vocabularyName=qualifiedName     # chunkingModeVocabulary
+;
+
+splitCharactersList:
+      K_NONE                                        # splitCharacterListNone
+    | K_BLANKLINE                                   # splitCharacterListBlankline
+    | K_NEWLINE                                     # splitCharacterListNewline
+    | K_SPACE                                       # splitCharacterListSpace
+    | K_RECURSIVELY                                 # splitCharacterListRecursively
+    | K_SENTENCE                                    # splitCharacterListSentence
+    | K_CUSTOM customSplitCharactersList            # splitCharacterListCustom
+;
+
+customSplitCharactersList:
+    LPAR chars+=expression (COMMA chars+=expression)* RPAR
+;
+
+normalizationSpec:
+      K_NONE                                        # normalizationSpecNone
+    | K_ALL                                         # normalizationSpecAll
+    | customNormalizationSpec                       # normalizationSpecCustom
+;
+
+customNormalizationSpec:
+    LPAR modes+=normalizationMode (COMMA modes+=normalizationMode)* RPAR
+;
+
+normalizationMode:
+      K_WHITESPACE                                  # normalizationModeWhitespace
+    | K_PUNCTUATION                                 # normalizationModePunctuation
+    | K_WIDECHAR                                    # normalizationModeWidechar
 ;
 
 vectorSerialize:
