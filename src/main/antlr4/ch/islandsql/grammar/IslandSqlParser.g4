@@ -4434,14 +4434,15 @@ binaryOperator:
     | GT_HAT                        # aboveOperator
     | HAT_COMMAT                    # startsWithOperator
     | LT_COMMAT                     # containedByOperator
+    | LT_EQUALS_GT                  # cosineDistanceOperator
     | LT_LT                         # bitwiseShiftLeftOperator
     | LT_LT_EQUALS                  # strictlyContainedByOrEqualOperator
     | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
     | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
     | LT_LT_VERBAR                  # strictlyBelowOperator
     | LT_HAT                        # belowOperator
-    | LT_MINUS_GT                   # distanceOperator
-    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS
+    | LT_MINUS_GT                   # distanceOperator              // OracleDB 23.4: Euclidian distance operator
+    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS, OracleDB 23.4: negative dot product operator
     | MINUS_GT                      # extractElementOperator
     | MINUS_GT_GT                   # extractObjectOperator
     | MINUS_VERBAR_MINUS            # adjacentOperator
