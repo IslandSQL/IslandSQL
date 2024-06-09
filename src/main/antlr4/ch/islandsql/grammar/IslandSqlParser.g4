@@ -4647,6 +4647,7 @@ keywordAsId:
     | K_DEPRECATE
     | K_DEPTH
     | K_DESC
+    | K_DESTINATION
     | K_DETERMINISTIC
     | K_DIMENSION
     | K_DIRECTORY
@@ -5043,6 +5044,7 @@ keywordAsId:
     | K_SNAPSHOT
     | K_SOME
     | K_SORT
+    | K_SOURCE
     | K_SQL
     | K_SQL_MACRO
     | K_STABLE
