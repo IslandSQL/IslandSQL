@@ -5127,6 +5127,7 @@ keywordAsId:
     | K_VARIADIC
     | K_VARRAY
     | K_VARYING
+    | K_VECTOR
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS

@@ -684,6 +684,7 @@ K_VARCHAR: 'varchar';
 K_VARIADIC: 'variadic';
 K_VARRAY: 'varray';
 K_VARYING: 'varying';
+K_VECTOR: 'vector';
 K_VERBOSE: 'verbose';
 K_VERSION: 'version';
 K_VERSIONS: 'versions';
