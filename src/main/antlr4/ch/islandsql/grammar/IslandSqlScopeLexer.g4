@@ -346,6 +346,10 @@ SET_CONSTRAINTS:
     'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ 'constraint' 's'? MORE_TO_SQL_END
 ;
 
+SET_TRANSACTION:
+    'set' {isBeginOfStatement("set")}? COMMENT_OR_WS+ 'transaction' MORE_TO_SQL_END
+;
+
 SELECT:
     (
         'select' {isBeginOfStatement("select")}? MORE_TO_SQL_END
