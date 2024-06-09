@@ -126,8 +126,31 @@ Here are some examples:
 | `select a #b from t;`  | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a `#`   |
 | `select 1#2;`          | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a digit |
 
-## PostgreSQL Custom Operators
-
+## PostgreSQL Custom Operat
 Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions. Therefore, the IslandSQL grammar does not support custom operators.
 
 However, the custom operators provided by the [PostGIS](https://www.postgis.net/) extension are included in the grammar.
+
+## Inquiry Directives
+
+By default, the parser uses a [generic SQL dialect](src/main/java/ch/islandsql/grammar/IslandSqlDialect.java#L25). This means that the parser expects a file to contain statements using OracleDB and PostgreSQL syntax. This works well in most cases.
+
+However, here's an example that causes a parse error:
+
+```sql
+alter session set plsql_ccflags = 'custom1:41, custom2:42';
+begin
+   dbms_output.put_line($$custom1);
+   dbms_output.put_line($$custom2);
+end;
+```
+
+Why? because `$$custom1);\n   dbms_output.put_line($$` is identified as a PostgreSQL [dollar-quoted string constant](https://www.postgresql.org/docs/16/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING) by the lexer.
+
+To solve the problem, the following mechanism are provided:
+
+- Handle predefined inquiry directives  (e.g. `$$plsql_unit`) for generic SQL dialect.
+- Detect SQL dialect automatically (which is not always possible).
+- Set SQL dialect explicitly when constructing an IslandSqlDocument.
+
+So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted strings that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L107) to avoid parse errors.
