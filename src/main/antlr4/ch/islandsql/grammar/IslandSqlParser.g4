@@ -4569,6 +4569,7 @@ keywordAsId:
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BIT
+    | K_BLANKLINE
     | K_BLOB
     | K_BLOCK
     | K_BODY
@@ -4592,6 +4593,8 @@ keywordAsId:
     | K_CHAR
     | K_CHARACTER
     | K_CHARACTERISTICS
+    | K_CHARACTERS
+    | K_CHARS
     | K_CHARSETFORM
     | K_CHARSETID
     | K_CHAR_CS
@@ -4638,6 +4641,7 @@ keywordAsId:
     | K_CURRENT
     | K_CURRENT_USER
     | K_CURSOR
+    | K_CUSTOM
     | K_CYCLE
     | K_DAMERAU_LEVENSHTEIN
     | K_DANGLING
@@ -4705,6 +4709,7 @@ keywordAsId:
     | K_EXISTS
     | K_EXIT
     | K_EXPLAIN
+    | K_EXTENDED
     | K_EXTERNAL
     | K_EXTRA
     | K_EXTRACT
@@ -4858,6 +4863,7 @@ keywordAsId:
     | K_MATCHES
     | K_MATCH_RECOGNIZE
     | K_MATERIALIZED
+    | K_MAX
     | K_MAXLEN
     | K_MEASURES
     | K_MEMBER
@@ -4887,6 +4893,7 @@ keywordAsId:
     | K_NCLOB
     | K_NESTED
     | K_NEW
+    | K_NEWLINE
     | K_NEXT
     | K_NO
     | K_NOAUDIT
@@ -4895,6 +4902,7 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NONE
     | K_NONEDITIONABLE
+    | K_NORMALIZE
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
@@ -4927,6 +4935,7 @@ keywordAsId:
     | K_OUTER
     | K_OVER
     | K_OVERFLOW
+    | K_OVERLAP
     | K_OVERLAY
     | K_OVERRIDING
     | K_PACKAGE
@@ -4971,6 +4980,7 @@ keywordAsId:
     | K_PRETTY
     | K_PRIOR
     | K_PROCEDURE
+    | K_PUNCTUATION
     | K_QUALIFY
     | K_RAISE
     | K_RANGE
@@ -4980,6 +4990,7 @@ keywordAsId:
     | K_REAL
     | K_RECORD
     | K_RECURSIVE
+    | K_RECURSIVELY
     | K_REF
     | K_REFERENCE
     | K_REFERENCING
@@ -5030,6 +5041,7 @@ keywordAsId:
     | K_SEGMENT
     | K_SELECT
     | K_SELF
+    | K_SENTENCE
     | K_SEQUENCE
     | K_SEQUENTIAL
     | K_SERIAL2
@@ -5062,6 +5074,8 @@ keywordAsId:
     | K_SOME
     | K_SORT
     | K_SOURCE
+    | K_SPACE
+    | K_SPLIT
     | K_SQL
     | K_SQL_MACRO
     | K_STABLE
@@ -5152,12 +5166,14 @@ keywordAsId:
     | K_VARRAY
     | K_VARYING
     | K_VECTOR
+    | K_VECTOR_CHUNKS
     | K_VECTOR_SERIALIZE
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
+    | K_VOCABULARY
     | K_VOLATILE
     | K_WAIT
     | K_WAL
@@ -5165,13 +5181,16 @@ keywordAsId:
     | K_WHEN
     | K_WHERE
     | K_WHILE
+    | K_WHITESPACE
     | K_WHOLE_WORD_MATCH
+    | K_WIDECHAR
     | K_WINDOW
     | K_WITH
     | K_WITHIN
     | K_WITHOUT
     | K_WNDS
     | K_WNPS
+    | K_WORDS
     | K_WORK
     | K_WRAPPER
     | K_WRITE
