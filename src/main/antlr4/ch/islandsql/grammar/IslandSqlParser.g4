@@ -3047,6 +3047,7 @@ specialFunctionExpression:
     | cast
     | extract
     | featureCompare
+    | fromVector
     | fuzzyMatch
     | graphTable
     | jsonArray
@@ -3291,6 +3292,10 @@ featureCompare:
 
 respectIgnoreNullsClause:
     (K_RESPECT | K_IGNORE) K_NULLS
+;
+
+fromVector:
+    K_FROM_VECTOR LPAR expr=expression (K_RETURNING dataType)? RPAR
 ;
 
 fuzzyMatch:
