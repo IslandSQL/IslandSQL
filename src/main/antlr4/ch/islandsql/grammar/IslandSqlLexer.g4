@@ -804,6 +804,7 @@ LPAR: '(';
 LSQB: '[';
 LT: '<';
 LT_COMMAT: '<@';
+LT_EQUALS_GT: '<=>';
 LT_LT: '<<';
 LT_LT_EQUALS: '<<=';
 LT_LT_MINUS_GT_GT: '<<->>';
