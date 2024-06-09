@@ -4716,6 +4716,7 @@ keywordAsId:
     | K_FORMAT
     | K_FORWARD
     | K_FROM
+    | K_FROM_VECTOR
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH

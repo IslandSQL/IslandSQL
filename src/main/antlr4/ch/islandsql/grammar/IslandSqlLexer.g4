@@ -262,6 +262,7 @@ K_FORCE: 'force';
 K_FORMAT: 'format';
 K_FORWARD: 'forward';
 K_FROM: 'from';
+K_FROM_VECTOR: 'from_vector';
 K_FULL: 'full';
 K_FUNCTION: 'function';
 K_FUZZY_MATCH: 'fuzzy_match';
