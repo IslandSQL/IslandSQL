@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.misc.Interval;
  */
 public abstract class IslandSqlLexerBase extends Lexer {
     private final boolean scopeLexer;
+    private IslandSqlDialect dialect = IslandSqlDialect.GENERIC;
     private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
     private String dollarIdentifier1;
@@ -42,6 +43,15 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
+     * Set the SQL dialect.
+     *
+     * @param dialect The SQL dialect to be used.
+     */
+    public void setDialect(IslandSqlDialect dialect) {
+        this.dialect = dialect;
+    }
+
+    /**
      * Emits token and saves last token for use in isBeginOfStatement.
      *
      * @param token Token to be emitted
@@ -49,11 +59,20 @@ public abstract class IslandSqlLexerBase extends Lexer {
     @Override
     public void emit(Token token) {
         super.emit(token);
-        if (scopeLexer && token.getType() > 6) {
-            // token that is not a WS (1),  ML_COMMENT (2), SL_COMMENT (3),
-            // REMARK_COMMAND (4), PROMPT_COMMAND (5), CONDITIONAL_COMPILATION_DIRECTIVE (6)
+        if (scopeLexer && (token.getType() == 3 || token.getType() > 3 && token.getStopIndex() == token.getStartIndex())) {
+            // ID (3) and ANY_OTHER (last token, single character) are the only tokens of interest
+            // WS (1) must be ignored and STRING (2) is not relevant
             this.lastToken = token;
         }
+    }
+
+    /**
+     * Gets the SQL dialect to be used for this lexer.
+     *
+     * @return Returns the SQL dialect.
+     */
+    public IslandSqlDialect getDialect() {
+        return this.dialect;
     }
 
     /**
@@ -64,6 +83,25 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean isText(String text) {
         return text.equalsIgnoreCase(getInputStream()
                 .getText(Interval.of(_input.index(), _input.index() + text.length() - 1)));
+    }
+
+    /**
+     * Determines if the start of the current lexer token looks like a PL/SQL inquiry directive.
+     *
+     * @return Returns true if the current texts starts with a PL/SQL inquiry directive.
+     */
+    public boolean isInquiryDirective() {
+        String text = getText().toLowerCase();
+        return (dialect == IslandSqlDialect.ORACLEDB
+                || text.startsWith("$$plsql_line")
+                || text.startsWith("$$plsql_unit") // handles also plsql_unit_owner, plsql_unit_type
+                || text.startsWith("$$plscope_settings")
+                || text.startsWith("$$plsql_ccflags")
+                || text.startsWith("$$plsql_code_type")
+                || text.startsWith("$$plsql_optimize_level")
+                || text.startsWith("$$plsql_warnings")
+                || text.startsWith("$$nls_length_semantics")
+                || text.startsWith("$$permit_92_wrap_format"));
     }
 
     /**
@@ -91,7 +129,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines the idenitifier in a dollar-quoted string constant.
+     * Determines the identifier in a dollar-quoted string constant.
      * Current index position is directly after the ending dollar sign.
      *
      * @return identifier in dollar-quoted string constant.
@@ -177,11 +215,8 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * A SQL statement starts after a semicolon or slash.
      * A SQL statement can start at begin-of-file.
      * Temporary solution to identify start of statement:
-     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/29">Fully parse PL/SQL block</a>
-     *     - after the keywords AS, IS, DECLARE, BEGIN, THEN, ELSIF, ELSE, LOOP
-     *     - after a forall statement
-     *     - after a new line
-     *     - after a label
+     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/35">Fully parse view statement</a>
+     *     - after the keywords AS, IS
      * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
@@ -197,10 +232,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
             } else {
                 // decide according previous token if it is a statement
                 String text = lastToken.getText().toLowerCase().trim();
-                if (text.endsWith(";") || text.endsWith("/") || text.equals("as")
-                        || text.equals("is") || text.equals("declare") || text.equals("begin")
-                        || text.equals("then") || text.equals("elsif") || text.equals("else") || text.equals("loop")
-                        || text.startsWith("forall") || text.startsWith("<<")) {
+                if (text.endsWith(";") || text.endsWith("/") || text.equals("as") || text.equals("is")) {
                     return true;
                 }
             }

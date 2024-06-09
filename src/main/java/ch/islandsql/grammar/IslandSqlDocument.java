@@ -32,6 +32,7 @@ import java.util.List;
  * Provides methods to navigate the parse tree.
  */
 public class IslandSqlDocument {
+    private final IslandSqlDialect dialect;
     private final CommonTokenStream tokenStream;
     private final IslandSqlParser.FileContext file;
     private final List<SyntaxErrorEntry> syntaxErrors;
@@ -42,9 +43,12 @@ public class IslandSqlDocument {
      * @param sql SQL-script as string.
      * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
      */
-    private IslandSqlDocument(String sql, boolean hideOutOfScopeTokens) {
+    private IslandSqlDocument(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect) {
+        assert sql != null : "sql must not be null";
+        this.dialect = dialect == null ? guessDialect(sql) : dialect;
         CodePointCharStream charStream = CharStreams.fromString(sql);
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
+        lexer.setDialect(this.dialect);
         SyntaxErrorListener errorListener = new SyntaxErrorListener();
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
@@ -57,6 +61,18 @@ public class IslandSqlDocument {
         parser.addErrorListener(errorListener);
         this.file = parser.file();
         this.syntaxErrors = errorListener.getSyntaxErrors();
+    }
+
+    /**
+     * Guess the SQL dialect based on the specified SQL.
+     *
+     * @param sql The SQL statement to guess the dialect from.
+     * @return The SQL dialect.
+     */
+    private static IslandSqlDialect guessDialect(String sql) {
+        // A slash at the beginning of a line is used in SQL*Plus or SQLcl scripts to terminate
+        // a DDL statement containing PL/SQL code. This is a good and cheap dialect detection mechanism.
+        return sql.contains("\n/") ? IslandSqlDialect.ORACLEDB : IslandSqlDialect.GENERIC;
     }
 
     /**
@@ -77,7 +93,28 @@ public class IslandSqlDocument {
      * @return Constructed IslandSqlDocument.
      */
     public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens) {
-        return new IslandSqlDocument(sql, hideOutOfScopeTokens);
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens, null);
+    }
+
+    /**
+     * Factory to construct an IslandSqlDocument.
+     *
+     * @param sql SQL-script as string.
+     * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
+     * @param dialect The SQL dialect to be used.
+     * @return Constructed IslandSqlDocument.
+     */
+    public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect) {
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens, dialect);
+    }
+
+    /**
+     * Returns the SQL dialect used to parse the document.
+     *
+     * @return SQL dialect.
+     */
+    public IslandSqlDialect getDialect() {
+        return dialect;
     }
 
     /**
