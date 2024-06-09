@@ -2684,6 +2684,7 @@ oracleBuiltInDatatype:
     | rowidDatatype
     | jsonDatatype
     | booleanDatatype
+    | vectorDatatype
 ;
 
 characterDatatype:
@@ -2731,6 +2732,10 @@ jsonDatatype:
 
 booleanDatatype:
     K_BOOLEAN
+;
+
+vectorDatatype:
+    K_VECTOR (LPAR numberOfDimensions=expression (COMMA dimensionElementFormat=expression)? RPAR)?
 ;
 
 ansiSupportedDatatype:
