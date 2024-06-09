@@ -2039,13 +2039,9 @@ javascriptDeclaration:
 ;
 
 // new syntax introduced in 23.4 (breaking change)
+// script contains also the start and end delimiters, e.g. {{, }}
 scriptBody:
-      LSQB+ script=.*? RSQB+
-    | LPAR+ script=.*? RPAR+
-    | LCUB+ script=.*? RCUB+
-    | (LT_LT|LT)+ script=.*? (GT_GT|GT)+
-    | sqlName script=.*? sqlName
-    | script=.*? // handles all other kind of delimiters such as ~, @, £, etc.
+    script=.*? // handles all kind of delimiters
 ;
 
 cDeclaration:
@@ -2684,6 +2680,7 @@ oracleBuiltInDatatype:
     | rowidDatatype
     | jsonDatatype
     | booleanDatatype
+    | vectorDatatype
 ;
 
 characterDatatype:
@@ -2731,6 +2728,10 @@ jsonDatatype:
 
 booleanDatatype:
     K_BOOLEAN
+;
+
+vectorDatatype:
+    K_VECTOR (LPAR numberOfDimensions=expression (COMMA dimensionElementFormat=expression)? RPAR)?
 ;
 
 ansiSupportedDatatype:
@@ -2939,6 +2940,10 @@ expression:
     | expr=expression K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR              # isOfTypeCondition
+    | left=expression
+        K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
+    | left=expression
+        K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
 ;
 
 intervalExpression:
@@ -3038,6 +3043,7 @@ specialFunctionExpression:
     | cast
     | extract
     | featureCompare
+    | fromVector
     | fuzzyMatch
     | graphTable
     | jsonArray
@@ -3061,6 +3067,8 @@ specialFunctionExpression:
     | treat
     | trim
     | validateConversion
+    | vectorChunks
+    | vectorSerialize
     | xmlcast
     | xmlcolattval
     | xmlelement
@@ -3282,6 +3290,10 @@ featureCompare:
 
 respectIgnoreNullsClause:
     (K_RESPECT | K_IGNORE) K_NULLS
+;
+
+fromVector:
+    K_FROM_VECTOR LPAR expr=expression (K_RETURNING dataType)? RPAR
 ;
 
 fuzzyMatch:
@@ -4002,6 +4014,62 @@ validateConversion:
         (COMMA fmt=expression (COMMA nlsparam=expression)?)? RPAR
 ;
 
+vectorChunks:
+    K_VECTOR_CHUNKS LPAR chunkTableArguments RPAR
+;
+
+// all components of chunking_spec are optional, therfore it is here mandatory
+chunkTableArguments:
+    textDocument=expression chunkingSpec
+;
+
+chunkingSpec:
+    (K_BY chunkingMode)? (K_MAX max=expression)? (K_OVERLAP overlap=expression)?
+    (K_SPLIT K_BY? splitCharactersList)? (K_LANGUAGE languageName=expression)?
+    (K_NORMALIZE normalizationSpec)? K_EXTENDED?
+;
+
+chunkingMode:
+      K_WORDS                                       # chunkingModeWords
+    | K_CHARS                                       # chunkingModeChars
+    | K_CHARACTERS                                  # chunkingModeChars
+    | K_VOCABULARY vocabularyName=qualifiedName     # chunkingModeVocabulary
+;
+
+splitCharactersList:
+      K_NONE                                        # splitCharacterListNone
+    | K_BLANKLINE                                   # splitCharacterListBlankline
+    | K_NEWLINE                                     # splitCharacterListNewline
+    | K_SPACE                                       # splitCharacterListSpace
+    | K_RECURSIVELY                                 # splitCharacterListRecursively
+    | K_SENTENCE                                    # splitCharacterListSentence
+    | K_CUSTOM customSplitCharactersList            # splitCharacterListCustom
+;
+
+customSplitCharactersList:
+    LPAR chars+=expression (COMMA chars+=expression)* RPAR
+;
+
+normalizationSpec:
+      K_NONE                                        # normalizationSpecNone
+    | K_ALL                                         # normalizationSpecAll
+    | customNormalizationSpec                       # normalizationSpecCustom
+;
+
+customNormalizationSpec:
+    LPAR modes+=normalizationMode (COMMA modes+=normalizationMode)* RPAR
+;
+
+normalizationMode:
+      K_WHITESPACE                                  # normalizationModeWhitespace
+    | K_PUNCTUATION                                 # normalizationModePunctuation
+    | K_WIDECHAR                                    # normalizationModeWidechar
+;
+
+vectorSerialize:
+    K_VECTOR_SERIALIZE LPAR expr=expression (K_RETURNING dataType)? RPAR
+;
+
 xmlcast:
     K_XMLCAST LPAR expr=expression K_AS typeName=dataType RPAR
 ;
@@ -4362,14 +4430,15 @@ binaryOperator:
     | GT_HAT                        # aboveOperator
     | HAT_COMMAT                    # startsWithOperator
     | LT_COMMAT                     # containedByOperator
+    | LT_EQUALS_GT                  # cosineDistanceOperator
     | LT_LT                         # bitwiseShiftLeftOperator
     | LT_LT_EQUALS                  # strictlyContainedByOrEqualOperator
     | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
     | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
     | LT_LT_VERBAR                  # strictlyBelowOperator
     | LT_HAT                        # belowOperator
-    | LT_MINUS_GT                   # distanceOperator
-    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS
+    | LT_MINUS_GT                   # distanceOperator              // OracleDB 23.4: Euclidian distance operator
+    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS, OracleDB 23.4: negative dot product operator
     | MINUS_GT                      # extractElementOperator
     | MINUS_GT_GT                   # extractObjectOperator
     | MINUS_VERBAR_MINUS            # adjacentOperator
@@ -4451,6 +4520,8 @@ danglingCondition:
     | K_IS K_NOT? K_OF K_TYPE?
         LPAR types+=isOfTypeConditionItem
         (COMMA types+=isOfTypeConditionItem)* RPAR      # isOfTypeConditionDangling
+    | K_IS K_NOT? K_SOURCE K_OF right=expression        # sourcePredicateDangling
+    | K_IS K_NOT? K_DESTINATION K_OF right=expression   # destinationPredicateDangling
 ;
 
 jsonPassingClause:
@@ -4548,6 +4619,7 @@ keywordAsId:
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BIT
+    | K_BLANKLINE
     | K_BLOB
     | K_BLOCK
     | K_BODY
@@ -4571,6 +4643,8 @@ keywordAsId:
     | K_CHAR
     | K_CHARACTER
     | K_CHARACTERISTICS
+    | K_CHARACTERS
+    | K_CHARS
     | K_CHARSETFORM
     | K_CHARSETID
     | K_CHAR_CS
@@ -4617,6 +4691,7 @@ keywordAsId:
     | K_CURRENT
     | K_CURRENT_USER
     | K_CURSOR
+    | K_CUSTOM
     | K_CYCLE
     | K_DAMERAU_LEVENSHTEIN
     | K_DANGLING
@@ -4642,6 +4717,7 @@ keywordAsId:
     | K_DEPRECATE
     | K_DEPTH
     | K_DESC
+    | K_DESTINATION
     | K_DETERMINISTIC
     | K_DIMENSION
     | K_DIRECTORY
@@ -4683,6 +4759,7 @@ keywordAsId:
     | K_EXISTS
     | K_EXIT
     | K_EXPLAIN
+    | K_EXTENDED
     | K_EXTERNAL
     | K_EXTRA
     | K_EXTRACT
@@ -4704,6 +4781,7 @@ keywordAsId:
     | K_FORMAT
     | K_FORWARD
     | K_FROM
+    | K_FROM_VECTOR
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
@@ -4835,6 +4913,7 @@ keywordAsId:
     | K_MATCHES
     | K_MATCH_RECOGNIZE
     | K_MATERIALIZED
+    | K_MAX
     | K_MAXLEN
     | K_MEASURES
     | K_MEMBER
@@ -4864,6 +4943,7 @@ keywordAsId:
     | K_NCLOB
     | K_NESTED
     | K_NEW
+    | K_NEWLINE
     | K_NEXT
     | K_NO
     | K_NOAUDIT
@@ -4872,6 +4952,7 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NONE
     | K_NONEDITIONABLE
+    | K_NORMALIZE
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
@@ -4904,6 +4985,7 @@ keywordAsId:
     | K_OUTER
     | K_OVER
     | K_OVERFLOW
+    | K_OVERLAP
     | K_OVERLAY
     | K_OVERRIDING
     | K_PACKAGE
@@ -4948,6 +5030,7 @@ keywordAsId:
     | K_PRETTY
     | K_PRIOR
     | K_PROCEDURE
+    | K_PUNCTUATION
     | K_QUALIFY
     | K_RAISE
     | K_RANGE
@@ -4957,6 +5040,7 @@ keywordAsId:
     | K_REAL
     | K_RECORD
     | K_RECURSIVE
+    | K_RECURSIVELY
     | K_REF
     | K_REFERENCE
     | K_REFERENCING
@@ -5007,6 +5091,7 @@ keywordAsId:
     | K_SEGMENT
     | K_SELECT
     | K_SELF
+    | K_SENTENCE
     | K_SEQUENCE
     | K_SEQUENTIAL
     | K_SERIAL2
@@ -5038,6 +5123,9 @@ keywordAsId:
     | K_SNAPSHOT
     | K_SOME
     | K_SORT
+    | K_SOURCE
+    | K_SPACE
+    | K_SPLIT
     | K_SQL
     | K_SQL_MACRO
     | K_STABLE
@@ -5127,11 +5215,15 @@ keywordAsId:
     | K_VARIADIC
     | K_VARRAY
     | K_VARYING
+    | K_VECTOR
+    | K_VECTOR_CHUNKS
+    | K_VECTOR_SERIALIZE
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
     | K_VISIBLE
+    | K_VOCABULARY
     | K_VOLATILE
     | K_WAIT
     | K_WAL
@@ -5139,13 +5231,16 @@ keywordAsId:
     | K_WHEN
     | K_WHERE
     | K_WHILE
+    | K_WHITESPACE
     | K_WHOLE_WORD_MATCH
+    | K_WIDECHAR
     | K_WINDOW
     | K_WITH
     | K_WITHIN
     | K_WITHOUT
     | K_WNDS
     | K_WNPS
+    | K_WORDS
     | K_WORK
     | K_WRAPPER
     | K_WRITE
