@@ -154,6 +154,7 @@ postgresqlFunctionOption:
     | K_AS definition=expression
     | K_AS objFile=expression COMMA linkSymbol=expression
     | sqlBody
+    | otherOption=sqlName // e.g. _cost_low, _cost_medium, _cost_high, _cost_default
 ;
 
 transformItem:
