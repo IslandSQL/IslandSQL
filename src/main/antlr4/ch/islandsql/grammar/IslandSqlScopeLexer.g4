@@ -48,7 +48,7 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL?;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment ANY_EXCEPT_AST_SOL: ('*' ~'/'|~'*');
+fragment ANY_EXCEPT_AST_SOL: (~'*'|'*' {!isText("/")}? );
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]

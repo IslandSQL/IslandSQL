@@ -32,7 +32,7 @@ fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
 fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
-fragment ANY_EXCEPT_AST_SOL: ('*' ~'/'|~'*');
+fragment ANY_EXCEPT_AST_SOL: (~'*'|'*' {!isText("/")}? );
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
