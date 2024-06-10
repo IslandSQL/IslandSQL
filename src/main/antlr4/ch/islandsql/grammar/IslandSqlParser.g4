@@ -4209,7 +4209,7 @@ functionExpression:
 functionParameter:
     // PostgreSQL := is older syntax supported for backward compatiblity only
     // OracleDB: no space between '=>' allowed
-    (name=sqlName (EQUALS_GT | COLON EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
+    (name=sqlName (EQUALS_GT | COLON_EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
 ;
 
 functionParameterPrefix:
