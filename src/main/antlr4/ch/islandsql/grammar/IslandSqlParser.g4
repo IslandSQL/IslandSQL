@@ -135,7 +135,7 @@ argmode:
 ;
 
 postgresqlFunctionOption:
-      K_LANGUAGE languageName=sqlName
+      K_LANGUAGE languageName=expression // expected sqlName, string is allowed but deprecated
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_WINDOW
     | K_IMMUTABLE
