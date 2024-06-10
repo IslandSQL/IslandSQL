@@ -72,7 +72,8 @@ public class IslandSqlDocument {
     private static IslandSqlDialect guessDialect(String sql) {
         // A slash at the beginning of a line is used in SQL*Plus or SQLcl scripts to terminate
         // a DDL statement containing PL/SQL code. This is a good and cheap dialect detection mechanism.
-        return sql.contains("\n/") ? IslandSqlDialect.ORACLEDB : IslandSqlDialect.GENERIC;
+        // Added new line after slash to ensure a multiline comment is not considered.
+        return sql.contains("\n/\n") ? IslandSqlDialect.ORACLEDB : IslandSqlDialect.GENERIC;
     }
 
     /**
