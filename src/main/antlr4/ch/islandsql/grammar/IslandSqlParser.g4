@@ -1945,7 +1945,7 @@ itemDeclaration:
 
 // not documented in 23.4: optionality of "not"
 constantDeclaration:
-    constant=sqlName K_CONSTANT type=dataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+    constant=sqlName K_CONSTANT type=plsqlDataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
 ;
 
 // not documented in 23.4: optionality of "not"
