@@ -483,7 +483,7 @@ objectBaseTypeDef:
 // wrong documentation in 23.3: optional attributes
 objectTypeDef:
     K_OBJECT LPAR attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)* RPAR
-    (K_NOT? (K_FINAL | K_INSTANTIABLE | K_PERSISTABLE))?
+    options+=objectTypeDefOption*
 ;
 
 attribute:
@@ -551,6 +551,12 @@ inheritanceClauseItem:
     | K_NOT? K_INSTANTIABLE     # instantiableInheritanceClauseItem
 ;
 
+objectTypeDefOption:
+      K_NOT? K_FINAL            # finalObjectTypeDefOption
+    | K_NOT? K_INSTANTIABLE     # intantiableObjectTypeDefOption
+    | K_NOT? K_PERSISTABLE      # persistableObjectTypeDefOption
+;
+
 // not documented in 23.4: optionality of "not"
 varayTypeSpec:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR sizeLimit=expression RPAR K_OF
@@ -572,7 +578,7 @@ nestedTableTypeSpec:
 objectSubtypeDef:
     K_UNDER (schema=sqlName PERIOD)? superType=sqlName
     (LPAR attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)* RPAR)?
-    (K_NOT? (K_FINAL | K_INSTANTIABLE | K_PERSISTABLE))?
+    options+=objectTypeDefOption*
 ;
 
 postgresqlTypeSource:
