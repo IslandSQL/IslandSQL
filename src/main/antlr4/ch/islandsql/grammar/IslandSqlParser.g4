@@ -2216,8 +2216,9 @@ executeImmediateStatement:
 // required variant without ending on semicolon, used in forall_statement
 executeImmediate:
     K_EXECUTE K_IMMEDIATE dynamicSqlStmt=expression (
-        (intoClause | bulkCollectIntoClause) usingClause?
-
+          (intoClause | bulkCollectIntoClause) usingClause?
+        | usingClause dynamicReturnClause?
+        | dynamicReturnClause
     )?
 ;
 
@@ -2231,6 +2232,10 @@ bindArgument:
           K_IN K_OUT?
         | K_OUT
     )? arg=expression
+;
+
+dynamicReturnClause:
+    (K_RETURNING | K_RETURN) (intoClause | bulkCollectIntoClause)
 ;
 
 exitStatement:
