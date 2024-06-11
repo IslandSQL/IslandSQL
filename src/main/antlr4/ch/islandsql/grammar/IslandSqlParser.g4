@@ -320,9 +320,9 @@ referencingClause:
 ;
 
 refercingClauseItem:
-      K_OLD K_AS? oldName=sqlName           # referencingClauseItemOld
-    | K_NEW K_AS? newName=sqlName           # referencingClauseItemNew
-    | K_PARENT K_AS? parentName=sqlName     # referencingClauseItemParent
+      K_OLD K_AS? oldName=sqlName           # oldReferencingClauseItem
+    | K_NEW K_AS? newName=sqlName           # newReferencingClauseItem
+    | K_PARENT K_AS? parentName=sqlName     # parentReferencingClauseItem
 ;
 
 triggerEditionClause:
@@ -1076,13 +1076,13 @@ select:
 // PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
 // PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
 subquery:
-      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # subqueryQueryBlock
-    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # subqueryQueryBlock
-    | left=subquery setOperator right=subquery                                          # subquerySet
-    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # subqueryParen
-    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # subqueryParen
-    | valuesClause orderByClause? rowLimitingClause?                                    # subqueryValues
-    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlock // PostgreSQL
+      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # queryBlockSubquery
+    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # queryBlockSubquery
+    | left=subquery setOperator right=subquery                                          # setSubquery
+    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # parenSubquery
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # parenSubquery
+    | valuesClause orderByClause? rowLimitingClause?                                    # valuesSubquery
+    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlockSubquery // PostgreSQL
 ;
 
 queryBlock:
@@ -1145,8 +1145,8 @@ subqueryFactoringClause:
 // Using the values_clause without table/column alias is primarily used in the with_clause
 valuesClause:
       LPAR K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)* RPAR
-        K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR     # valuesClauseQualified
-    | K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*                                 # valuesClauseDefault
+        K_AS? talias=sqlName LPAR caliases+=sqlName (COMMA caliases+=sqlName)* RPAR     # qualifiedValuesClause
+    | K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*                                 # defaultValuesClause
 ;
 
 // undocumented, first value in the first row does not need parentheses (in OracleDB only)
@@ -1196,8 +1196,8 @@ filterClause:
 ;
 
 hierId:
-      K_MEASURES    # hierIdMeasures
-    | hierarchyRef  # hierIdDim
+      K_MEASURES    # measuresHierId
+    | hierarchyRef  # dimHierId
 ;
 
 addMeasClause:
@@ -1635,9 +1635,9 @@ rowPatternRowsPerMatch:
 
 // undocumented artificial clause, see issue #75
 rowPatternRowsPerMatchOption:
-      K_SHOW K_EMPTY K_MATCHES  # rowPatternRowsPerMatchShowEmptyMatches
-    | K_OMIT K_EMPTY K_MATCHES  # rowPatternRowsPerMatchOmitEmptyMatches
-    | K_WITH K_UNMATCHED K_ROWS # rowPatternRowsPerMatchWithUnmatchedRows
+      K_SHOW K_EMPTY K_MATCHES  # showEmptyMatchesRowPatternRowsPerMatch
+    | K_OMIT K_EMPTY K_MATCHES  # omitEmptyMatchesRowPatternRowsPerMatch
+    | K_WITH K_UNMATCHED K_ROWS # withUnmatchedRowsRowPatternRowsPerMatch
 ;
 
 rowPatternSkipTo:
@@ -1809,12 +1809,12 @@ updateSetClause:
 
 updateSetClauseItem:
       LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
-        EQUALS LPAR query=subquery RPAR                                             # updateSetClauseItemColumnList
+        EQUALS LPAR query=subquery RPAR                                             # columnListUpdateSetClauseItem
     | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
-        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # updateSetClauseItemPostgresqlRow
+        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # postgresqlRowUpdateSetClauseItem
     | LPAR columns+=qualifiedName RPAR
-        EQUALS (expr=expression | LPAR query=subquery RPAR)                         # updateSetClauseItemColumn
-    | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # updateSetClauseItemColumn
+        EQUALS (expr=expression | LPAR query=subquery RPAR)                         # columnUpdateSetClauseItem
+    | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # columnUpdateSetClauseItem
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3138,11 +3138,11 @@ avWindowClause:
 
 // artifical clause to reduce reduncancy
 avLevelRef:
-      K_LEVEL levelRef=sqlName?                             # avLevelRefLevel
-    | K_PARENT                                              # avLevelRefParent
+      K_LEVEL levelRef=sqlName?                             # levelAvLevelRef
+    | K_PARENT                                              # parentAvLevelRef
     | K_ACROSS? K_ANCESTOR K_AT K_LEVEL levelRef=sqlName
-       (K_POSITION K_FROM (K_BEGINNING|K_END)?)?            # avLevelRefAncestor
-    | K_MEMBER expr=memberExpression                        # avLevelRefMember
+       (K_POSITION K_FROM (K_BEGINNING|K_END)?)?            # ancestorAvLevelRef
+    | K_MEMBER expr=memberExpression                        # memberAvLevelRef
 ;
 
 precedingBoundary:
@@ -3208,11 +3208,11 @@ qualifier:
 ;
 
 memberExpression:
-      levelMemberLiteral            # memberExprLevelMember
-    | hierNavigationExpression      # memberExprHierNavigation
-    | K_CURRENT K_MEMBER            # memberExprCurrentMember
-    | K_NULL                        # memberExprNull
-    | K_ALL                         # memberExprAll
+      levelMemberLiteral            # levelMemberMemberExpr
+    | hierNavigationExpression      # hierNavigationMemberExpr
+    | K_CURRENT K_MEMBER            # currentMemberMemberExpr
+    | K_NULL                        # nullMemberExpr
+    | K_ALL                         # allMemberExpr
 ;
 
 levelMemberLiteral:
@@ -3232,9 +3232,9 @@ namedMemberKeysItem:
 ;
 
 hierNavigationExpression:
-      hierAncestorExpression    # hierNavigationExprAncestor
-    | hierParentExpression      # hierNavigationExprParent
-    | hierLeadLagExpression     # hierNavigationExprLeadLag
+      hierAncestorExpression    # ancestorHierNavigationExpr
+    | hierParentExpression      # parentHierNavigationExpr
+    | hierLeadLagExpression     # leadLagHierNavigationExpr
 ;
 
 hierAncestorExpression:
@@ -3410,12 +3410,12 @@ fullEdgePattern:
 ;
 
 abbreviatedEdgePattern:
-      MINUS GT      # abbreviatedEdgePatternPointingRight
-    | MINUS_GT      # abbreviatedEdgePatternPointingRight
-    | LT MINUS      # abbreviatedEdgePatternPointingLeft
-    | MINUS         # abbreviatedEdgePatternAnyDirection
-    | LT MINUS GT   # abbreviatedEdgePatternAnyDirection
-    | LT_MINUS_GT   # abbreviatedEdgePatternAnyDirection
+      MINUS GT      # pointingRightAbbreviatedEdgePattern
+    | MINUS_GT      # pointingRightAbbreviatedEdgePattern
+    | LT MINUS      # pointingLeftAbbreviatedEdgePattern
+    | MINUS         # anyDirectionAbbreviatedEdgePattern
+    | LT MINUS GT   # anyDirectionAbbreviatedEdgePattern
+    | LT_MINUS_GT   # anyDirectionAbbreviatedEdgePattern
 ;
 
 fullEdgePointingRight:
@@ -3938,9 +3938,9 @@ jsonEqualCondition:
 ;
 
 jsonEqualConditionOption:
-      K_ERROR K_ON K_ERROR  # jsonEqualConditionErrorOnError
-    | K_FALSE K_ON K_ERROR  # jsonEqualConditionFalseOnError
-    | K_TRUE K_ON K_ERROR   # jsonEqualConditionTrueOnError
+      K_ERROR K_ON K_ERROR  # errorOnErrorJsonEqualCondition
+    | K_FALSE K_ON K_ERROR  # falseOnErrorJsonEqualCondition
+    | K_TRUE K_ON K_ERROR   # trueOnErrorJsonEqualCondition
 ;
 
 jsonExistsCondition:
@@ -4042,20 +4042,20 @@ chunkingSpec:
 ;
 
 chunkingMode:
-      K_WORDS                                       # chunkingModeWords
-    | K_CHARS                                       # chunkingModeChars
-    | K_CHARACTERS                                  # chunkingModeChars
-    | K_VOCABULARY vocabularyName=qualifiedName     # chunkingModeVocabulary
+      K_WORDS                                       # wordsChunkingMode
+    | K_CHARS                                       # charsChunkingMode
+    | K_CHARACTERS                                  # charsChunkingMode
+    | K_VOCABULARY vocabularyName=qualifiedName     # vocabularyChunkingMode
 ;
 
 splitCharactersList:
-      K_NONE                                        # splitCharacterListNone
-    | K_BLANKLINE                                   # splitCharacterListBlankline
-    | K_NEWLINE                                     # splitCharacterListNewline
-    | K_SPACE                                       # splitCharacterListSpace
-    | K_RECURSIVELY                                 # splitCharacterListRecursively
-    | K_SENTENCE                                    # splitCharacterListSentence
-    | K_CUSTOM customSplitCharactersList            # splitCharacterListCustom
+      K_NONE                                        # noneSplitCharacterList
+    | K_BLANKLINE                                   # blanklineSplitCharacterList
+    | K_NEWLINE                                     # newlineSplitCharacterList
+    | K_SPACE                                       # spaceSplitCharacterList
+    | K_RECURSIVELY                                 # recursivelySplitCharacterList
+    | K_SENTENCE                                    # sentenceSplitCharacterList
+    | K_CUSTOM customSplitCharactersList            # customSplitCharacterList
 ;
 
 customSplitCharactersList:
@@ -4063,9 +4063,9 @@ customSplitCharactersList:
 ;
 
 normalizationSpec:
-      K_NONE                                        # normalizationSpecNone
-    | K_ALL                                         # normalizationSpecAll
-    | customNormalizationSpec                       # normalizationSpecCustom
+      K_NONE                                        # noneNormalizationSpec
+    | K_ALL                                         # allNormalizationSpec
+    | customNormalizationSpec                       # custNormalizationSpec
 ;
 
 customNormalizationSpec:
@@ -4073,9 +4073,9 @@ customNormalizationSpec:
 ;
 
 normalizationMode:
-      K_WHITESPACE                                  # normalizationModeWhitespace
-    | K_PUNCTUATION                                 # normalizationModePunctuation
-    | K_WIDECHAR                                    # normalizationModeWidechar
+      K_WHITESPACE                                  # whitespaceNormalizationMode
+    | K_PUNCTUATION                                 # punctuationNormalizationMode
+    | K_WIDECHAR                                    # widecharNormalizationMode
 ;
 
 vectorSerialize:
@@ -4165,9 +4165,9 @@ xmlroot:
 ;
 
 xmlrootStandalone:
-      K_YES         # xmlrootStandaloneYes
-    | K_NO          # xmlrootStandaloneNo
-    | K_NO K_VALUE  # xmlrootStandaloneNoValue
+      K_YES         # yesXmlrootStandalone
+    | K_NO          # noXmlrootStandalone
+    | K_NO K_VALUE  # noValueXmlrootStandalone
 ;
 
 xmlserialize:
@@ -4480,8 +4480,8 @@ postgresqlArrayConstructor:
 ;
 
 postgresqlArrayElement:
-      expr=expression                                                                # postgresqlArrayElementItem
-    | LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB # postgresqlArrayElementList
+      expr=expression                                                                # itemPostgresqlArrayElement
+    | LSQB exprs+=postgresqlArrayElement (COMMA exprs+=postgresqlArrayElement)* RSQB # listPostgresqlArrayElement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -4567,13 +4567,13 @@ simpleComparisionOperator:
 // it's possible but not documented that options can be used in an arbitrary order
 // it's also possible but not documented to place the options in parenthesis
 jsonConditionOption:
-      K_STRICT                                      # jsonConditionOptionStrict
-    | K_LAX                                         # jsonConditionOptionLax
-    | K_ALLOW K_SCALARS                             # jsonConditionOptionAllowScalars
-    | K_DISALLOW K_SCALARS                          # jsonConditionOptionDisallowSclars
-    | K_WITH K_UNIQUE K_KEYS                        # jsonConditionOptionWithUniqueKeys
-    | K_WITHOUT K_UNIQUE K_KEYS                     # jsonConditionOptionWithoutUniqueKeys
-    | K_VALIDATE K_CAST? K_USING? schema=expression # jsonConditionOptionValidate
+      K_STRICT                                      # strictJsonConditionOption
+    | K_LAX                                         # laxJsonConditionOption
+    | K_ALLOW K_SCALARS                             # allowScalarsJsonConditionOption
+    | K_DISALLOW K_SCALARS                          # disallowSclarsJsonConditionOption
+    | K_WITH K_UNIQUE K_KEYS                        # withUniqueKeysJsonConditionOption
+    | K_WITHOUT K_UNIQUE K_KEYS                     # withoutUniqueKeysJsonConditionOption
+    | K_VALIDATE K_CAST? K_USING? schema=expression # validateJsonConditionOption
 ;
 
 isOfTypeConditionItem:
