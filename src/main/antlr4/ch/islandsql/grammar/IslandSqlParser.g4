@@ -2393,7 +2393,7 @@ plsqlBlock:
 
 // others is handled as normal exception name
 exceptionHandler:
-    K_WHEN exceptions+=sqlName (K_OR exceptions+=sqlName)* K_THEN stmts+=plsqlStatement+
+    K_WHEN exceptions+=qualifiedName (K_OR exceptions+=qualifiedName)* K_THEN stmts+=plsqlStatement+
 ;
 
 procedureCall:
