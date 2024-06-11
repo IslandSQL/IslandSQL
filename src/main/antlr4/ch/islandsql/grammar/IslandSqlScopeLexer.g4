@@ -33,7 +33,6 @@ fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS? NAME WS? '>>';
 fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
-fragment UNIT_DEFINITION_START: ('function'|'procedure') COMMENT_OR_WS+ SQL_TEXT+? ('is'|'as') COMMENT_OR_WS+;
 fragment OR_REPLACE: ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?;
 fragment NON_EDITIONABLE: (('editionable' | 'noneditionable') COMMENT_OR_WS+)?;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
@@ -411,7 +410,8 @@ mode DECLARE_SECTION_MODE;
 DS_EOF: EOF -> popMode;
 
 DS_COMPOUND_TRIGGER: 'compound' -> more, mode(CODE_BLOCK_MODE);
-DS_UNIT_DEFINITION: UNIT_DEFINITION_START -> more, pushMode(DECLARE_SECTION_MODE);
+DS_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
+DS_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 DS_BEGIN: 'begin' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
 
 DS_ML_COMMENT: ML_COMMENT -> more;
@@ -433,7 +433,8 @@ WC_EOF: EOF -> popMode;
 
 WC: SQL_END -> popMode;
 
-WC_UNIT_DEFINITION: UNIT_DEFINITION_START -> more, pushMode(DECLARE_SECTION_MODE);
+WC_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
+WC_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 WC_UNIT_BEGIN: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
 
 WC_ML_COMMENT: ML_COMMENT -> more;
@@ -470,6 +471,8 @@ CB_EXPR: 'end' (COMMENT_OR_WS+ NAME)? -> popMode; // including PostgreSQL atomic
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 // handle everything that has end keyword as nested code block
+CB_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
+CB_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
 CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
 CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
