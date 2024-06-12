@@ -61,7 +61,44 @@ select 42 as result;
 select 'fourty-two' as result
 ```
 
-Removing the semicolon in the scripts will result in a parse error. 
+Removing the semicolon in the scripts will result in a parse error.
+
+## Multiline Comments
+
+The grammar consumes only complete multiline comments. As a result incomplete multiline comments lead to parse errors.
+
+Here's an example:
+
+```sql
+/* start multiline comment
+/* start nested multiline comment
+end of (nested) multiline comment */
+select 42;
+```
+
+IslandSQL reports an `mismatched input '*'` error on line 1 because the outer multiline comment is not terminated. Only line 2 and 3 are recognized as a multiline comment. This behaviour is different to the DBMSs in scope.
+
+The OracleDB executes `select 42;` without reporting an error. PostgreSQL doesn't execute anything because it waits for the outer comment to be terminated. In other words in PostgreSQL the whole SQL script is interpreted as a comment.
+
+Here's another example:
+
+```sql
+/* start multiline comment
+end of multiline comment */
+select 42;
+*/ 
+```
+
+IslandSQL reports an `extraneous input '*'` error on line 4 because there is no matching start of the multiline comment. Only line 1 and 2 are recognized as multiline comment. This behaviour matches the one of the OracleDB and PostgreSQL, even if PostgreSQL does not report an error on line 4.
+
+Furthermore, IslandSQL supports nested multiline comments. Here's an example:
+
+```sql
+/* level 1 /* level 2 /* level 3 */ level 2 */ level 1 */
+select 42;
+```
+
+Like PostgreSQL, IslandSQL recognises the first line as a multiline comment. OracleDB, however, recognized only `/* level 1 /* level 2 /* level 3 */` as comment. Everything up to the first `*/`.
 
 ## SQL\*Plus Substitution Variables
 
@@ -133,7 +170,7 @@ However, the custom operators provided by the [PostGIS](https://www.postgis.net/
 
 ## Inquiry Directives
 
-By default, the parser uses a [generic SQL dialect](src/main/java/ch/islandsql/grammar/IslandSqlDialect.java#L25). This means that the parser expects a file to contain statements using OracleDB and PostgreSQL syntax. This works well in most cases.
+By default, the parser uses a [GENERIC SQL dialect](src/main/java/ch/islandsql/grammar/IslandSqlDialect.java#L25). This means that the parser expects a file to contain statements using OracleDB and/or PostgreSQL syntax. This works well in most cases.
 
 However, here's an example that causes a parse error:
 
@@ -147,10 +184,11 @@ end;
 
 Why? because `$$custom1);\n   dbms_output.put_line($$` is identified as a PostgreSQL [dollar-quoted string constant](https://www.postgresql.org/docs/16/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING) by the lexer.
 
-To solve the problem, the following mechanism are provided:
+To solve the problem, the following mechanisms are provided:
 
-- Handle predefined inquiry directives  (e.g. `$$plsql_unit`) for generic SQL dialect.
-- Detect SQL dialect automatically (which is not always possible).
+- Handle predefined inquiry directives (e.g. `$$plsql_unit`) for GENERIC SQL dialect.
+- Disable dollar-quoted string constants for ORACLEDB SQL dialect
 - Set SQL dialect explicitly when constructing an IslandSqlDocument.
+- Detect SQL dialect automatically.
 
-So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted strings that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L107) to avoid parse errors.
+So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted string constants that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L107) to avoid parse errors.
