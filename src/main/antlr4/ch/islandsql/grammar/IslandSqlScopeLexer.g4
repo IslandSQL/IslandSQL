@@ -47,7 +47,7 @@ fragment SQL_END:
 fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL?;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
-fragment ANY_EXCEPT_AST_SOL: (~'*'|'*' {!isText("/")}? );
+fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
 fragment ANY_EXCEPT_AS_WS:
     (
           'a' 's' ~[ \t\r\n]
@@ -108,7 +108,7 @@ QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> channel(HIDDEN);
 // Comments
 /*----------------------------------------------------------------------------*/
 
-ML_COMMENT: '/*' (ML_COMMENT|ANY_EXCEPT_AST_SOL)* '*/' -> channel(HIDDEN);
+ML_COMMENT: '/*' IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/

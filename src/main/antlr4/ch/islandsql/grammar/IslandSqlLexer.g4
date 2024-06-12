@@ -32,15 +32,15 @@ fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
 fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
-fragment ANY_EXCEPT_AST_SOL: (~'*'|'*' {!isText("/")}? );
+fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
 /*----------------------------------------------------------------------------*/
 
 WS: [ \t\r\n]+ -> channel(HIDDEN);
-ML_HINT: '/*+' (ML_COMMENT|ANY_EXCEPT_AST_SOL)*? '*/' -> channel(HIDDEN);
-ML_COMMENT: '/*' (ML_COMMENT|ANY_EXCEPT_AST_SOL)*? '*/' -> channel(HIDDEN);
+ML_HINT: '/*+' IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
+ML_COMMENT: '/*' IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
 SL_HINT: '--+' ~[\r\n]* -> channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
