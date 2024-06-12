@@ -178,6 +178,12 @@ CREATE_MATERIALIZED_VIEW_LOG:
         COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ 'log' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
+// hide statements and keywords after "as" (e.g. JavaScript code)
+CREATE_MLE_MODULE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE 'mle' COMMENT_OR_WS+
+        'module' COMMENT_OR_WS+ .+? SLASH_END -> channel(HIDDEN)
+;
+
 // hide keyword: with
 CREATE_OPERATOR:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
