@@ -2017,8 +2017,12 @@ functionDefinition:
     functionHeading options+=functionDefinitionOption* (K_IS | K_AS) (declareSection? body | callSpec SEMI)
 ;
 
+// contains also options for package body function defintion
+// not documented in 23.4: accessible_by_clause, shard_enable_clause
 functionDefinitionOption:
-      deterministicClause
+      accessibleByClause
+    | deterministicClause
+    | shardEnableClause
     | pipelinedClause
     | parallelEnableClause
     | resultCacheClause
