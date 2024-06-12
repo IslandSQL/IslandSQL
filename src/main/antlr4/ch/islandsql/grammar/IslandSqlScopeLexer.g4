@@ -275,7 +275,7 @@ CREATE_FUNCTION:
 // handles also package body
 CREATE_PACKAGE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'package' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
+    'package' COMMENT_OR_WS+ -> pushMode(PACKAGE_MODE)
 ;
 
 CREATE_PROCEDURE:
@@ -446,7 +446,31 @@ WC_QUOTED_ID: QUOTED_ID -> more;
 WC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// PL/SQL Code Block Mode
+// PL/SQL Package Mode (PKG)
+/*----------------------------------------------------------------------------*/
+
+mode PACKAGE_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+PKG_EOF: EOF -> popMode;
+
+PKG_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
+
+PKG_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
+PKG_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
+PKG_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
+PKG_INITIALIZE_SECTION_START: 'begin' -> more, mode(CODE_BLOCK_MODE);
+
+PKG_ML_COMMENT: ML_COMMENT -> more;
+PKG_SL_COMMENT: SL_COMMENT -> more;
+PKG_WS: WS -> more;
+PKG_STRING: STRING -> more;
+PKG_ID: ID -> more;
+PKG_QUOTED_ID: QUOTED_ID -> more;
+PKG_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// PL/SQL Code Block Mode (CB)
 /*----------------------------------------------------------------------------*/
 
 mode CODE_BLOCK_MODE;
