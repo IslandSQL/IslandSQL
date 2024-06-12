@@ -373,7 +373,7 @@ WITH:
 ANY_OTHER: . -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
-// Unit Mode (standalone function and procedure)
+// Unit Mode for standalone function and procedure (UNIT)
 /*----------------------------------------------------------------------------*/
 
 mode UNIT_MODE;
@@ -401,7 +401,7 @@ UNIT_QUOTED_ID: QUOTED_ID -> more;
 UNIT_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// Declare Section Mode
+// Declare Section Mode (DS)
 /*----------------------------------------------------------------------------*/
 
 mode DECLARE_SECTION_MODE;
@@ -423,7 +423,7 @@ DS_QUOTED_ID: QUOTED_ID -> more;
 DS_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// With Clause Mode
+// With Clause Mode (WC)
 /*----------------------------------------------------------------------------*/
 
 mode WITH_CLAUSE_MODE;
@@ -488,7 +488,7 @@ CB_QUOTED_ID: QUOTED_ID -> more;
 CB_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// Conditional Compilation Directive Mode
+// Conditional Compilation Directive Mode (CC)
 /*----------------------------------------------------------------------------*/
 
 mode CONDITIONAL_COMPILATION_MODE;
