@@ -490,7 +490,7 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
 CB_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
-CB_EXPR: 'end' (COMMENT_OR_WS+ NAME)? -> popMode; // including PostgreSQL atomic block
+CB_EXPR: 'end' -> popMode; // including PostgreSQL atomic block
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
