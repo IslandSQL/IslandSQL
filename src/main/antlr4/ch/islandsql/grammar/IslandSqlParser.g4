@@ -2854,8 +2854,9 @@ expression:
     | operator=unaryOperator expr=expression                    # unaryExpression               // precedence 0, must be evaluated before functions
     | expr=specialFunctionExpression                            # specialFunctionExpressionParent
     | expr=functionExpression                                   # functionExpressionParent
+    | expr=expression LPAR dims+=expression RPAR
+        (LPAR dims+=expression RPAR)*                           # plsqlMultiDimensionalExpression
     | expr=plsqlQualifiedExpression                             # plsqlQualifiedExpressionParent
-    | expr=plsqlMultiDimensionalExpression                      # plsqlMultiDimensionalExpressionParent
     | expr=placeholderExpression                                # placeholderExpressionParent
     | expr=AST                                                  # allColumnWildcardExpression
     | type=dataType expr=string                                 # postgresqlStringCast
@@ -4293,10 +4294,6 @@ basicIteratorChoice:
 
 indexIteratorChoice:
     K_FOR iterator K_INDEX indexExpr=expression EQUALS_GT valueExpr=expression
-;
-
-plsqlMultiDimensionalExpression:
-    name=sqlName LPAR dims+=expression RPAR (LPAR dims+=expression RPAR)+
 ;
 
 placeholderExpression:
