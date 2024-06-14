@@ -516,8 +516,9 @@ functionSpec:
     returnClause
 ;
 
+// not documented in 23.4: options are missing, at least pipelined_clause is working
 returnClause:
-    K_RETURN type=dataType ((K_IS | K_AS) callSpec)?
+    K_RETURN type=dataType options+=functionDeclarationOption* ((K_IS | K_AS) callSpec)?
 ;
 
 // undocumented in 23.3: final/instantiable is an unordered group,
