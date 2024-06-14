@@ -2055,11 +2055,12 @@ scriptBody:
     script=.*? // handles all kind of delimiters
 ;
 
+// undocumented in 23.4: nameSchema and libNameSchema
 cDeclaration:
     (K_LANGUAGE K_C | K_EXTERNAL)
         (
-              (K_NAME name=sqlName)? K_LIBRARY libName=sqlName
-            | K_LIBRARY libName=sqlName (K_NAME name=sqlName)?
+              (K_NAME (nameSchema=sqlName PERIOD)? name=sqlName)? K_LIBRARY (libNameSchema=sqlName PERIOD)? libName=sqlName
+            | K_LIBRARY (libNameSchema=sqlName PERIOD)? libName=sqlName (K_NAME (nameSchema=sqlName PERIOD)? name=sqlName)?
         )
         (K_AGENT K_IN LPAR args+=sqlName (COMMA args+=sqlName)* RPAR)?
         (K_WITH K_CONTEXT)?
