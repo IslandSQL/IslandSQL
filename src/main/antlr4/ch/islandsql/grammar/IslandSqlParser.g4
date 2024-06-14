@@ -687,6 +687,7 @@ mapOrderFuncDeclaration:
 dmlStatement:
       callStatement
     | deleteStatement
+    | doStatement
     | explainPlanStatement
     | insertStatement
     | lockTableStatement
@@ -767,6 +768,23 @@ errorLoggingClause:
     (K_INTO (schema=sqlName PERIOD)? table=sqlName)?
     (LPAR statementTag=expression RPAR)?
     (K_REJECT K_LIMIT (unlimited=K_UNLIMITED | limit=expression))?
+;
+
+/*----------------------------------------------------------------------------*/
+// Do
+/*----------------------------------------------------------------------------*/
+
+doStatement:
+    postgresqlDo sqlEnd
+;
+
+// undocumented in PostgreSQL 16.3: language option after code
+postgresqlDo:
+    K_DO (
+          code=string
+        | K_LANGUAGE languageName=expression code=string
+        | code=string K_LANGUAGE languageName=expression
+    )
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2686,7 +2704,7 @@ dataType:
     | ansiSupportedDatatype
     | postgresqlDatatype
     | userDefinedType
-    | posgresqlArrayDatatype=dataType (LSQB RSQB)+
+    | posgresqlArrayDatatype=dataType (LSQB RSQB)
 ;
 
 oracleBuiltInDatatype:

@@ -316,6 +316,10 @@ DELETE:
     'delete' {isBeginOfStatement("delete")}? MORE_TO_SQL_END
 ;
 
+DO:
+    'do' {isBeginOfStatement("do")}? MORE_TO_SQL_END
+;
+
 EXPLAIN_PLAN:
     'explain' {isBeginOfStatement("explain")}? MORE_TO_SQL_END
 ;
