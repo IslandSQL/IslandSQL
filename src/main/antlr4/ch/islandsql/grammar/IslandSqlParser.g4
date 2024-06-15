@@ -1766,11 +1766,44 @@ inlineAnalyticView:
 // make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
       K_OFFSET offset=expression (K_ROW | K_ROWS)?
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
-      K_FETCH (K_FIRST | K_NEXT) (rowcount=expression | percent=expression K_PERCENT)?
-      (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? fetchClause rowLimitingPartitionClause? rowSpecification? rowSpecification? accuracyClause?
     | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
     | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
+;
+
+fetchClause:
+    K_FETCH (K_EXACT | K_APPROX | K_APPROXIMATE)? (K_FIRST | K_NEXT)
+;
+
+// wrong documentation in 23.4: all clauses are optional (already optional in row_limiting_clause)
+// making it mandatory for at least one item
+rowLimitingPartitionClause:
+    rowLimitingPartitionClauseItem+
+;
+
+// artificial clause to simplifiy cardinality handling
+rowLimitingPartitionClauseItem:
+    partitionCount=expression (K_PARTITION | K_PARTITIONS) K_BY partitionByExpr=expression COMMA
+;
+
+rowSpecification:
+    (rowcount=expression | percent=expression K_PERCENT)? (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
+;
+
+// wrong documentation in 23.4: optionality and alternatives are not plausible (keyword accuracy is required)
+// adapted according examples in Oracle AI Vector Search User Guide
+accuracyClause:
+    (K_WITH K_TARGET)? K_ACCURACY
+    (
+          accuracy=expression K_PERCENT?
+        | K_PARAMETERS LPAR params+=accuracyParameter+ (COMMA params+=accuracyParameter+)* RPAR
+    )
+;
+
+// artifical clause to handle arbitrary parameter order
+accuracyParameter:
+      K_EFSEARCH efs=expression
+    | K_NEIGHBOR K_PARTITION K_PROBES nprobes=expression
 ;
 
 forUpdateClause:
@@ -4611,6 +4644,7 @@ keywordAsId:
     | K_ABSENT
     | K_ACCESS
     | K_ACCESSIBLE
+    | K_ACCURACY
     | K_ACROSS
     | K_ADD
     | K_AFTER
@@ -4626,6 +4660,8 @@ keywordAsId:
     | K_ANY
     | K_APPEND
     | K_APPLY
+    | K_APPROX
+    | K_APPROXIMATE
     | K_ARRAY
     | K_AS
     | K_ASC
@@ -4768,6 +4804,7 @@ keywordAsId:
     | K_EACH
     | K_EDITIONABLE
     | K_EDIT_TOLERANCE
+    | K_EFSEARCH
     | K_ELSE
     | K_ELSIF
     | K_EMPTY
@@ -4781,6 +4818,7 @@ keywordAsId:
     | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
+    | K_EXACT
     | K_EXCEPT
     | K_EXCEPTION
     | K_EXCEPTIONS
@@ -4974,6 +5012,7 @@ keywordAsId:
     | K_NCHAR
     | K_NCHAR_CS
     | K_NCLOB
+    | K_NEIGHBOR
     | K_NESTED
     | K_NEW
     | K_NEWLINE
@@ -5028,6 +5067,7 @@ keywordAsId:
     | K_PARAMETERS
     | K_PARENT
     | K_PARTITION
+    | K_PARTITIONS
     | K_PASSING
     | K_PAST
     | K_PATH
@@ -5062,6 +5102,7 @@ keywordAsId:
     | K_PRESERVE
     | K_PRETTY
     | K_PRIOR
+    | K_PROBES
     | K_PROCEDURE
     | K_PUNCTUATION
     | K_QUALIFY
@@ -5184,6 +5225,7 @@ keywordAsId:
     | K_SYSTEM
     | K_TABLE
     | K_TABLESAMPLE
+    | K_TARGET
     | K_TDO
     | K_TEMP
     | K_TEMPORARY
