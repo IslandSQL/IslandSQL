@@ -1766,11 +1766,44 @@ inlineAnalyticView:
 // make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
       K_OFFSET offset=expression (K_ROW | K_ROWS)?
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
-      K_FETCH (K_FIRST | K_NEXT) (rowcount=expression | percent=expression K_PERCENT)?
-      (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
+    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? fetchClause rowLimitingPartitionClause? rowSpecification? rowSpecification? accuracyClause?
     | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
     | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
+;
+
+fetchClause:
+    K_FETCH (K_EXACT | K_APPROX | K_APPROXIMATE)? (K_FIRST | K_NEXT)
+;
+
+// wrong documentation in 23.4: all clauses are optional (already optional in row_limiting_clause)
+// making it mandatory for at least one item
+rowLimitingPartitionClause:
+    rowLimitingPartitionClauseItem+
+;
+
+// artificial clause to simplifiy cardinality handling
+rowLimitingPartitionClauseItem:
+    partitionCount=expression (K_PARTITION | K_PARTITIONS) K_BY partitionByExpr=expression COMMA
+;
+
+rowSpecification:
+    (rowcount=expression | percent=expression K_PERCENT)? (K_ROW | K_ROWS) (K_ONLY | K_WITH K_TIES)
+;
+
+// wrong documentation in 23.4: optionality and alternatives are not plausible (keyword accuracy is required)
+// adapted according examples in Oracle AI Vector Search User Guide
+accuracyClause:
+    (K_WITH K_TARGET)? K_ACCURACY
+    (
+          accuracy=expression K_PERCENT?
+        | K_PARAMETERS LPAR params+=accuracyParameter+ (COMMA params+=accuracyParameter+)* RPAR
+    )
+;
+
+// artifical clause to handle arbitrary parameter order
+accuracyParameter:
+      K_EFSEARCH efs=expression
+    | K_NEIGHBOR K_PARTITION K_PROBES nprobes=expression
 ;
 
 forUpdateClause:
