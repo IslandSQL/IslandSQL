@@ -4611,6 +4611,7 @@ keywordAsId:
     | K_ABSENT
     | K_ACCESS
     | K_ACCESSIBLE
+    | K_ACCURACY
     | K_ACROSS
     | K_ADD
     | K_AFTER
@@ -4626,6 +4627,8 @@ keywordAsId:
     | K_ANY
     | K_APPEND
     | K_APPLY
+    | K_APPROX
+    | K_APPROXIMATE
     | K_ARRAY
     | K_AS
     | K_ASC
@@ -4768,6 +4771,7 @@ keywordAsId:
     | K_EACH
     | K_EDITIONABLE
     | K_EDIT_TOLERANCE
+    | K_EFSEARCH
     | K_ELSE
     | K_ELSIF
     | K_EMPTY
@@ -4781,6 +4785,7 @@ keywordAsId:
     | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
+    | K_EXACT
     | K_EXCEPT
     | K_EXCEPTION
     | K_EXCEPTIONS
@@ -4974,6 +4979,7 @@ keywordAsId:
     | K_NCHAR
     | K_NCHAR_CS
     | K_NCLOB
+    | K_NEIGHBOR
     | K_NESTED
     | K_NEW
     | K_NEWLINE
@@ -5028,6 +5034,7 @@ keywordAsId:
     | K_PARAMETERS
     | K_PARENT
     | K_PARTITION
+    | K_PARTITIONS
     | K_PASSING
     | K_PAST
     | K_PATH
@@ -5062,6 +5069,7 @@ keywordAsId:
     | K_PRESERVE
     | K_PRETTY
     | K_PRIOR
+    | K_PROBES
     | K_PROCEDURE
     | K_PUNCTUATION
     | K_QUALIFY
@@ -5184,6 +5192,7 @@ keywordAsId:
     | K_SYSTEM
     | K_TABLE
     | K_TABLESAMPLE
+    | K_TARGET
     | K_TDO
     | K_TEMP
     | K_TEMPORARY
