@@ -781,21 +781,14 @@ outOflineConstraint:
 ;
 
 // oid is old syntax that is not documented anymore
-// wrong documentation in 23.4: list of attributes and constraints does not make sense, omitted it therefore (commented out)
+// wrong documentation in 23.4: list of attributes and constraints does not make sense, omitted it therefore
 objectViewClause:
     K_OF (schema=sqlName PERIOD)? typeName=sqlName
     (
           K_WITH K_OBJECT (K_IDENTIFIER | K_ID | K_OID) (K_DEFAULT | LPAR attributes+=sqlName (COMMA attributes+=sqlName)* RPAR)
         | K_UNDER (superSchema=sqlName PERIOD)? superViewName=sqlName
     )
-    //(LPAR items+=objectViewItem (COMMA items+=objectViewItem)* RPAR)?
 ;
-
-// artificial clause
-//objectViewItem:
-//      outOflineConstraint
-//    | attributeName=sqlName inlineConstraint*
-//;
 
 // oid is old syntax that is not documented anymore
 xmltypeViewClause:
