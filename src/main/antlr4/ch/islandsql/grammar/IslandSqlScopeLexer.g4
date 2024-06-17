@@ -223,22 +223,10 @@ CREATE_USER:
 ;
 
 // hide keyword: with (everything up to the as keyword)
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/35
-CREATE_VIEW:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-    (
-         (('temp' 'orary'?) COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
-       | (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)?
-             (
-                 (
-                       'editioning'
-                     | 'editionable'
-                     | ('editionable' COMMENT_OR_WS+ 'editioning')
-                     | 'noneditionable'
-                 ) COMMENT_OR_WS+
-             )?
-    )
-    ('materialized' COMMENT_OR_WS+)? 'view'
+// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/81
+CREATE_MATERIALIZED_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    'materialized' COMMENT_OR_WS+ 'view'
     COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
 ;
 
@@ -310,6 +298,23 @@ CREATE_TYPE:
 CREATE_TYPE_BODY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
+;
+
+CREATE_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+    (
+         (('temp' 'orary'?) COMMENT_OR_WS+)? ('recursive' COMMENT_OR_WS+)?
+       | (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)?
+             (
+                 (
+                       'editioning'
+                     | 'editionable'
+                     | ('editionable' COMMENT_OR_WS+ 'editioning')
+                     | 'noneditionable'
+                 ) COMMENT_OR_WS+
+             )?
+    )
+    'view' COMMENT_OR_WS+ SQL_TEXT+? -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 DELETE:
