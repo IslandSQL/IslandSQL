@@ -34,6 +34,7 @@ file: statement* EOF;
 statement:
       ddlStatement
     | dmlStatement
+    | doStatement
     | emptyStatement
     | plsqlBlockStatement
     | tclStatement
@@ -51,6 +52,7 @@ ddlStatement:
     | createTriggerStatement
     | createTypeStatement
     | createTypeBodyStatement
+    | createViewStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -88,8 +90,9 @@ plsqlFunctionOption:
     | sqlMacroClause
 ;
 
+// extended by options available in createView only
 sharingClause:
-    K_SHARING EQUALS (K_METADATA | K_NONE)
+    K_SHARING EQUALS (K_METADATA | K_NONE | K_DATA | K_EXTENDED K_DATA)
 ;
 
 shardEnableClause:
@@ -625,7 +628,7 @@ postgresqlFunctionType:
 /*----------------------------------------------------------------------------*/
 
 createTypeBodyStatement:
-      createTypeBody sqlEnd?
+    createTypeBody sqlEnd?
 ;
 
 createTypeBody:
@@ -681,13 +684,166 @@ mapOrderFuncDeclaration:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Create View
+/*----------------------------------------------------------------------------*/
+
+createViewStatement:
+    createView sqlEnd?
+;
+
+createView:
+    K_CREATE (K_OR K_REPLACE)? (K_NO? K_FORCE)?
+    (K_TEMP | K_TEMPORARY)? K_RECURSIVE?    // PostgreSQL only
+    (
+          K_EDITIONING
+        | K_EDITIONABLE K_EDITIONING?
+        | K_NONEDITIONABLE
+    )? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    sharingClause?
+    (
+          relationalViewClause
+        | objectViewClause
+        | xmltypeViewClause
+    )?
+    postgresqlViewOptions?
+    defaultCollationClause?
+    (K_BEQUEATH (K_CURRENT_USER | K_DEFINER))?
+    annotationClause?
+    K_AS subquery subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)?
+;
+
+postgresqlViewOptions:
+    K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
+;
+
+postgresqlViewOption:
+    name=sqlName (EQUALS value=expression)?
+;
+
+// artificial clause
+relationalViewClause:
+    LPAR items+=relationalViewClauseItem (COMMA items+=relationalViewClauseItem)* RPAR
+;
+
+relationalViewClauseItem:
+      alias=sqlName (K_VISIBLE | K_INVISIBLE)? inlineConstraint?
+    | outOflineConstraint
+;
+
+inlineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_NOT? K_NULL constraintState?
+        | K_UNIQUE constraintState?
+        | K_PRIMARY K_KEY constraintState?
+        | referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+// wrong documentation in 23.4: first part is not mandatory
+// allow arbitrary order of states
+constraintState:
+    states+=constraintStateItem+
+;
+
+constraintStateItem:
+      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
+    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
+    | K_RELY                                    # relyConstraintStateItem
+    | K_NORELY                                  # norelyConstraintStateItem
+    | usingIndexClause                          # indexConstraintStateItem
+    | K_ENABLE                                  # enableConstraintStateItem
+    | K_DISABLE                                 # disableConstraintStateItem
+    | K_VALIDATE                                # validateConstraintStateItem
+    | K_NOVALIDATE                              # novalidateConstraintStateItem
+    | exceptionsClause                          # exceptionConstraintStateItem
+;
+
+// We do not fully parse the using_index_clause. The reason is that it is very extensive
+// (e.g. it contains the full create index statement) and not required for the forseen
+// use cases. Providing a list of tokens is considered sufficient for the time being.
+usingIndexClause:
+    K_USING K_INDEX code=.+?
+;
+
+exceptionsClause:
+    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+referencesClause:
+    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
+    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
+    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
+;
+
+precheckState:
+      K_PRECHECK
+    | K_NOPRECHECK
+;
+
+outOflineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+// oid is old syntax that is not documented anymore
+// wrong documentation in 23.4: list of attributes and constraints does not make sense, omitted it therefore
+objectViewClause:
+    K_OF (schema=sqlName PERIOD)? typeName=sqlName
+    (
+          K_WITH K_OBJECT (K_IDENTIFIER | K_ID | K_OID) (K_DEFAULT | LPAR attributes+=sqlName (COMMA attributes+=sqlName)* RPAR)
+        | K_UNDER (superSchema=sqlName PERIOD)? superViewName=sqlName
+    )
+;
+
+// oid is old syntax that is not documented anymore
+xmltypeViewClause:
+    K_OF K_XMLTYPE xmlschemaSpec?
+    K_WITH K_OBJECT (K_IDENTIFIER | K_ID | K_OID) (K_DEFAULT | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)
+;
+
+// wrong documentation in 23.4: url and element must be passed in double quotes (as quoted identifier)
+// no need to deal with anchored element explicitly since they are part of the quoted identifier
+xmlschemaSpec:
+    (K_XMLSCHEMA url=QUOTED_ID)? K_ELEMENT element=QUOTED_ID
+    (K_STORE K_ALL K_VARRAYS K_AS (K_LOBS | K_TABLES))?
+    ((K_ALLOW | K_DISALLOW) K_NONSCHEMA)?
+    ((K_ALLOW | K_DISALLOW) K_ANYSCHEMA)?
+;
+
+// contains part of annotations_list clause to simplify grammar
+annotationClause:
+    K_ANNOTATIONS LPAR items+=annotationListItem (COMMA items+=annotationListItem)* RPAR
+;
+
+// artificial clause
+annotationListItem:
+    (
+          K_ADD (K_IF K_NOT K_EXISTS | K_OR K_REPLACE)?
+        | K_DROP (K_IF K_EXISTS)?
+        | K_REPLACE
+    )?
+    annotation
+;
+
+// contains annotation_name and annotation_value to simplify grammar
+annotation:
+    name=sqlName value=string?
+;
+
+/*----------------------------------------------------------------------------*/
 // Data Manipulation Language
 /*----------------------------------------------------------------------------*/
 
 dmlStatement:
       callStatement
     | deleteStatement
-    | doStatement
     | explainPlanStatement
     | insertStatement
     | lockTableStatement
@@ -1086,8 +1242,7 @@ selectStatement:
 
 select:
     subquery
-    subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
-    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create view support, see see https://github.com/IslandSQL/IslandSQL/issues/35
+    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create table support, see see https://github.com/IslandSQL/IslandSQL/issues/82
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
@@ -1559,7 +1714,13 @@ datatypeDomain:
 ;
 
 subqueryRestrictionClause:
-    K_WITH (K_READ K_ONLY | K_CHECK K_OPTION) (K_CONSTRAINT constraintName=sqlName)?
+    K_WITH
+    (
+          K_READ K_ONLY
+        | K_CHECK K_OPTION
+        | (K_CASCADED | K_LOCAL) K_CHECK K_OPTION   // PostgreSQL only
+    )
+    (K_CONSTRAINT constraintName=sqlName)?
 ;
 
 // handle MINVALUE and MAXVALUE as sqlName in expression
@@ -4657,7 +4818,9 @@ keywordAsId:
     | K_ANALYZE
     | K_ANCESTOR
     | K_AND
+    | K_ANNOTATIONS
     | K_ANY
+    | K_ANYSCHEMA
     | K_APPEND
     | K_APPLY
     | K_APPROX
@@ -4680,6 +4843,7 @@ keywordAsId:
     | K_BEFORE
     | K_BEGIN
     | K_BEGINNING
+    | K_BEQUEATH
     | K_BETWEEN
     | K_BFILE
     | K_BIGINT
@@ -4705,6 +4869,8 @@ keywordAsId:
     | K_C
     | K_CALL
     | K_CALLED
+    | K_CASCADE
+    | K_CASCADED
     | K_CASE
     | K_CASE_SENSITIVE
     | K_CAST
@@ -4803,8 +4969,10 @@ keywordAsId:
     | K_DURATION
     | K_EACH
     | K_EDITIONABLE
+    | K_EDITIONING
     | K_EDIT_TOLERANCE
     | K_EFSEARCH
+    | K_ELEMENT
     | K_ELSE
     | K_ELSIF
     | K_EMPTY
@@ -4849,6 +5017,7 @@ keywordAsId:
     | K_FOR
     | K_FORALL
     | K_FORCE
+    | K_FOREIGN
     | K_FORMAT
     | K_FORWARD
     | K_FROM
@@ -4882,6 +5051,8 @@ keywordAsId:
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HOUR
+    | K_ID
+    | K_IDENTIFIER
     | K_IF
     | K_IGNORE
     | K_IMMEDIATE
@@ -4962,6 +5133,7 @@ keywordAsId:
     | K_LIMIT
     | K_LINE
     | K_LISTAGG
+    | K_LOBS
     | K_LOCAL
     | K_LOCATION
     | K_LOCK
@@ -5024,6 +5196,9 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NONE
     | K_NONEDITIONABLE
+    | K_NONSCHEMA
+    | K_NOPRECHECK
+    | K_NORELY
     | K_NORMALIZE
     | K_NOSCHEMACHECK
     | K_NOT
@@ -5092,6 +5267,7 @@ keywordAsId:
     | K_PRAGMA
     | K_PRECEDES
     | K_PRECEDING
+    | K_PRECHECK
     | K_PRECISION
     | K_PREDICTION
     | K_PREDICTION_COST
@@ -5101,6 +5277,7 @@ keywordAsId:
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
+    | K_PRIMARY
     | K_PRIOR
     | K_PROBES
     | K_PROCEDURE
@@ -5117,10 +5294,12 @@ keywordAsId:
     | K_RECURSIVELY
     | K_REF
     | K_REFERENCE
+    | K_REFERENCES
     | K_REFERENCING
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELIES_ON
+    | K_RELY
     | K_REMOVE
     | K_RENAME
     | K_REPEAT
@@ -5210,6 +5389,7 @@ keywordAsId:
     | K_STATEMENT_ID
     | K_STATIC
     | K_STATISTICS
+    | K_STORE
     | K_STRICT
     | K_STRUCT
     | K_SUBMULTISET
@@ -5224,6 +5404,7 @@ keywordAsId:
     | K_SYMMETRIC
     | K_SYSTEM
     | K_TABLE
+    | K_TABLES
     | K_TABLESAMPLE
     | K_TARGET
     | K_TDO
@@ -5289,6 +5470,7 @@ keywordAsId:
     | K_VARCHAR
     | K_VARIADIC
     | K_VARRAY
+    | K_VARRAYS
     | K_VARYING
     | K_VECTOR
     | K_VECTOR_CHUNKS
@@ -5331,6 +5513,7 @@ keywordAsId:
     | K_XMLPI
     | K_XMLQUERY
     | K_XMLROOT
+    | K_XMLSCHEMA
     | K_XMLSERIALIZE
     | K_XMLTABLE
     | K_XMLTYPE
