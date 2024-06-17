@@ -34,6 +34,7 @@ file: statement* EOF;
 statement:
       ddlStatement
     | dmlStatement
+    | doStatement
     | emptyStatement
     | plsqlBlockStatement
     | tclStatement
@@ -687,7 +688,6 @@ mapOrderFuncDeclaration:
 dmlStatement:
       callStatement
     | deleteStatement
-    | doStatement
     | explainPlanStatement
     | insertStatement
     | lockTableStatement
