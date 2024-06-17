@@ -4852,6 +4852,7 @@ keywordAsId:
     | K_CALL
     | K_CALLED
     | K_CASCADE
+    | K_CASCADED
     | K_CASE
     | K_CASE_SENSITIVE
     | K_CAST

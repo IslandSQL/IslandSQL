@@ -130,6 +130,7 @@ K_C: 'c';
 K_CALL: 'call';
 K_CALLED: 'called';
 K_CASCADE: 'cascade';
+K_CASCADED: 'cascaded';
 K_CASE: 'case';
 K_CASE_SENSITIVE: ('case_sensitive'|'case-sensitive'); // original implementation was based on kebab-case, see https://mobile.twitter.com/phsalvisberg/status/1351990195109974018
 K_CAST: 'cast';
