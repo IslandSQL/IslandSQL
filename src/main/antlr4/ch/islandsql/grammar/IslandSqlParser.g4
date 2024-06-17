@@ -693,6 +693,7 @@ createViewStatement:
 
 createView:
     K_CREATE (K_OR K_REPLACE)? (K_NO? K_FORCE)?
+    (K_TEMP | K_TEMPORARY)? K_RECURSIVE?    // PostgreSQL only
     (
           K_EDITIONING
         | K_EDITIONABLE K_EDITIONING?
@@ -704,10 +705,19 @@ createView:
         | objectViewClause
         | xmltypeViewClause
     )?
+    postgresqlViewOptions?
     defaultCollationClause?
     (K_BEQUEATH (K_CURRENT_USER | K_DEFINER))?
     annotationClause?
     K_AS subquery subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)?
+;
+
+postgresqlViewOptions:
+    K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
+;
+
+postgresqlViewOption:
+    name=sqlName (EQUALS value=expression)?
 ;
 
 // artificial clause
@@ -1702,7 +1712,13 @@ datatypeDomain:
 ;
 
 subqueryRestrictionClause:
-    K_WITH (K_READ K_ONLY | K_CHECK K_OPTION) (K_CONSTRAINT constraintName=sqlName)?
+    K_WITH
+    (
+          K_READ K_ONLY
+        | K_CHECK K_OPTION
+        | (K_CASCADED | K_LOCAL) K_CHECK K_OPTION   // PostgreSQL only
+    )
+    (K_CONSTRAINT constraintName=sqlName)?
 ;
 
 // handle MINVALUE and MAXVALUE as sqlName in expression
