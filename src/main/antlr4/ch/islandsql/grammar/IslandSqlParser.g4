@@ -52,6 +52,7 @@ ddlStatement:
     | createTriggerStatement
     | createTypeStatement
     | createTypeBodyStatement
+    | createViewStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -89,8 +90,9 @@ plsqlFunctionOption:
     | sqlMacroClause
 ;
 
+// extended by options available in createView only
 sharingClause:
-    K_SHARING EQUALS (K_METADATA | K_NONE)
+    K_SHARING EQUALS (K_METADATA | K_NONE | K_DATA | K_EXTENDED K_DATA)
 ;
 
 shardEnableClause:
@@ -682,6 +684,155 @@ mapOrderFuncDeclaration:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Create View
+/*----------------------------------------------------------------------------*/
+
+createViewStatement:
+    createView sqlEnd?
+;
+
+createView:
+    K_CREATE (K_OR K_REPLACE)? (K_NO? K_FORCE)?
+    (
+          K_EDITIONING
+        | K_EDITIONABLE K_EDITIONING?
+        | K_NONEDITIONABLE
+    )? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    sharingClause?
+    (
+          relationalViewClause
+        | objectViewClause
+        | xmltypeViewClause
+    )?
+    defaultCollationClause?
+    (K_BEQUEATH (K_CURRENT_USER | K_DEFINER))?
+    annotationClause?
+    K_AS subquery subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)?
+;
+
+// artificial clause
+relationalViewClause:
+    LPAR items+=relationalViewClauseItem (COMMA items+=relationalViewClauseItem)* RPAR
+;
+
+relationalViewClauseItem:
+      alias=sqlName (K_VISIBLE | K_INVISIBLE)? inlineConstraint?
+    | outOflineConstraint
+;
+
+inlineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_NOT? K_NULL constraintState?
+        | K_UNIQUE constraintState?
+        | K_PRIMARY K_KEY constraintState?
+        | referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+// wrong documentation in 23.4: first part is not mandatory
+// allow arbitrary order of states
+constraintState:
+    states+=constraintStateItem+
+;
+
+constraintStateItem:
+      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
+    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
+    | K_RELY                                    # relyConstraintStateItem
+    | K_NORELY                                  # norelyConstraintStateItem
+    | usingIndexClause                          # indexConstraintStateItem
+    | K_ENABLE                                  # enableConstraintStateItem
+    | K_DISABLE                                 # disableConstraintStateItem
+    | K_VALIDATE                                # validateConstraintStateItem
+    | K_NOVALIDATE                              # novalidateConstraintStateItem
+    | exceptionsClause                          # exceptionConstraintStateItem
+;
+
+// simplified clause, details of using_index_clause are available as token stream only
+usingIndexClause:
+    K_USING K_INDEX code=.+? // TODO: document limitation
+;
+
+exceptionsClause:
+    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+referencesClause:
+    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
+    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
+    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
+;
+
+precheckState:
+      K_PRECHECK
+    | K_NOPRECHECK
+;
+
+outOflineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+// oid is old syntax that is not documented anymore
+// wrong documentation in 23.4: list of attributes and constraints does not make sense, omitted it therefore (commented out)
+objectViewClause:
+    K_OF (schema=sqlName PERIOD)? typeName=sqlName
+    (
+          K_WITH K_OBJECT (K_IDENTIFIER | K_ID | K_OID) (K_DEFAULT | LPAR attributes+=sqlName (COMMA attributes+=sqlName)* RPAR)
+        | K_UNDER (superSchema=sqlName PERIOD)? superViewName=sqlName
+    )
+    //(LPAR items+=objectViewItem (COMMA items+=objectViewItem)* RPAR)?
+;
+
+// artificial clause
+//objectViewItem:
+//      outOflineConstraint
+//    | attributeName=sqlName inlineConstraint*
+//;
+
+// oid is old syntax that is not documented anymore
+xmltypeViewClause:
+    K_OF K_XMLTYPE xmlschemaSpec?
+    K_WITH K_OBJECT (K_IDENTIFIER | K_ID | K_OID) (K_DEFAULT | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)
+;
+
+// wrong documentation in 23.4: url and element must be passed in double quotes (as quoted identifier)
+// no need to deal with anchored element explicitly since they are part of the quoted identifier
+xmlschemaSpec:
+    (K_XMLSCHEMA url=QUOTED_ID)? K_ELEMENT element=QUOTED_ID
+    (K_STORE K_ALL K_VARRAYS K_AS (K_LOBS | K_TABLES))?
+    ((K_ALLOW | K_DISALLOW) K_NONSCHEMA)?
+    ((K_ALLOW | K_DISALLOW) K_ANYSCHEMA)?
+;
+
+// contains part of annotations_list clause to simplify grammar
+annotationClause:
+    K_ANNOTATIONS LPAR items+=annotationListItem (COMMA items+=annotationListItem)* RPAR
+;
+
+// artificial clause
+annotationListItem:
+    (
+          K_ADD (K_IF K_NOT K_EXISTS | K_OR K_REPLACE)?
+        | K_DROP (K_IF K_EXISTS)?
+        | K_REPLACE
+    )?
+    annotation
+;
+
+// contains annotation_name and annotation_value to simplify grammar
+annotation:
+    name=sqlName value=string?
+;
+
+/*----------------------------------------------------------------------------*/
 // Data Manipulation Language
 /*----------------------------------------------------------------------------*/
 
@@ -1086,7 +1237,6 @@ selectStatement:
 
 select:
     subquery
-    subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)? // TODO: remove with create view support, see https://github.com/IslandSQL/IslandSQL/issues/35
     (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create view support, see see https://github.com/IslandSQL/IslandSQL/issues/35
 ;
 
