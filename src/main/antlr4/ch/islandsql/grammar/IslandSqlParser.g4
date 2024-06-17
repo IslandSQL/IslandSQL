@@ -760,9 +760,11 @@ constraintStateItem:
     | exceptionsClause                          # exceptionConstraintStateItem
 ;
 
-// simplified clause, details of using_index_clause are available as token stream only
+// We do not fully parse the using_index_clause. The reason is that it is very extensive
+// (e.g. it contains the full create index statement) and not required for the forseen
+// use cases. Providing a list of tokens is considered sufficient for the time being.
 usingIndexClause:
-    K_USING K_INDEX code=.+? // TODO: document limitation
+    K_USING K_INDEX code=.+?
 ;
 
 exceptionsClause:
