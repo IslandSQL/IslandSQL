@@ -626,7 +626,7 @@ postgresqlFunctionType:
 /*----------------------------------------------------------------------------*/
 
 createTypeBodyStatement:
-      createTypeBody sqlEnd?
+    createTypeBody sqlEnd?
 ;
 
 createTypeBody:
