@@ -445,7 +445,6 @@ WC: SQL_END -> popMode;
 
 WC_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 WC_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
-WC_UNIT_BEGIN: 'begin' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
 
 WC_ML_COMMENT: ML_COMMENT -> more;
 WC_SL_COMMENT: SL_COMMENT -> more;
