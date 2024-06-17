@@ -4657,7 +4657,9 @@ keywordAsId:
     | K_ANALYZE
     | K_ANCESTOR
     | K_AND
+    | K_ANNOTATIONS
     | K_ANY
+    | K_ANYSCHEMA
     | K_APPEND
     | K_APPLY
     | K_APPROX
@@ -4680,6 +4682,7 @@ keywordAsId:
     | K_BEFORE
     | K_BEGIN
     | K_BEGINNING
+    | K_BEQUEATH
     | K_BETWEEN
     | K_BFILE
     | K_BIGINT
@@ -4705,6 +4708,7 @@ keywordAsId:
     | K_C
     | K_CALL
     | K_CALLED
+    | K_CASCADE
     | K_CASE
     | K_CASE_SENSITIVE
     | K_CAST
@@ -4803,8 +4807,10 @@ keywordAsId:
     | K_DURATION
     | K_EACH
     | K_EDITIONABLE
+    | K_EDITIONING
     | K_EDIT_TOLERANCE
     | K_EFSEARCH
+    | K_ELEMENT
     | K_ELSE
     | K_ELSIF
     | K_EMPTY
@@ -4849,6 +4855,7 @@ keywordAsId:
     | K_FOR
     | K_FORALL
     | K_FORCE
+    | K_FOREIGN
     | K_FORMAT
     | K_FORWARD
     | K_FROM
@@ -4882,6 +4889,8 @@ keywordAsId:
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HOUR
+    | K_ID
+    | K_IDENTIFIER
     | K_IF
     | K_IGNORE
     | K_IMMEDIATE
@@ -4962,6 +4971,7 @@ keywordAsId:
     | K_LIMIT
     | K_LINE
     | K_LISTAGG
+    | K_LOBS
     | K_LOCAL
     | K_LOCATION
     | K_LOCK
@@ -5024,6 +5034,9 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NONE
     | K_NONEDITIONABLE
+    | K_NONSCHEMA
+    | K_NOPRECHECK
+    | K_NORELY
     | K_NORMALIZE
     | K_NOSCHEMACHECK
     | K_NOT
@@ -5092,6 +5105,7 @@ keywordAsId:
     | K_PRAGMA
     | K_PRECEDES
     | K_PRECEDING
+    | K_PRECHECK
     | K_PRECISION
     | K_PREDICTION
     | K_PREDICTION_COST
@@ -5101,6 +5115,7 @@ keywordAsId:
     | K_PRESENT
     | K_PRESERVE
     | K_PRETTY
+    | K_PRIMARY
     | K_PRIOR
     | K_PROBES
     | K_PROCEDURE
@@ -5117,10 +5132,12 @@ keywordAsId:
     | K_RECURSIVELY
     | K_REF
     | K_REFERENCE
+    | K_REFERENCES
     | K_REFERENCING
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELIES_ON
+    | K_RELY
     | K_REMOVE
     | K_RENAME
     | K_REPEAT
@@ -5210,6 +5227,7 @@ keywordAsId:
     | K_STATEMENT_ID
     | K_STATIC
     | K_STATISTICS
+    | K_STORE
     | K_STRICT
     | K_STRUCT
     | K_SUBMULTISET
@@ -5224,6 +5242,7 @@ keywordAsId:
     | K_SYMMETRIC
     | K_SYSTEM
     | K_TABLE
+    | K_TABLES
     | K_TABLESAMPLE
     | K_TARGET
     | K_TDO
@@ -5289,6 +5308,7 @@ keywordAsId:
     | K_VARCHAR
     | K_VARIADIC
     | K_VARRAY
+    | K_VARRAYS
     | K_VARYING
     | K_VECTOR
     | K_VECTOR_CHUNKS
@@ -5331,6 +5351,7 @@ keywordAsId:
     | K_XMLPI
     | K_XMLQUERY
     | K_XMLROOT
+    | K_XMLSCHEMA
     | K_XMLSERIALIZE
     | K_XMLTABLE
     | K_XMLTYPE
