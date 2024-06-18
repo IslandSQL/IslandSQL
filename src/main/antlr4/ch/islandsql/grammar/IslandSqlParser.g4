@@ -174,7 +174,7 @@ sqlBody:
 /*----------------------------------------------------------------------------*/
 
 createPackageStatement:
-      createPackage sqlEnd?
+    createPackage sqlEnd?
 ;
 
 // wrong documenation in 23.3: package_item_list is not mandatory
