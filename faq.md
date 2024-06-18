@@ -6,7 +6,7 @@ The ANLTR organisation on GitHub manages a repository with example grammars. You
 
 Most of the 3rd party grammars cover a large subset of the underlying languages. They define what they cover in ANTLR or by EBNF. However, they often do not define which versions they cover and they do not define what they don’t cover. As a result, you have to try if the grammar is sufficient for your use case. Furthermore, you have to assess if it is sufficient for future use cases and if the grammar will cover the changes in newer versions. This is very difficult without a clear scope.
 
-IslandSQL is different. It defines the scope. The [Database Management Systems](README.md#database-management-systems) including the grammar versions and the [statements](README.md#statements)). The statements that are not in scope are kept as hidden tokens. They do not lead to parser errors. And the known [limitations](limitations.md) are documented.
+IslandSQL is different. It defines the scope. The [Database Management Systems](README.md#database-management-systems) including the grammar versions and the [statements](README.md#statements). The statements that are not in scope are kept as hidden tokens. They do not lead to parser errors. And the known [limitations](limitations.md) are documented.
 
 ## What is the scope?
 
