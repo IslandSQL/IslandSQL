@@ -688,7 +688,7 @@ mapOrderFuncDeclaration:
 /*----------------------------------------------------------------------------*/
 
 createViewStatement:
-    createView sqlEnd?
+    createView sqlEnd
 ;
 
 createView:
