@@ -61,7 +61,7 @@ The current islands of interests are:
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
 
-Statements containing other languages such as Java or JavaScript are not within the scope of IsqlandSQL, as the source code in these languages is most likely developed, linted, tested and packaged outside the database before being deployed in the database.
+Statements containing other languages such as Java or JavaScript are not within the scope of IslandSQL, as the source code in these languages is most likely developed, linted, tested and packaged outside the database before being deployed in the database.
 
 ## IslandSQL Grammar
 
