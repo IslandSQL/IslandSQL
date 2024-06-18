@@ -70,7 +70,9 @@ and can be found [here](https://islandsql.github.io/IslandSQL/grammar.html).
 
 [<img src="images/IslandSQL-file.png" alt="IslandSQL file" width="25%"/>](https://islandsql.github.io/IslandSQL/grammar.html)
 
-## More
+## Frequently Asked Questions (FAQ)
+
+See [FAQ](faq.md).
 
 - [SQL:2023 / ISO/IEC 9075:2023](sql-2023.md)
 - [Limitations](limitations.md)
