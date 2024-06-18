@@ -25,34 +25,43 @@ The HTML reference shows the latest version of the document. However, the latest
 
 ### Statements
 
+The IslandSQL grammar covers statements that can contain static DML statements and code in PL/SQL and PL/pgSQL.
+
 The current islands of interests are:
 
-| Type  | Statement                |      OracleDB      |     PostgreSQL     |
-|-------|--------------------------|:------------------:|:------------------:|
-| DDL   | `create function`        | :white_check_mark: | :white_check_mark: |
-|       | `create package`         | :white_check_mark: |        n/a         |
-|       | `create package body`    | :white_check_mark: |        n/a         |
-|       | `create procedure`       | :white_check_mark: | :white_check_mark: |
-|       | `create trigger`         | :white_check_mark: | :white_check_mark: |
-|       | `create type`            | :white_check_mark: | :white_check_mark: |
-|       | `create type body`       | :white_check_mark: |        n/a         |
-| DML   | `call`                   | :white_check_mark: | :white_check_mark: |
-|       | `delete`                 | :white_check_mark: | :white_check_mark: |
-|       | `explain plan`           | :white_check_mark: | :white_check_mark: |
-|       | `insert`                 | :white_check_mark: | :white_check_mark: |
-|       | `lock table`             | :white_check_mark: | :white_check_mark: |
-|       | `merge`                  | :white_check_mark: | :white_check_mark: |
-|       | `select`                 | :white_check_mark: | :white_check_mark: |
-|       | `update`                 | :white_check_mark: | :white_check_mark: |
-| TCL   | `begin`                  |        n/a         | :white_check_mark: |
-|       | `commit`                 | :white_check_mark: | :white_check_mark: |
-|       | `rollback`               | :white_check_mark: | :white_check_mark: |
-|       | `savepoint`              | :white_check_mark: | :white_check_mark: |
-|       | `set constraints`        | :white_check_mark: | :white_check_mark: |
-|       | `set transaction`        | :white_check_mark: | :white_check_mark: |
-| other | `anonymous PL/SQL block` | :white_check_mark: |        n/a         |
+| Type  | Statement                             |      OracleDB      |     PostgreSQL     |
+|-------|---------------------------------------|:------------------:|:------------------:|
+| DDL   | `create function`                     | :white_check_mark: | :white_check_mark: |
+|       | `create json relational duality view` |   :construction:   |        n/a         |
+|       | `create materialized view`            | :white_check_mark: | :white_check_mark: |
+|       | `create package`                      | :white_check_mark: |        n/a         |
+|       | `create package body`                 | :white_check_mark: |        n/a         |
+|       | `create procedure`                    | :white_check_mark: | :white_check_mark: |
+|       | `create table`                        |   :construction:   |   :construction:   |
+|       | `create trigger`                      | :white_check_mark: | :white_check_mark: |
+|       | `create type`                         | :white_check_mark: | :white_check_mark: |
+|       | `create type body`                    | :white_check_mark: |        n/a         |
+|       | `create view`                         | :white_check_mark: | :white_check_mark: |
+| DML   | `call`                                | :white_check_mark: | :white_check_mark: |
+|       | `delete`                              | :white_check_mark: | :white_check_mark: |
+|       | `explain plan`                        | :white_check_mark: | :white_check_mark: |
+|       | `insert`                              | :white_check_mark: | :white_check_mark: |
+|       | `lock table`                          | :white_check_mark: | :white_check_mark: |
+|       | `merge`                               | :white_check_mark: | :white_check_mark: |
+|       | `select`                              | :white_check_mark: | :white_check_mark: |
+|       | `update`                              | :white_check_mark: | :white_check_mark: |
+| TCL   | `begin`                               |        n/a         | :white_check_mark: |
+|       | `commit`                              | :white_check_mark: | :white_check_mark: |
+|       | `rollback`                            | :white_check_mark: | :white_check_mark: |
+|       | `savepoint`                           | :white_check_mark: | :white_check_mark: |
+|       | `set constraints`                     | :white_check_mark: | :white_check_mark: |
+|       | `set transaction`                     | :white_check_mark: | :white_check_mark: |
+| other | `anonymous PL/SQL block`              | :white_check_mark: |        n/a         |
+|       | `do`                                  |        n/a         | :white_check_mark: |
 
 Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
+
+Statements containing other languages such as Java or JavaScript are not within the scope of IsqlandSQL, as the source code in these languages is most likely developed, linted, tested and packaged outside the database before being deployed in the database.
 
 ## IslandSQL Grammar
 
