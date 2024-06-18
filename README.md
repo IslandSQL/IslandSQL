@@ -74,9 +74,6 @@ and can be found [here](https://islandsql.github.io/IslandSQL/grammar.html).
 
 See [FAQ](faq.md).
 
-- [SQL:2023 / ISO/IEC 9075:2023](sql-2023.md)
-- [Limitations](limitations.md)
-
 ## License
 
 IslandSQL is licensed under the Apache License, Version 2.0. You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
