@@ -314,7 +314,7 @@ CREATE_VIEW:
                  ) COMMENT_OR_WS+
              )?
     )
-    'view' COMMENT_OR_WS+ SQL_TEXT+? -> pushMode(WITH_CLAUSE_MODE)
+    'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 DELETE:
