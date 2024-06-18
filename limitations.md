@@ -173,6 +173,8 @@ create or replace package my_pkg as
 end my_pkg;
 ```
 
+The grammar expects a plsqlDataType after `subtype my_real is` but got a selectionDirective.
+
 ## Shallow Parsed Clauses
 
 The following clauses contain a flat sequence of tokens for certain parts:
