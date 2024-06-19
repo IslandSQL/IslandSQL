@@ -138,15 +138,60 @@ select e.*, :'schema' as schema from :schema emp as e;
 
 The grammar expects an identifier to not contain a period. Hence, this usage is not supported.
 
-## External Table Access Parameters
+## Conditional Compilation (Selection Directives)
 
-The `access_parameters` clause used in [inline_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-AC907F76-4436-4D28-9EAB-FD3D93AE5648) or [modified_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-BC324A59-5780-461E-8DDF-F8ABCEFD741B) is driver specific. You can pass this access parameters as string or as a subquery returning a CLOB or embed the driver specific parameters directly. All variants are supported. 
+Selection directives are similar to substitution variables. They can contain arbitrary text and are replaced as part of the pre-compilation step. 
 
-However, when you embed the drivers specific parameters directly, the parameters are parsed as a list of tokens. We do not plan to implement the driver specific grammars. See also:
+The IslandSQL grammar provides limited support for selection directives. They can be used in places where an [expression](https://islandsql.github.io/IslandSQL/grammar.html#expression), [itemlistItem](https://islandsql.github.io/IslandSQL/grammar.html#itemlistItem) or [plsqlStatement](https://islandsql.github.io/IslandSQL/grammar.html#plsqlStatement) is valid.
 
-- [Oracle Database Utilities: External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables.html#GUID-038ED956-A6EE-4C6D-B7C9-0D406B8088B6) 
-- [Oracle Database Administrator's Guide: Using Inline External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-621E5DDE-36D9-4661-9D14-80DE35858C3F)
-- [Oracle Database Administrator's Guide: Overriding Parameters for External Tables in a Query](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-6E4219FF-A557-452E-A6E9-96C38BA87EE0)
+Here's an example of a supported usage:
+
+```sql
+create or replace package my_pkg as 
+   $if dbms_db_version.version < 10 $then 
+      subtype my_real is number;
+   $else 
+      subtype my_real is binary_double;
+   $end
+   my_pi my_real;
+   my_e my_real;
+end my_pkg;
+```
+
+And here's an example of an unsupported usage:
+
+```sql
+create or replace package my_pkg as
+   subtype my_real is
+      $if dbms_db_version.version < 10 $then  
+         number;
+      $else 
+         binary_double;
+      $end
+   my_pi my_real;
+   my_e my_real;
+end my_pkg;
+```
+
+The grammar expects a plsqlDataType after `subtype my_real is` but got a selectionDirective.
+
+## Shallow Parsed Clauses
+
+The following clauses contain a flat sequence of tokens:
+
+| Clause                                                                                                                                                                                                     | Parts containing token list                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [column_properties](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/CREATE-MATERIALIZED-VIEW.html#GUID-EE262CA4-01E5-4618-B659-6165D993CA1B__I2116487)                                 | Complete clause                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [inline_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-AC907F76-4436-4D28-9EAB-FD3D93AE5648)              | Driver-specific `access parameters`, see [Oracle Database Administrator's Guide: Using Inline External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-621E5DDE-36D9-4661-9D14-80DE35858C3F), [Oracle Database Utilities: External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables.html#GUID-038ED956-A6EE-4C6D-B7C9-0D406B8088B6)                         |
+| [javascript_declaration](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/call-specification.html#GUID-C5F117AE-E9A2-499B-BA6A-35D072575BAD__GUID-59B2D1AA-DB1E-4E23-BEA2-51EFCC1F2098) | JavaScript `code`                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| [modified_external_table](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/SELECT.html#GUID-CFA006CA-6FF1-4972-821E-6996142A51C6__GUID-BC324A59-5780-461E-8DDF-F8ABCEFD741B)            | Driver-specific `access parameters`, see [Oracle Database Administrator's Guide: Overriding Parameters for External Tables in a Query](https://docs.oracle.com/en/database/oracle/oracle-database/23/admin/managing-tables.html#GUID-6E4219FF-A557-452E-A6E9-96C38BA87EE0), [Oracle Database Utilities: External Tables](https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables.html#GUID-038ED956-A6EE-4C6D-B7C9-0D406B8088B6) |
+| [physical_attributes_clause](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/CREATE-MATERIALIZED-VIEW.html#GUID-EE262CA4-01E5-4618-B659-6165D993CA1B__I2116626)                        | Complete clause                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [physical_properties](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/CREATE-MATERIALIZED-VIEW.html#GUID-EE262CA4-01E5-4618-B659-6165D993CA1B__I2147304)                               | Complete clause                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [Selection Directives](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/plsql-language-fundamentals.html#GUID-78F2074C-C799-4CF9-9290-EB8473D0C8FB)                                     | `text`                                                                                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| [table_partitioning_clauses](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/CREATE-TABLE.html#GUID-F9CE0CC3-13AE-4744-A43C-EAC7A71AAAB6__I2129707)                                 | Complete clause                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| [using_index_clause](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/constraint.html#GUID-1055EA97-BA6F-4764-A15F-1024FD5B6DFE__CJAGEBIG)                                              | `create_index_statement` and `index_properties`                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+This means that syntax errors may not be reported and static code analysis of these clauses is more complex.
 
 ## PostgreSQL Bitwise XOR Operator `#`
 

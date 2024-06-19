@@ -48,13 +48,6 @@ fragment CONTINUE_LINE: '-' HSPACE? SINGLE_NL?;
 fragment SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE);
 fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
-fragment ANY_EXCEPT_AS_WS:
-    (
-          'a' 's' ~[ \t\r\n]
-        | 'a' ~'s'
-        | ~'a'
-    )
-;
 fragment ANY_EXCEPT_LOG:
     (
           'l' 'o' ~'g'
@@ -222,14 +215,6 @@ CREATE_USER:
         MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
-// hide keyword: with (everything up to the as keyword)
-// TODO: remove with https://github.com/IslandSQL/IslandSQL/issues/81
-CREATE_MATERIALIZED_VIEW:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    'materialized' COMMENT_OR_WS+ 'view'
-    COMMENT_OR_WS+ ANY_EXCEPT_LOG ANY_EXCEPT_AS_WS+ -> channel(HIDDEN)
-;
-
 // hide keywords: select, insert, update, delete
 GRANT:
     'grant' {isBeginOfStatement("grant")}? MORE_TO_SQL_END -> channel(HIDDEN)
@@ -264,6 +249,12 @@ COMMIT:
 CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
+;
+
+CREATE_MATERIALIZED_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    'materialized' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+
+    ANY_EXCEPT_LOG -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 // handles also package body
@@ -314,7 +305,7 @@ CREATE_VIEW:
                  ) COMMENT_OR_WS+
              )?
     )
-    'view' COMMENT_OR_WS+ SQL_TEXT+? -> pushMode(WITH_CLAUSE_MODE)
+    'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 DELETE:

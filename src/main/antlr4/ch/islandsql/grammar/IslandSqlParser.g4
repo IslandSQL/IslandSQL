@@ -46,6 +46,7 @@ statement:
 
 ddlStatement:
       createFunctionStatement
+    | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
@@ -170,11 +171,169 @@ sqlBody:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Create Materialized View
+/*----------------------------------------------------------------------------*/
+
+createMaterializedViewStatement:
+    createMaterializedView sqlEnd
+;
+
+// wrong documentation in 23.4:
+// - column list is optional and parentheses start/close the list not the column
+// - on prebuilt table is optional
+// - phyisical_properties and materialized_view_props are optional
+createMaterializedView:
+    K_CREATE K_MATERIALIZED K_VIEW
+    (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
+    (K_OF (objectTypeSchema=sqlName PERIOD)? objectTypeName=sqlName)?
+    (LPAR columns+=mviewColumn (COMMA columns+=mviewColumn)* RPAR)?
+    (K_USING method=string)? postgresqlViewOptions?  // PostgreSQL only
+    defaultCollationClause?
+    (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
+    physicalProperties? materializedViewProps
+    (
+          K_USING K_INDEX physicalAttributesClause?
+        | K_USING K_NO K_INDEX
+    )?
+    createMvRefresh?
+    evaluationEditionClause? onQueryComputationClause?
+    queryRewriteClause? concurrentRefreshClause? annotationClause?
+    K_AS subquery
+    (K_WITH K_NO? K_DATA)?  // PostgreSQL only
+;
+
+// artificial clause
+// wrong documentation in 23.4: scoped_table_ref_constraint cannot follow a column alias
+mviewColumn:
+      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationClause?
+    | scopedTableRefConstraint?
+;
+
+encryptionSpec:
+    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
+    integrityAlgorithm=string? (K_NO? K_SALT)?
+;
+
+scopedTableRefConstraint:
+    K_SCOPE K_FOR LPAR refColumn=sqlName RPAR K_IS (schema=sqlName PERIOD)? scopeTableOrAlias=sqlName
+;
+
+// simplified as list of tokens
+physicalProperties:
+    (
+          deferredSegmentCreation
+        | segmentAttributesClause
+        | K_ORGANIZATION .+?
+        | K_EXTERNAL .+?
+        | K_CLUSTER .+?
+    )
+;
+
+deferredSegmentCreation:
+    K_SEGMENT K_CREATION (K_IMMEDIATE | K_DEFERRED)
+;
+
+// simplified as list of tokens
+segmentAttributesClause:
+    (
+          K_PCTFREE
+        | K_PCTUSED
+        | K_INITRANS
+        | K_STORAGE
+        | K_TABLESPACE
+        | K_LOGGING
+        | K_NOLOGGING
+        | K_FILESYSTEM_LIKE_LOGGING
+    ) .+?
+;
+
+materializedViewProps:
+    columnProperties? tablePartitioningClauses? (K_CACHE | K_NOCACHE)? parallelClause?
+    buildClause?
+;
+
+// simplified as list of tokens
+columnProperties:
+    (
+          K_COLUMN
+        | K_NESTED K_TABLE
+        | K_VARRAY
+        | K_LOB
+        | K_XMLTYPE
+        | K_JSON
+    ) .+?
+;
+
+// simplified as list of tokens
+tablePartitioningClauses:
+    (K_PARTITION | K_PARTITIONSET) K_BY .+?
+;
+
+parallelClause:
+      K_NOPARALLEL
+    | K_PARALLEL degree=expression?
+;
+
+buildClause:
+    K_BUILD (K_IMMEDIATE | K_DEFERRED)
+;
+
+// simplified as list of tokens
+physicalAttributesClause:
+    .+?
+;
+
+createMvRefresh:
+      K_REFRESH options+=createMvRefreshOption+
+    | K_NEVER K_REFRESH
+;
+
+createMvRefreshOption:
+      K_FAST
+    | K_COMPLETE
+    | K_FORCE
+    | K_ON (K_DEMAND | K_COMMIT | K_STATEMENT)
+    | (K_START K_WITH | K_NEXT) date=expression
+    | K_WITH (K_PRIMARY K_KEY | K_ROWID)
+    | K_USING K_DEFAULT (K_MASTER | K_LOCAL)? K_ROLLBACK K_SEGMENT
+    | K_USING (K_MASTER | K_LOCAL)? K_ROLLBACK K_SEGMENT segment=sqlName
+    | K_USING (K_ENFORCED | K_TRUSTED) K_CONSTRAINTS
+;
+
+evaluationEditionClause:
+    K_EVALUATE K_USING
+    (
+          K_CURRENT K_EDITION
+        | K_EDITION edition=sqlName
+        | K_NULL K_EDITION
+    )
+;
+
+// artificial clause to avoid multiple enable/disable keywords in rule
+onQueryComputationClause:
+    (K_ENABLE | K_DISABLE) K_ON K_QUERY K_COMPUTATION
+;
+
+// wrong documentation in 23.4: optionality of unusable_edition_clause
+queryRewriteClause:
+    (K_ENABLE | K_DISABLE) K_QUERY K_REWRITE unusableEditionsClause
+;
+
+unusableEditionsClause:
+    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
+    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
+;
+
+concurrentRefreshClause:
+    (K_ENABLE | K_DISABLE) K_CONCURRENT K_REFRESH
+;
+
+/*----------------------------------------------------------------------------*/
 // Create Package
 /*----------------------------------------------------------------------------*/
 
 createPackageStatement:
-      createPackage sqlEnd?
+    createPackage sqlEnd?
 ;
 
 // wrong documenation in 23.3: package_item_list is not mandatory
@@ -688,7 +847,7 @@ mapOrderFuncDeclaration:
 /*----------------------------------------------------------------------------*/
 
 createViewStatement:
-    createView sqlEnd?
+    createView sqlEnd
 ;
 
 createView:
@@ -716,8 +875,9 @@ postgresqlViewOptions:
     K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
 ;
 
+// used also for materialized view and therefore name is a qualifiedName
 postgresqlViewOption:
-    name=sqlName (EQUALS value=expression)?
+    name=qualifiedName (EQUALS value=expression)?
 ;
 
 // artificial clause
@@ -4862,11 +5022,13 @@ keywordAsId:
     | K_BOX
     | K_BREADTH
     | K_BUFFERS
+    | K_BUILD
     | K_BULK
     | K_BY
     | K_BYTE
     | K_BYTEA
     | K_C
+    | K_CACHE
     | K_CALL
     | K_CALLED
     | K_CASCADE
@@ -4893,11 +5055,15 @@ keywordAsId:
     | K_COLLATE
     | K_COLLATION
     | K_COLLECT
+    | K_COLUMN
     | K_COLUMNS
     | K_COMMENT
     | K_COMMIT
     | K_COMMITTED
+    | K_COMPLETE
     | K_COMPOUND
+    | K_COMPUTATION
+    | K_CONCURRENT
     | K_CONDITIONAL
     | K_CONFLICT
     | K_CONNECT
@@ -4921,6 +5087,7 @@ keywordAsId:
     | K_COUNT
     | K_COVERAGE
     | K_CREATE
+    | K_CREATION
     | K_CROSS
     | K_CROSSEDITION
     | K_CURRENT
@@ -4948,6 +5115,7 @@ keywordAsId:
     | K_DEFINE
     | K_DEFINER
     | K_DELETE
+    | K_DEMAND
     | K_DENSE_RANK
     | K_DEPRECATE
     | K_DEPTH
@@ -4968,6 +5136,7 @@ keywordAsId:
     | K_DROP
     | K_DURATION
     | K_EACH
+    | K_EDITION
     | K_EDITIONABLE
     | K_EDITIONING
     | K_EDIT_TOLERANCE
@@ -4978,7 +5147,9 @@ keywordAsId:
     | K_EMPTY
     | K_ENABLE
     | K_ENCODING
+    | K_ENCRYPT
     | K_END
+    | K_ENFORCED
     | K_ENTITYESCAPING
     | K_ENUM
     | K_ENV
@@ -4986,6 +5157,7 @@ keywordAsId:
     | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
+    | K_EVALUATE
     | K_EXACT
     | K_EXCEPT
     | K_EXCEPTION
@@ -5004,8 +5176,10 @@ keywordAsId:
     | K_EXTRACT
     | K_FACT
     | K_FALSE
+    | K_FAST
     | K_FEATURE_COMPARE
     | K_FETCH
+    | K_FILESYSTEM_LIKE_LOGGING
     | K_FILTER
     | K_FINAL
     | K_FIRST
@@ -5052,6 +5226,7 @@ keywordAsId:
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HOUR
     | K_ID
+    | K_IDENTIFIED
     | K_IDENTIFIER
     | K_IF
     | K_IGNORE
@@ -5067,6 +5242,7 @@ keywordAsId:
     | K_INET
     | K_INFINITE
     | K_INITIALLY
+    | K_INITRANS
     | K_INLINE
     | K_INNER
     | K_INOUT
@@ -5133,6 +5309,7 @@ keywordAsId:
     | K_LIMIT
     | K_LINE
     | K_LISTAGG
+    | K_LOB
     | K_LOBS
     | K_LOCAL
     | K_LOCATION
@@ -5140,6 +5317,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOG
     | K_LOGFILE
+    | K_LOGGING
     | K_LOGOFF
     | K_LOGON
     | K_LONG
@@ -5151,6 +5329,7 @@ keywordAsId:
     | K_MAIN
     | K_MAP
     | K_MAPPING
+    | K_MASTER
     | K_MATCH
     | K_MATCHED
     | K_MATCHES
@@ -5186,17 +5365,21 @@ keywordAsId:
     | K_NCLOB
     | K_NEIGHBOR
     | K_NESTED
+    | K_NEVER
     | K_NEW
     | K_NEWLINE
     | K_NEXT
     | K_NO
     | K_NOAUDIT
+    | K_NOCACHE
     | K_NOCOPY
     | K_NOCYCLE
     | K_NOENTITYESCAPING
+    | K_NOLOGGING
     | K_NONE
     | K_NONEDITIONABLE
     | K_NONSCHEMA
+    | K_NOPARALLEL
     | K_NOPRECHECK
     | K_NORELY
     | K_NORMALIZE
@@ -5227,6 +5410,7 @@ keywordAsId:
     | K_ORDER
     | K_ORDERED
     | K_ORDINALITY
+    | K_ORGANIZATION
     | K_OTHERS
     | K_OUT
     | K_OUTER
@@ -5243,10 +5427,13 @@ keywordAsId:
     | K_PARENT
     | K_PARTITION
     | K_PARTITIONS
+    | K_PARTITIONSET
     | K_PASSING
     | K_PAST
     | K_PATH
     | K_PATTERN
+    | K_PCTFREE
+    | K_PCTUSED
     | K_PER
     | K_PERCENT
     | K_PERIOD
@@ -5265,6 +5452,7 @@ keywordAsId:
     | K_POLYMORPHIC
     | K_POSITION
     | K_PRAGMA
+    | K_PREBUILT
     | K_PRECEDES
     | K_PRECEDING
     | K_PRECHECK
@@ -5283,6 +5471,7 @@ keywordAsId:
     | K_PROCEDURE
     | K_PUNCTUATION
     | K_QUALIFY
+    | K_QUERY
     | K_RAISE
     | K_RANGE
     | K_RANK
@@ -5292,10 +5481,12 @@ keywordAsId:
     | K_RECORD
     | K_RECURSIVE
     | K_RECURSIVELY
+    | K_REDUCED
     | K_REF
     | K_REFERENCE
     | K_REFERENCES
     | K_REFERENCING
+    | K_REFRESH
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELIES_ON
@@ -5316,6 +5507,7 @@ keywordAsId:
     | K_RETURNS
     | K_REVERSE
     | K_REVOKE
+    | K_REWRITE
     | K_RIGHT
     | K_RNDS
     | K_RNPS
@@ -5328,6 +5520,7 @@ keywordAsId:
     | K_RULES
     | K_RUNNING
     | K_SAFE
+    | K_SALT
     | K_SAMPLE
     | K_SAVE
     | K_SAVEPOINT
@@ -5336,6 +5529,7 @@ keywordAsId:
     | K_SCHEMA
     | K_SCHEMACHECK
     | K_SCN
+    | K_SCOPE
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
@@ -5389,6 +5583,7 @@ keywordAsId:
     | K_STATEMENT_ID
     | K_STATIC
     | K_STATISTICS
+    | K_STORAGE
     | K_STORE
     | K_STRICT
     | K_STRUCT
@@ -5406,6 +5601,7 @@ keywordAsId:
     | K_TABLE
     | K_TABLES
     | K_TABLESAMPLE
+    | K_TABLESPACE
     | K_TARGET
     | K_TDO
     | K_TEMP
@@ -5431,6 +5627,7 @@ keywordAsId:
     | K_TRUE
     | K_TRUNCATE
     | K_TRUST
+    | K_TRUSTED
     | K_TSQUERY
     | K_TSVECTOR
     | K_TXID_SNAPSHOT
@@ -5453,6 +5650,7 @@ keywordAsId:
     | K_UNSAFE
     | K_UNSCALED
     | K_UNTIL
+    | K_UNUSABLE
     | K_UPDATE
     | K_UPDATED
     | K_UPSERT
