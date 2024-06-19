@@ -4862,11 +4862,13 @@ keywordAsId:
     | K_BOX
     | K_BREADTH
     | K_BUFFERS
+    | K_BUILD
     | K_BULK
     | K_BY
     | K_BYTE
     | K_BYTEA
     | K_C
+    | K_CACHE
     | K_CALL
     | K_CALLED
     | K_CASCADE
@@ -4893,11 +4895,15 @@ keywordAsId:
     | K_COLLATE
     | K_COLLATION
     | K_COLLECT
+    | K_COLUMN
     | K_COLUMNS
     | K_COMMENT
     | K_COMMIT
     | K_COMMITTED
+    | K_COMPLETE
     | K_COMPOUND
+    | K_COMPUTATION
+    | K_CONCURRENT
     | K_CONDITIONAL
     | K_CONFLICT
     | K_CONNECT
@@ -4921,6 +4927,7 @@ keywordAsId:
     | K_COUNT
     | K_COVERAGE
     | K_CREATE
+    | K_CREATION
     | K_CROSS
     | K_CROSSEDITION
     | K_CURRENT
@@ -4948,6 +4955,7 @@ keywordAsId:
     | K_DEFINE
     | K_DEFINER
     | K_DELETE
+    | K_DEMAND
     | K_DENSE_RANK
     | K_DEPRECATE
     | K_DEPTH
@@ -4968,6 +4976,7 @@ keywordAsId:
     | K_DROP
     | K_DURATION
     | K_EACH
+    | K_EDITION
     | K_EDITIONABLE
     | K_EDITIONING
     | K_EDIT_TOLERANCE
@@ -4978,7 +4987,9 @@ keywordAsId:
     | K_EMPTY
     | K_ENABLE
     | K_ENCODING
+    | K_ENCRYPT
     | K_END
+    | K_ENFORCED
     | K_ENTITYESCAPING
     | K_ENUM
     | K_ENV
@@ -4986,6 +4997,7 @@ keywordAsId:
     | K_ERRORS
     | K_ESCAPE
     | K_EVALNAME
+    | K_EVALUATE
     | K_EXACT
     | K_EXCEPT
     | K_EXCEPTION
@@ -5004,8 +5016,10 @@ keywordAsId:
     | K_EXTRACT
     | K_FACT
     | K_FALSE
+    | K_FAST
     | K_FEATURE_COMPARE
     | K_FETCH
+    | K_FILESYSTEM_LIKE_LOGGING
     | K_FILTER
     | K_FINAL
     | K_FIRST
@@ -5052,6 +5066,7 @@ keywordAsId:
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HOUR
     | K_ID
+    | K_IDENTIFIED
     | K_IDENTIFIER
     | K_IF
     | K_IGNORE
@@ -5067,6 +5082,7 @@ keywordAsId:
     | K_INET
     | K_INFINITE
     | K_INITIALLY
+    | K_INITRANS
     | K_INLINE
     | K_INNER
     | K_INOUT
@@ -5133,6 +5149,7 @@ keywordAsId:
     | K_LIMIT
     | K_LINE
     | K_LISTAGG
+    | K_LOB
     | K_LOBS
     | K_LOCAL
     | K_LOCATION
@@ -5140,6 +5157,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOG
     | K_LOGFILE
+    | K_LOGGING
     | K_LOGOFF
     | K_LOGON
     | K_LONG
@@ -5151,6 +5169,7 @@ keywordAsId:
     | K_MAIN
     | K_MAP
     | K_MAPPING
+    | K_MASTER
     | K_MATCH
     | K_MATCHED
     | K_MATCHES
@@ -5186,17 +5205,21 @@ keywordAsId:
     | K_NCLOB
     | K_NEIGHBOR
     | K_NESTED
+    | K_NEVER
     | K_NEW
     | K_NEWLINE
     | K_NEXT
     | K_NO
     | K_NOAUDIT
+    | K_NOCACHE
     | K_NOCOPY
     | K_NOCYCLE
     | K_NOENTITYESCAPING
+    | K_NOLOGGING
     | K_NONE
     | K_NONEDITIONABLE
     | K_NONSCHEMA
+    | K_NOPARALLEL
     | K_NOPRECHECK
     | K_NORELY
     | K_NORMALIZE
@@ -5227,6 +5250,7 @@ keywordAsId:
     | K_ORDER
     | K_ORDERED
     | K_ORDINALITY
+    | K_ORGANIZATION
     | K_OTHERS
     | K_OUT
     | K_OUTER
@@ -5243,10 +5267,13 @@ keywordAsId:
     | K_PARENT
     | K_PARTITION
     | K_PARTITIONS
+    | K_PARTITIONSET
     | K_PASSING
     | K_PAST
     | K_PATH
     | K_PATTERN
+    | K_PCTFREE
+    | K_PCTUSED
     | K_PER
     | K_PERCENT
     | K_PERIOD
@@ -5265,6 +5292,7 @@ keywordAsId:
     | K_POLYMORPHIC
     | K_POSITION
     | K_PRAGMA
+    | K_PREBUILT
     | K_PRECEDES
     | K_PRECEDING
     | K_PRECHECK
@@ -5283,6 +5311,7 @@ keywordAsId:
     | K_PROCEDURE
     | K_PUNCTUATION
     | K_QUALIFY
+    | K_QUERY
     | K_RAISE
     | K_RANGE
     | K_RANK
@@ -5292,10 +5321,12 @@ keywordAsId:
     | K_RECORD
     | K_RECURSIVE
     | K_RECURSIVELY
+    | K_REDUCED
     | K_REF
     | K_REFERENCE
     | K_REFERENCES
     | K_REFERENCING
+    | K_REFRESH
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELIES_ON
@@ -5316,6 +5347,7 @@ keywordAsId:
     | K_RETURNS
     | K_REVERSE
     | K_REVOKE
+    | K_REWRITE
     | K_RIGHT
     | K_RNDS
     | K_RNPS
@@ -5328,6 +5360,7 @@ keywordAsId:
     | K_RULES
     | K_RUNNING
     | K_SAFE
+    | K_SALT
     | K_SAMPLE
     | K_SAVE
     | K_SAVEPOINT
@@ -5336,6 +5369,7 @@ keywordAsId:
     | K_SCHEMA
     | K_SCHEMACHECK
     | K_SCN
+    | K_SCOPE
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
@@ -5389,6 +5423,7 @@ keywordAsId:
     | K_STATEMENT_ID
     | K_STATIC
     | K_STATISTICS
+    | K_STORAGE
     | K_STORE
     | K_STRICT
     | K_STRUCT
@@ -5406,6 +5441,7 @@ keywordAsId:
     | K_TABLE
     | K_TABLES
     | K_TABLESAMPLE
+    | K_TABLESPACE
     | K_TARGET
     | K_TDO
     | K_TEMP
@@ -5431,6 +5467,7 @@ keywordAsId:
     | K_TRUE
     | K_TRUNCATE
     | K_TRUST
+    | K_TRUSTED
     | K_TSQUERY
     | K_TSVECTOR
     | K_TXID_SNAPSHOT
@@ -5453,6 +5490,7 @@ keywordAsId:
     | K_UNSAFE
     | K_UNSCALED
     | K_UNTIL
+    | K_UNUSABLE
     | K_UPDATE
     | K_UPDATED
     | K_UPSERT
