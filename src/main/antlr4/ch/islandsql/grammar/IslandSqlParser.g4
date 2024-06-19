@@ -187,6 +187,7 @@ createMaterializedView:
     (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
     (K_OF (objectTypeSchema=sqlName PERIOD)? objectTypeName=sqlName)?
     (LPAR columns+=mviewColumn (COMMA columns+=mviewColumn)* RPAR)?
+    (K_USING method=string)? postgresqlViewOptions?  // PostgreSQL only
     defaultCollationClause?
     (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
     physicalProperties? materializedViewProps
@@ -198,6 +199,7 @@ createMaterializedView:
     evaluationEditionClause? onQueryComputationClause?
     queryRewriteClause? concurrentRefreshClause? annotationClause?
     K_AS subquery
+    (K_WITH K_NO? K_DATA)?  // PostgreSQL only
 ;
 
 // artificial clause
@@ -873,8 +875,9 @@ postgresqlViewOptions:
     K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
 ;
 
+// used also for materialized view and therefore name is a qualifiedName
 postgresqlViewOption:
-    name=sqlName (EQUALS value=expression)?
+    name=qualifiedName (EQUALS value=expression)?
 ;
 
 // artificial clause
