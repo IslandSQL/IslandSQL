@@ -46,6 +46,7 @@ statement:
 
 ddlStatement:
       createFunctionStatement
+    | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
@@ -167,6 +168,162 @@ transformItem:
 sqlBody:
       K_RETURN expr=expression
     | atomicBlock
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Materialized View
+/*----------------------------------------------------------------------------*/
+
+createMaterializedViewStatement:
+    createMaterializedView sqlEnd
+;
+
+// wrong documentation in 23.4:
+// - column list is optional and parentheses start/close the list not the column
+// - on prebuilt table is optional
+// - phyisical_properties and materialized_view_props are optional
+createMaterializedView:
+    K_CREATE K_MATERIALIZED K_VIEW
+    (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
+    (K_OF (objectTypeSchema=sqlName PERIOD)? objectTypeName=sqlName)?
+    (LPAR columns+=mviewColumn (COMMA columns+=mviewColumn)* RPAR)?
+    defaultCollationClause?
+    (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
+    physicalProperties? materializedViewProps
+    (
+          K_USING K_INDEX physicalAttributesClause?
+        | K_USING K_NO K_INDEX
+    )?
+    createMvRefresh?
+    evaluationEditionClause? onQueryComputationClause?
+    queryRewriteClause? concurrentRefreshClause? annotationClause?
+    K_AS subquery
+;
+
+// artificial clause
+// wrong documentation in 23.4: scoped_table_ref_constraint cannot follow a column alias
+mviewColumn:
+      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationClause?
+    | scopedTableRefConstraint?
+;
+
+encryptionSpec:
+    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
+    integrityAlgorithm=string? (K_NO? K_SALT)?
+;
+
+scopedTableRefConstraint:
+    K_SCOPE K_FOR LPAR refColumn=sqlName RPAR K_IS (schema=sqlName PERIOD)? scopeTableOrAlias=sqlName
+;
+
+// simplified as list of tokens
+physicalProperties:
+    (
+          deferredSegmentCreation
+        | segmentAttributesClause
+        | K_ORGANIZATION .+?
+        | K_EXTERNAL .+?
+        | K_CLUSTER .+?
+    )
+;
+
+deferredSegmentCreation:
+    K_SEGMENT K_CREATION (K_IMMEDIATE | K_DEFERRED)
+;
+
+// simplified as list of tokens
+segmentAttributesClause:
+    (
+          K_PCTFREE
+        | K_PCTUSED
+        | K_INITRANS
+        | K_STORAGE
+        | K_TABLESPACE
+        | K_LOGGING
+        | K_NOLOGGING
+        | K_FILESYSTEM_LIKE_LOGGING
+    ) .+?
+;
+
+materializedViewProps:
+    columnProperties? tablePartitioningClauses? (K_CACHE | K_NOCACHE)? parallelClause?
+    buildClause?
+;
+
+// simplified as list of tokens
+columnProperties:
+    (
+          K_COLUMN
+        | K_NESTED K_TABLE
+        | K_VARRAY
+        | K_LOB
+        | K_XMLTYPE
+        | K_JSON
+    ) .+?
+;
+
+// simplified as list of tokens
+tablePartitioningClauses:
+    (K_PARTITION | K_PARTITIONSET) K_BY .+?
+;
+
+parallelClause:
+      K_NOPARALLEL
+    | K_PARALLEL degree=expression?
+;
+
+buildClause:
+    K_BUILD (K_IMMEDIATE | K_DEFERRED)
+;
+
+// simplified as list of tokens
+physicalAttributesClause:
+    .+?
+;
+
+createMvRefresh:
+      K_REFRESH options+=createMvRefreshOption+
+    | K_NEVER K_REFRESH
+;
+
+createMvRefreshOption:
+      K_FAST
+    | K_COMPLETE
+    | K_FORCE
+    | K_ON (K_DEMAND | K_COMMIT | K_STATEMENT)
+    | (K_START K_WITH | K_NEXT) date=expression
+    | K_WITH (K_PRIMARY K_KEY | K_ROWID)
+    | K_USING K_DEFAULT (K_MASTER | K_LOCAL)? K_ROLLBACK K_SEGMENT
+    | K_USING (K_MASTER | K_LOCAL)? K_ROLLBACK K_SEGMENT segment=sqlName
+    | K_USING (K_ENFORCED | K_TRUSTED) K_CONSTRAINTS
+;
+
+evaluationEditionClause:
+    K_EVALUATE K_USING
+    (
+          K_CURRENT K_EDITION
+        | K_EDITION edition=sqlName
+        | K_NULL K_EDITION
+    )
+;
+
+// artificial clause to avoid multiple enable/disable keywords in rule
+onQueryComputationClause:
+    (K_ENABLE | K_DISABLE) K_ON K_QUERY K_COMPUTATION
+;
+
+// wrong documentation in 23.4: optionality of unusable_edition_clause
+queryRewriteClause:
+    (K_ENABLE | K_DISABLE) K_QUERY K_REWRITE unusableEditionsClause
+;
+
+unusableEditionsClause:
+    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
+    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
+;
+
+concurrentRefreshClause:
+    (K_ENABLE | K_DISABLE) K_CONCURRENT K_REFRESH
 ;
 
 /*----------------------------------------------------------------------------*/
