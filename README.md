@@ -32,7 +32,7 @@ The current islands of interests are:
 | Type  | Statement                             |      OracleDB      |     PostgreSQL     |
 |-------|---------------------------------------|:------------------:|:------------------:|
 | DDL   | `create function`                     | :white_check_mark: | :white_check_mark: |
-|       | `create json relational duality view` |   :construction:   |        n/a         |
+|       | `create json relational duality view` | :white_check_mark: |        n/a         |
 |       | `create materialized view`            | :white_check_mark: | :white_check_mark: |
 |       | `create package`                      | :white_check_mark: |        n/a         |
 |       | `create package body`                 | :white_check_mark: |        n/a         |
