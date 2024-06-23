@@ -46,6 +46,7 @@ statement:
 
 ddlStatement:
       createFunctionStatement
+    | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
@@ -168,6 +169,118 @@ transformItem:
 sqlBody:
       K_RETURN expr=expression
     | atomicBlock
+;
+
+/*----------------------------------------------------------------------------*/
+// Create JSON Relational Duality View
+/*----------------------------------------------------------------------------*/
+
+createJsonRelationalDualityViewStatement:
+    createJsonRelationalDualityView sqlEnd
+;
+
+createJsonRelationalDualityView:
+    K_CREATE (K_OR K_REPLACE)? (K_NO? K_FORCE)?
+    (
+          K_EDITIONABLE
+        | K_NONEDITIONABLE
+    )? K_JSON K_RELATIONAL? K_DUALITY K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    K_AS jsonRelationalDualityViewSource
+;
+
+// artificial clause because the query cababilities are not fully documented, e.g
+// - query in paranthesis are allowed
+// - using JSON_OBJECT () instead of JSON {} is allowed
+// - using JSON_ARRAY () instead of JSON [] is allowed
+// Instead we extend the select statement to cover the special clauses,
+// similar to the select_into clause for PL/SQL.
+jsonRelationalDualityViewSource:
+      subquery
+    | graphqlQueryForDv
+;
+
+tableTagsClause:
+    K_WITH tags+=tableTagsClauseItem+
+;
+
+// artificial clause
+tableTagsClauseItem:
+      K_CHECK K_ETAG?
+    | K_NOCHECK K_ETAG?
+    | K_INSERT
+    | K_NOINSERT
+    | K_UPDATE
+    | K_NOUPDATE
+    | K_DELETE
+    | K_NODELETE
+;
+
+// only components that are not handled by regularEntry for create_json_relational_duality_view
+keyValueClause:
+      regularEntry columnTagsClause
+    | flexClause
+    | K_UNNEST LPAR subquery RPAR
+;
+
+flexClause:
+    columnName=qualifiedName K_AS K_FLEX K_COLUMN?
+;
+
+columnTagsClause:
+    K_WITH tags+=columnTagsClauseItem+
+;
+
+// artificial clause
+columnTagsClauseItem:
+      K_CHECK K_ETAG?
+    | K_NOCHECK K_ETAG?
+    | K_UPDATE
+    | K_NOUPDATE
+;
+
+// added "graphql" prefix to all graphql related clauses to avoid conflicts with grammar fields
+graphqlQueryForDv:
+    graphqlRootQueryField
+;
+
+graphqlRootQueryField:
+    root=qualifiedName graphqlDirectives? graphqlSelectionSet
+;
+
+graphqlDirectives:
+    directives=graphqlDirective+
+;
+
+graphqlDirective:
+    COMMAT directive=sqlName (LPAR (args+=graphqlArgument)+ RPAR)?
+;
+
+graphqlArgument:
+    name=sqlName COLON value=expression
+;
+
+graphqlSelectionSet:
+      LSQB LCUB graphqlSelectionList RCUB RSQB
+    | LCUB graphqlSelectionList RCUB
+;
+
+// undocumentend in 23.4: comma can be used as separator
+graphqlSelectionList:
+    selections+=graphqlSelection (COMMA? selections+=graphqlSelection)*
+;
+
+graphqlSelection:
+      graphqlField
+    | graphqlFragmentSpread
+;
+
+graphqlField:
+    (alias=sqlName COLON)? field=qualifiedName graphqlDirectives? graphqlSelectionSet?
+;
+
+graphqlFragmentSpread:
+      PERIOD PERIOD PERIOD name=sqlName
+    | AST
 ;
 
 /*----------------------------------------------------------------------------*/
