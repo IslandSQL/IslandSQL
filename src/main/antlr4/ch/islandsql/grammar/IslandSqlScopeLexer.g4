@@ -251,6 +251,13 @@ CREATE_FUNCTION:
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
+CREATE_JSON_RELATIONAL_DUALITY_VIEW:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+    (('no' COMMENT_OR_WS+)? 'force' COMMENT_OR_WS+)? NON_EDITIONABLE
+    'json' COMMENT_OR_WS+ ('relational' COMMENT_OR_WS+)?
+    'duality' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
+;
+
 CREATE_MATERIALIZED_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     'materialized' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+
