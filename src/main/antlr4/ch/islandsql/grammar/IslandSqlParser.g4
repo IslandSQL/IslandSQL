@@ -3227,7 +3227,28 @@ rowidDatatype:
 ;
 
 jsonDatatype:
-    K_JSON
+    K_JSON (LPAR jsonColumnModifier RPAR)?
+;
+
+jsonColumnModifier:
+      K_VALUE
+    | K_ARRAY
+    | K_OBJECT
+    | K_SCALAR jsonScalarModifier?
+;
+
+jsonScalarModifier:
+      K_NUMBER
+    | K_STRING
+    | K_BINARY_DOUBLE
+    | K_BINARY_FLOAT
+    | K_DATE
+    | K_TIMESTAMP (K_WITH K_TIME K_ZONE)?
+    | K_NULL
+    | K_BOOLEAN
+    | K_BINARY
+    | K_INTERVAL K_YEAR K_TO K_MONTH
+    | K_INTERVAL K_DAY K_TO K_SECOND
 ;
 
 booleanDatatype:
@@ -3418,7 +3439,8 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_UNKNOWN            # isUnknownCondition        // PostgreSQL
     | expr=expression operator=K_IS K_NOT? K_DOCUMENT           # isDocumentCondition       // PostgreSQL
     | expr=expression
-        operator=K_IS K_NOT? K_JSON formatClause?
+        operator=K_IS K_NOT? K_JSON
+        jsonModifierList? formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
@@ -3958,6 +3980,11 @@ jsonOption:
 
 jsonArrayElement:
     expr=expression formatClause?
+;
+
+jsonModifierList:
+      LPAR modifiers+=jsonColumnModifier (COMMA modifiers+=jsonColumnModifier)* RPAR
+    | modifiers+=jsonColumnModifier
 ;
 
 formatClause:
@@ -5004,7 +5031,8 @@ danglingCondition:
     | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
     | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
     | operator=K_IS K_NOT? K_DANGLING                   # isDanglingConditionDangling
-    | operator=K_IS K_NOT? K_JSON formatClause?
+    | operator=K_IS K_NOT? K_JSON
+        jsonModifierList? formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
@@ -5125,6 +5153,7 @@ keywordAsId:
     | K_BIGINT
     | K_BIGRAM
     | K_BIGSERIAL
+    | K_BINARY
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BIT
@@ -5710,6 +5739,7 @@ keywordAsId:
     | K_STORAGE
     | K_STORE
     | K_STRICT
+    | K_STRING
     | K_STRUCT
     | K_SUBMULTISET
     | K_SUBPARTITION
