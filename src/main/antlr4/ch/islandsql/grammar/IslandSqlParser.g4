@@ -5125,6 +5125,7 @@ keywordAsId:
     | K_BIGINT
     | K_BIGRAM
     | K_BIGSERIAL
+    | K_BINARY
     | K_BINARY_DOUBLE
     | K_BINARY_FLOAT
     | K_BIT
@@ -5710,6 +5711,7 @@ keywordAsId:
     | K_STORAGE
     | K_STORE
     | K_STRICT
+    | K_STRING
     | K_STRUCT
     | K_SUBMULTISET
     | K_SUBPARTITION
