@@ -5134,6 +5134,7 @@ keywordAsId:
     | K_DOMAIN
     | K_DOUBLE
     | K_DROP
+    | K_DUALITY
     | K_DURATION
     | K_EACH
     | K_EDITION
@@ -5156,6 +5157,7 @@ keywordAsId:
     | K_ERROR
     | K_ERRORS
     | K_ESCAPE
+    | K_ETAG
     | K_EVALNAME
     | K_EVALUATE
     | K_EXACT
@@ -5183,6 +5185,7 @@ keywordAsId:
     | K_FILTER
     | K_FINAL
     | K_FIRST
+    | K_FLEX
     | K_FLOAT4
     | K_FLOAT8
     | K_FLOAT
@@ -5372,9 +5375,12 @@ keywordAsId:
     | K_NO
     | K_NOAUDIT
     | K_NOCACHE
+    | K_NOCHECK
     | K_NOCOPY
     | K_NOCYCLE
+    | K_NODELETE
     | K_NOENTITYESCAPING
+    | K_NOINSERT
     | K_NOLOGGING
     | K_NONE
     | K_NONEDITIONABLE
@@ -5387,6 +5393,7 @@ keywordAsId:
     | K_NOT
     | K_NOTHING
     | K_NOTNULL
+    | K_NOUPDATE
     | K_NOVALIDATE
     | K_NOWAIT
     | K_NTH_VALUE
@@ -5489,6 +5496,7 @@ keywordAsId:
     | K_REFRESH
     | K_REJECT
     | K_RELATE_TO_SHORTER
+    | K_RELATIONAL
     | K_RELIES_ON
     | K_RELY
     | K_REMOVE
@@ -5645,6 +5653,7 @@ keywordAsId:
     | K_UNLIMITED
     | K_UNLOGGED
     | K_UNMATCHED
+    | K_UNNEST
     | K_UNPIVOT
     | K_UNPLUG
     | K_UNSAFE
