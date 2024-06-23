@@ -3439,7 +3439,8 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_UNKNOWN            # isUnknownCondition        // PostgreSQL
     | expr=expression operator=K_IS K_NOT? K_DOCUMENT           # isDocumentCondition       // PostgreSQL
     | expr=expression
-        operator=K_IS K_NOT? K_JSON formatClause?
+        operator=K_IS K_NOT? K_JSON
+        jsonModifierList? formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
@@ -3979,6 +3980,11 @@ jsonOption:
 
 jsonArrayElement:
     expr=expression formatClause?
+;
+
+jsonModifierList:
+      LPAR modifiers+=jsonColumnModifier (COMMA modifiers+=jsonColumnModifier)* RPAR
+    | modifiers+=jsonColumnModifier
 ;
 
 formatClause:
@@ -5025,7 +5031,8 @@ danglingCondition:
     | operator=K_IS K_NOT? K_TRUE                       # isTrueConditionDangling
     | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
     | operator=K_IS K_NOT? K_DANGLING                   # isDanglingConditionDangling
-    | operator=K_IS K_NOT? K_JSON formatClause?
+    | operator=K_IS K_NOT? K_JSON
+        jsonModifierList? formatClause?
         (
             LPAR (options+=jsonConditionOption+) RPAR
           | options+=jsonConditionOption*
