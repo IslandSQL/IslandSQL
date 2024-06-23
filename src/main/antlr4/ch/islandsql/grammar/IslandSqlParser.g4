@@ -3227,7 +3227,28 @@ rowidDatatype:
 ;
 
 jsonDatatype:
-    K_JSON
+    K_JSON (LPAR jsonColumnModifier RPAR)?
+;
+
+jsonColumnModifier:
+      K_VALUE
+    | K_ARRAY
+    | K_OBJECT
+    | K_SCALAR jsonScalarModifier?
+;
+
+jsonScalarModifier:
+      K_NUMBER
+    | K_STRING
+    | K_BINARY_DOUBLE
+    | K_BINARY_FLOAT
+    | K_DATE
+    | K_TIMESTAMP (K_WITH K_TIME K_ZONE)?
+    | K_NULL
+    | K_BOOLEAN
+    | K_BINARY
+    | K_INTERVAL K_YEAR K_TO K_MONTH
+    | K_INTERVAL K_DAY K_TO K_SECOND
 ;
 
 booleanDatatype:
