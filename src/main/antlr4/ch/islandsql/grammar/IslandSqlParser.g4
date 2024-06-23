@@ -1740,11 +1740,12 @@ fromClause:
 ;
 
 // handles table aliases for all from items, simplifies from items in parentheses
+// table_tags_clause is valid only within create_json_relational_duality_view
 fromItem:
-      tableReference tableAlias?        # tableReferenceFromItem
-    | fromItem joins+=joinVariant+      # joinClause
-    | inlineAnalyticView tableAlias?    # inlineAnalyticViewFromItem
-    | LPAR fromItem RPAR tableAlias?    # parenFromItem
+      tableReference tableAlias? tableTagsClause?   # tableReferenceFromItem
+    | fromItem joins+=joinVariant+                  # joinClause
+    | inlineAnalyticView tableAlias?                # inlineAnalyticViewFromItem
+    | LPAR fromItem RPAR tableAlias?                # parenFromItem
 ;
 
 // PostgreSQL allows caliases
@@ -3936,12 +3937,14 @@ jsonObjectContent:
 ;
 
 entry:
-    regularEntry formatClause?
+      regularEntry formatClause?
+    | keyValueClause // only in create_json_relational_duality_view
 ;
 
+// undocumented in 23.4: "is" instead of ":", "key" in combination with "is"/":"
 regularEntry:
       K_KEY? key=expression K_VALUE value=expression
-    | key=expression COLON value=expression
+    | K_KEY? key=expression (COLON|K_IS) value=expression
     | value=expression
 ;
 
