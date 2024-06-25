@@ -196,20 +196,6 @@ CREATE_SCHEMA:
 ;
 
 // hide keyword: with
-CREATE_TABLE:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
-    (
-          'global' COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
-        | ('private'|'local') COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
-        | 'unlogged' COMMENT_OR_WS+
-        | 'shared' COMMENT_OR_WS+
-        | 'duplicated' COMMENT_OR_WS+
-        | ('immutable' COMMENT_OR_WS+)? 'blockchain' COMMENT_OR_WS+
-        | 'immutable' COMMENT_OR_WS+
-    )?
-    'table' MORE_TO_SQL_END -> channel(HIDDEN);
-
-// hide keyword: with
 CREATE_USER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
         MORE_TO_SQL_END -> channel(HIDDEN)
@@ -273,6 +259,20 @@ CREATE_PACKAGE:
 CREATE_PROCEDURE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
+;
+
+CREATE_TABLE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    (
+          'global' COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
+        | ('private'|'local') COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
+        | 'unlogged' COMMENT_OR_WS+
+        | 'sharded' COMMENT_OR_WS+
+        | 'duplicated' COMMENT_OR_WS+
+        | ('immutable' COMMENT_OR_WS+)? 'blockchain' COMMENT_OR_WS+
+        | 'immutable' COMMENT_OR_WS+
+    )?
+    'table' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 CREATE_TRIGGER_POSTGRESQL:
