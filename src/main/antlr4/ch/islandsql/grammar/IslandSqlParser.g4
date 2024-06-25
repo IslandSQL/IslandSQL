@@ -5118,6 +5118,7 @@ keywordAsId:
     | K_ALL
     | K_ALLOW
     | K_ALTER
+    | K_ALWAYS
     | K_ANALYTIC
     | K_ANALYZE
     | K_ANCESTOR
@@ -5160,6 +5161,7 @@ keywordAsId:
     | K_BLANKLINE
     | K_BLOB
     | K_BLOCK
+    | K_BLOCKCHAIN
     | K_BODY
     | K_BOOL
     | K_BOOLEAN
@@ -5280,6 +5282,7 @@ keywordAsId:
     | K_DOUBLE
     | K_DROP
     | K_DUALITY
+    | K_DUPLICATED
     | K_DURATION
     | K_EACH
     | K_EDITION
@@ -5310,6 +5313,7 @@ keywordAsId:
     | K_EXCEPTION
     | K_EXCEPTIONS
     | K_EXCEPTION_INIT
+    | K_EXCHANGE
     | K_EXCLUDE
     | K_EXCLUSIVE
     | K_EXECUTE
@@ -5347,7 +5351,9 @@ keywordAsId:
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
+    | K_GENERATED
     | K_GENERIC_PLAN
+    | K_GLOBAL
     | K_GOTO
     | K_GRANT
     | K_GRAPH_TABLE
@@ -5376,6 +5382,7 @@ keywordAsId:
     | K_ID
     | K_IDENTIFIED
     | K_IDENTIFIER
+    | K_IDENTITY
     | K_IF
     | K_IGNORE
     | K_IMMEDIATE
@@ -5485,12 +5492,15 @@ keywordAsId:
     | K_MATERIALIZED
     | K_MAX
     | K_MAXLEN
+    | K_MAXVALUE
     | K_MEASURES
     | K_MEMBER
+    | K_MEMOPTIMIZED
     | K_MERGE
     | K_METADATA
     | K_MINUS
     | K_MINUTE
+    | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
     | K_MLE
@@ -5527,9 +5537,12 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NOINSERT
     | K_NOLOGGING
+    | K_NOMAXVALUE
+    | K_NOMINVALUE
     | K_NONE
     | K_NONEDITIONABLE
     | K_NONSCHEMA
+    | K_NOORDER
     | K_NOPARALLEL
     | K_NOPRECHECK
     | K_NORELY
@@ -5619,6 +5632,7 @@ keywordAsId:
     | K_PRETTY
     | K_PRIMARY
     | K_PRIOR
+    | K_PRIVATE
     | K_PROBES
     | K_PROCEDURE
     | K_PUNCTUATION
@@ -5706,6 +5720,7 @@ keywordAsId:
     | K_SET
     | K_SETOF
     | K_SETS
+    | K_SHARDED
     | K_SHARD_ENABLE
     | K_SHARE
     | K_SHARE_OF
@@ -5729,6 +5744,7 @@ keywordAsId:
     | K_SQL
     | K_SQL_MACRO
     | K_STABLE
+    | K_STAGING
     | K_STANDALONE
     | K_START
     | K_STARTUP
@@ -5747,10 +5763,12 @@ keywordAsId:
     | K_SUBSTRING
     | K_SUBTYPE
     | K_SUMMARY
+    | K_SUPPLEMENTAL
     | K_SUPPORT
     | K_SUPPRESSES_WARNING_6009
     | K_SUSPEND
     | K_SYMMETRIC
+    | K_SYNCHRONOUS
     | K_SYSTEM
     | K_TABLE
     | K_TABLES
@@ -5832,6 +5850,7 @@ keywordAsId:
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
+    | K_VIRTUAL
     | K_VISIBLE
     | K_VOCABULARY
     | K_VOLATILE
