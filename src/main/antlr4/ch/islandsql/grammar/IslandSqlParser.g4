@@ -310,7 +310,7 @@ createMaterializedView:
     )?
     createMvRefresh?
     evaluationEditionClause? onQueryComputationClause?
-    queryRewriteClause? concurrentRefreshClause? annotationClause?
+    queryRewriteClause? concurrentRefreshClause? annotationsClause?
     K_AS subquery
     (K_WITH K_NO? K_DATA)?  // PostgreSQL only
 ;
@@ -318,7 +318,7 @@ createMaterializedView:
 // artificial clause
 // wrong documentation in 23.4: scoped_table_ref_constraint cannot follow a column alias
 mviewColumn:
-      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationClause?
+      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationsClause?
     | scopedTableRefConstraint?
 ;
 
@@ -980,7 +980,7 @@ createView:
     postgresqlViewOptions?
     defaultCollationClause?
     (K_BEQUEATH (K_CURRENT_USER | K_DEFINER))?
-    annotationClause?
+    annotationsClause?
     K_AS subquery subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)?
 ;
 
@@ -1091,7 +1091,7 @@ xmlschemaSpec:
 ;
 
 // contains part of annotations_list clause to simplify grammar
-annotationClause:
+annotationsClause:
     K_ANNOTATIONS LPAR items+=annotationListItem (COMMA items+=annotationListItem)* RPAR
 ;
 
