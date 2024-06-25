@@ -556,7 +556,7 @@ otherAtomicStatement:
 /*----------------------------------------------------------------------------*/
 
 createTriggerStatement:
-      createTrigger sqlEnd?
+    createTrigger sqlEnd?
 ;
 
 createTrigger:
