@@ -51,6 +51,7 @@ ddlStatement:
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
+    | createTableStatement
     | createTriggerStatement
     | createTypeStatement
     | createTypeBodyStatement
@@ -92,7 +93,7 @@ plsqlFunctionOption:
     | sqlMacroClause
 ;
 
-// extended by options available in createView only
+// extended by options available in createView, craateTable only
 sharingClause:
     K_SHARING EQUALS (K_METADATA | K_NONE | K_DATA | K_EXTENDED K_DATA)
 ;
@@ -322,11 +323,6 @@ mviewColumn:
     | scopedTableRefConstraint?
 ;
 
-encryptionSpec:
-    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
-    integrityAlgorithm=string? (K_NO? K_SALT)?
-;
-
 scopedTableRefConstraint:
     K_SCOPE K_FOR LPAR refColumn=sqlName RPAR K_IS (schema=sqlName PERIOD)? scopeTableOrAlias=sqlName
 ;
@@ -413,15 +409,6 @@ createMvRefreshOption:
     | K_USING (K_ENFORCED | K_TRUSTED) K_CONSTRAINTS
 ;
 
-evaluationEditionClause:
-    K_EVALUATE K_USING
-    (
-          K_CURRENT K_EDITION
-        | K_EDITION edition=sqlName
-        | K_NULL K_EDITION
-    )
-;
-
 // artificial clause to avoid multiple enable/disable keywords in rule
 onQueryComputationClause:
     (K_ENABLE | K_DISABLE) K_ON K_QUERY K_COMPUTATION
@@ -430,11 +417,6 @@ onQueryComputationClause:
 // wrong documentation in 23.4: optionality of unusable_edition_clause
 queryRewriteClause:
     (K_ENABLE | K_DISABLE) K_QUERY K_REWRITE unusableEditionsClause
-;
-
-unusableEditionsClause:
-    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
-    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
 ;
 
 concurrentRefreshClause:
@@ -549,6 +531,267 @@ atomicStatement:
 // SQL statement not fully parsed by this grammar
 otherAtomicStatement:
     ~SEMI+ SEMI
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Table
+/*----------------------------------------------------------------------------*/
+
+createTableStatement:
+    createTable sqlEnd
+;
+
+createTable:
+    K_CREATE
+    (
+          (K_GLOBAL | K_PRIVATE) K_TEMPORARY
+        | K_SHARDED
+        | K_DUPLICATED
+        | K_IMMUTABLE? K_BLOCKCHAIN
+        | K_IMMUTABLE
+    )?
+    K_TABLE (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? tableName=sqlName
+    sharingClause?
+    relationalTable
+    (K_MEMOPTIMIZED K_FOR K_READ)?
+    (K_MEMOPTIMIZED K_FOR K_WRITE)?
+    (K_PARENT (parentSchema=sqlName PERIOD)? parentTableName=sqlName)?
+    (
+          K_REFRESH K_INTERVAL refreshRate=expression (K_SECOND | K_MINUTE | K_HOUR)
+        | K_SYNCHRONOUS
+    )?
+;
+
+// simplified, handles also object_table and xmltype_table
+relationalTable:
+    (LPAR relationalProperties RPAR)?
+    (
+          tableProperties
+        | beforeTableProperties tableProperties
+    )
+;
+
+relationalProperties:
+    props+=relationalProperty (COMMA props+=relationalProperty)*
+;
+
+// artificial clause to handle list of properties
+// wrong documentation domain_clause does not exists (part of datatype_domain in column_definition)
+relationalProperty:
+      columnDefinition
+    | virtualColumnDefinition
+    | periodDefinition
+    | outOfLineConstraint
+    | outOfLineRefConstraint
+    | supplementalLoggingProps
+;
+
+// wrong documentation in 23.4: expr should not be mandatory, it's part of the default clause
+columnDefinition:
+    column=sqlName typeName=datatypeDomain?
+    (
+          K_COLLATE collate=sqlName
+        | K_RESERVABLE
+    )?
+    K_SORT? (K_VISIBLE|K_INVISIBLE)?
+    (
+          K_DEFAULT ((K_ON K_NULL) (K_FOR K_INSERT (K_ONLY | K_AND K_UPDATE))?)? defaultExpr=expression
+        | identityClause
+    )?
+    (K_ENCRYPT encryptionSpec)?
+    (
+          inlineConstraints+=inlineConstraint+
+        | inlineRefConstraint
+    )?
+    annotationsClause?
+;
+
+// wrong documentation in 23.4: missing ref data type
+datatypeDomain:
+      K_REF? dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
+    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
+;
+
+identityClause:
+    K_GENERATED
+    (
+          K_ALWAYS // default
+        | K_BY K_DEFAULT (K_ON K_NULL (K_FOR K_INSERT (K_ONLY | K_AND K_UPDATE))?)?
+    )?
+    K_AS K_IDENTITY (LPAR identityOptions RPAR)?
+;
+
+identityOptions:
+    identityOption+
+;
+
+// artificial clause
+identityOption:
+      K_START K_WITH (expr=expression | K_LIMIT K_VALUE)
+    | K_INCREMENT K_BY expr=expression
+    | K_MAXVALUE expr=expression
+    | K_NOMAXVALUE
+    | K_MINVALUE expr=expression
+    | K_NOMINVALUE
+    | K_CYCLE
+    | K_NOCYCLE
+    | K_CACHE expr=expression
+    | K_NOCACHE
+    | K_ORDER
+    | K_NOORDER
+;
+
+encryptionSpec:
+    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
+    integrityAlgorithm=string? (K_NO? K_SALT)?
+;
+
+inlineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_NOT? K_NULL constraintState?
+        | K_UNIQUE constraintState?
+        | K_PRIMARY K_KEY constraintState?
+        | referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+// wrong documentation in 23.4: first part is not mandatory
+// allow arbitrary order of states
+constraintState:
+    states+=constraintStateItem+
+;
+
+constraintStateItem:
+      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
+    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
+    | K_RELY                                    # relyConstraintStateItem
+    | K_NORELY                                  # norelyConstraintStateItem
+    | usingIndexClause                          # indexConstraintStateItem
+    | K_ENABLE                                  # enableConstraintStateItem
+    | K_DISABLE                                 # disableConstraintStateItem
+    | K_VALIDATE                                # validateConstraintStateItem
+    | K_NOVALIDATE                              # novalidateConstraintStateItem
+    | exceptionsClause                          # exceptionConstraintStateItem
+;
+
+referencesClause:
+    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
+    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
+    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
+;
+
+precheckState:
+      K_PRECHECK
+    | K_NOPRECHECK
+;
+
+// simplified, list of tokens is considered good enough
+usingIndexClause:
+    K_USING K_INDEX usingIndexClauseCode
+;
+
+// artificial clause to handle token stream in "using index (create index i on t(c))"
+// ensure that closing parentheses are consumed.
+usingIndexClauseCode:
+    .+? RPAR*
+;
+
+exceptionsClause:
+    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+inlineRefConstraint:
+      K_SCOPE K_IS (schema=sqlName PERIOD)? tableName=sqlName
+    | K_WITH K_ROWID
+    | (K_CONSTRAINT constraitnName=sqlName) referencesClause constraintState?
+;
+
+// wrong documentation in 23.4: optionality of unusable_edition_clause
+virtualColumnDefinition:
+    column=sqlName (typeName=datatypeDomain (K_COLLATE collate=sqlName)?)?
+    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR K_VIRTUAL?
+    evaluationEditionClause? unusableEditionsClause constraints+=inlineConstraint*
+;
+
+evaluationEditionClause:
+    K_EVALUATE K_USING
+    (
+          K_CURRENT K_EDITION
+        | K_EDITION edition=sqlName
+        | K_NULL K_EDITION
+    )
+;
+
+unusableEditionsClause:
+    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
+    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
+;
+
+periodDefinition:
+    K_PERIOD K_FOR validTimeColumn=sqlName (LPAR startTimeColumn=sqlName COMMA endTimeColumn=sqlName RPAR)?
+;
+
+outOfLineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+    )
+;
+
+outOfLineRefConstraint:
+      K_SCOPE K_FOR LPAR refCol+=sqlName RPAR K_IS (schema=sqlName PERIOD)? tableName=sqlName
+    | K_REF LPAR refCol+=sqlName RPAR K_WITH K_ROWID
+    | (K_CONSTRAINT constraitnName=sqlName) K_FOREIGN K_KEY
+        LPAR refCol+=sqlName (COMMA refCol+=sqlName)* RPAR referencesClause constraintState?
+;
+
+supplementalLoggingProps:
+    K_SUPPLEMENTAL K_LOG (supplementalLogGrpClause | supplementalLogKeyClause)
+;
+
+supplementalLogGrpClause:
+    K_GROUP logGroup=sqlName
+    LPAR columns+=supplementalLogGrpClauseColumn (COMMA columns+=supplementalLogGrpClauseColumn)* RPAR
+    K_ALWAYS?
+;
+
+// artificial clause
+supplementalLogGrpClauseColumn:
+    column=sqlName (K_NO K_LOG)?
+;
+
+supplementalLogKeyClause:
+    K_DATA LPAR options+=supplementalLogKeyClauseOption (COMMA options+=supplementalLogKeyClauseOption)* RPAR K_COLUMNS
+;
+
+// artificial clause
+supplementalLogKeyClauseOption:
+      K_ALL
+    | K_PRIMARY K_KEY
+    | K_UNIQUE
+    | K_FOREIGN K_KEY
+;
+
+// artificial clause to handle everything up to table_properties
+// simplified, list of tokens is considered good enough
+beforeTableProperties:
+    .+?
+;
+
+// simplified, interested primarily in subquery,
+// everything else is handled by beforeTableProperties
+tableProperties:
+    annotationsClause?
+    (
+           K_AS subquery
+        | K_FOR K_EXCHANGE K_WITH K_TABLE (schema=sqlName PERIOD)? tableName=sqlName
+    )?
+    (K_FOR K_STAGING)?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1000,69 +1243,7 @@ relationalViewClause:
 
 relationalViewClauseItem:
       alias=sqlName (K_VISIBLE | K_INVISIBLE)? inlineConstraint?
-    | outOflineConstraint
-;
-
-inlineConstraint:
-    (K_CONSTRAINT name=sqlName)?
-    (
-          K_NOT? K_NULL constraintState?
-        | K_UNIQUE constraintState?
-        | K_PRIMARY K_KEY constraintState?
-        | referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
-    )
-;
-
-// wrong documentation in 23.4: first part is not mandatory
-// allow arbitrary order of states
-constraintState:
-    states+=constraintStateItem+
-;
-
-constraintStateItem:
-      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
-    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
-    | K_RELY                                    # relyConstraintStateItem
-    | K_NORELY                                  # norelyConstraintStateItem
-    | usingIndexClause                          # indexConstraintStateItem
-    | K_ENABLE                                  # enableConstraintStateItem
-    | K_DISABLE                                 # disableConstraintStateItem
-    | K_VALIDATE                                # validateConstraintStateItem
-    | K_NOVALIDATE                              # novalidateConstraintStateItem
-    | exceptionsClause                          # exceptionConstraintStateItem
-;
-
-// We do not fully parse the using_index_clause. The reason is that it is very extensive
-// (e.g. it contains the full create index statement) and not required for the forseen
-// use cases. Providing a list of tokens is considered sufficient for the time being.
-usingIndexClause:
-    K_USING K_INDEX code=.+?
-;
-
-exceptionsClause:
-    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
-;
-
-referencesClause:
-    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
-    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
-    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
-;
-
-precheckState:
-      K_PRECHECK
-    | K_NOPRECHECK
-;
-
-outOflineConstraint:
-    (K_CONSTRAINT name=sqlName)?
-    (
-          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
-        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
-        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
-    )
+    | outOfLineConstraint
 ;
 
 // oid is old syntax that is not documented anymore
@@ -1972,19 +2153,6 @@ externalTableDataProps:
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
     .+?
-;
-
-// minimal clause for use in inlineExternalTable; the following is missing:
-// default clause, identity_clause, encryption_spec, inline_constraint, inline_ref_constraint
-columnDefinition:
-    column=sqlName typeName=datatypeDomain
-    K_RESERVABLE? (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
-;
-
-// simplified, reservable and collate are part of column_definition
-datatypeDomain:
-      dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
-    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
 ;
 
 subqueryRestrictionClause:
