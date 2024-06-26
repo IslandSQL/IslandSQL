@@ -549,6 +549,8 @@ createTable:
         | K_DUPLICATED
         | K_IMMUTABLE? K_BLOCKCHAIN
         | K_IMMUTABLE
+        | (K_GLOBAL | K_LOCAL) (K_TEMPORARY | K_TEMP)   // PostgreSQL
+        | K_UNLOGGED    // PostgreSQL
     )?
     K_TABLE (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? tableName=sqlName
     sharingClause?
@@ -584,11 +586,14 @@ relationalProperty:
     | outOfLineConstraint
     | outOfLineRefConstraint
     | supplementalLoggingProps
+    | postgresqlLikeOptions
 ;
 
 // wrong documentation in 23.4: expr should not be mandatory, it's part of the default clause
 columnDefinition:
     column=sqlName typeName=datatypeDomain?
+    postgresqlStorage?
+    postgresqlCompression?
     (
           K_COLLATE collate=sqlName
         | K_RESERVABLE
@@ -612,6 +617,14 @@ datatypeDomain:
     | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
 ;
 
+postgresqlStorage:
+    K_STORAGE (K_PLAIN | K_EXTERNAL | K_EXTENDED | K_MAIN | K_DEFAULT)
+;
+
+postgresqlCompression:
+    K_COMPRESSION method=sqlName
+;
+
 identityClause:
     K_GENERATED
     (
@@ -627,18 +640,21 @@ identityOptions:
 
 // artificial clause
 identityOption:
-      K_START K_WITH (expr=expression | K_LIMIT K_VALUE)
-    | K_INCREMENT K_BY expr=expression
-    | K_MAXVALUE expr=expression
-    | K_NOMAXVALUE
-    | K_MINVALUE expr=expression
-    | K_NOMINVALUE
-    | K_CYCLE
-    | K_NOCYCLE
-    | K_CACHE expr=expression
-    | K_NOCACHE
-    | K_ORDER
-    | K_NOORDER
+      K_START K_WITH (expr=expression | K_LIMIT K_VALUE)    # startIdentityOption
+    | K_INCREMENT K_BY expr=expression                      # incrementIdentityOption
+    | K_MAXVALUE expr=expression                            # maxIdentityOption
+    | K_NOMAXVALUE                                          # nomaxIdentityOption
+    | K_NO K_MAXVALUE                                       # nomaxIdentityOption // PostgreSQL
+    | K_MINVALUE expr=expression                            # minIdentityOption
+    | K_NOMINVALUE                                          # nominIdentityOption
+    | K_NO K_MINVALUE                                       # nominIdentityOption // PostgreSQL
+    | K_CYCLE                                               # cycleIdentityOption
+    | K_NOCYCLE                                             # nocycleIdentityOption
+    | K_NO K_CYCLE                                          # nocycleIdentityOption // PostgreSQL
+    | K_CACHE expr=expression                               # cacheIdentityOption
+    | K_NOCACHE                                             # nocacheIdentityOption
+    | K_ORDER                                               # orderIdentityOption
+    | K_NOORDER                                             # noorderIdenityOption
 ;
 
 encryptionSpec:
@@ -654,8 +670,37 @@ inlineConstraint:
         | K_PRIMARY K_KEY constraintState?
         | referencesClause constraintState?
         | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | postgresqlColumnConstraint constraintState?
     )
 ;
+
+// constraints not handled by inlineConstraint
+postgresqlColumnConstraint:
+        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
+      | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
+      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
+      | K_PRIMARY K_KEY postgresqlIndexParameters*
+      | K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+;
+
+postgresqlIndexParameters:
+      K_INCLUDE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+    | K_WITH LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
+    | K_USING K_INDEX K_TABLESPACE tablespaceName=sqlName
+;
+
+postgresqlReferentialAction:
+      K_NO K_ACTION
+    | K_RESTRICT
+    | K_CASCADE
+    | K_SET K_NULL LPAR (columns+=sqlName (COMMA columns+=sqlName)*)? RPAR
+    | K_SET K_DEFAULT LPAR (columns+=sqlName (COMMA columns+=sqlName)*)? RPAR
+;
+
 
 // wrong documentation in 23.4: first part is not mandatory
 // allow arbitrary order of states
@@ -740,7 +785,29 @@ outOfLineConstraint:
         | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
         | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
         | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | postgresqlTableConstraint constraintState?
     )
+;
+
+// constraints not handled by outOflineConstraint
+postgresqlTableConstraint:
+        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
+            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+      | K_PRIMARY K_KEY
+            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+      | K_EXCLUDE (K_USING method=sqlName)?
+            LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
+            postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
+      | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+            K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+;
+
+postgresqlExcludeColumn:
+    excludeElement=sqlName K_WITH (binaryOperator | simpleComparisionOperator)
 ;
 
 outOfLineRefConstraint:
@@ -775,6 +842,29 @@ supplementalLogKeyClauseOption:
     | K_PRIMARY K_KEY
     | K_UNIQUE
     | K_FOREIGN K_KEY
+;
+
+postgresqlLikeOptions:
+    K_LIKE sourceTable=qualifiedName options+=postgresqlLikeOption (COMMA options+=postgresqlLikeOption)*
+;
+
+postgresqlLikeOption:
+    (
+          K_INCLUDING
+        | K_EXCLUDING
+    )
+    (
+          K_COMMENTS
+        | K_COMPRESSION
+        | K_CONSTRAINTS
+        | K_DEFAULTS
+        | K_GENERATED
+        | K_IDENTITY
+        | K_INDEXES
+        | K_STATISTICS
+        | K_STORAGE
+        | K_ALL
+    )
 ;
 
 // artificial clause to handle everything up to table_properties
