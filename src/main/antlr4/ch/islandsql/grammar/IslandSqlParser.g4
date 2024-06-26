@@ -1125,17 +1125,13 @@ postgresqlEnumType:
 // simplified (making all options optional even if subtype is mandatory) to support arbitrary order
 // undocumented in 16:3: subtype does not need to be the first option
 postgresqlRangeType:
-    K_AS K_RANGE LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
-;
-
-postgresqlTypeOption:
-    name=sqlName (EQUALS value=expression)?
+    K_AS K_RANGE LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
 ;
 
 // simplified (making all options optional even if input, output are mandatory) to support arbitrary order
 // undocumented in 16:3: input, output do not need to be the first and second option
 postgresqlFunctionType:
-    LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
+    LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1228,11 +1224,11 @@ createView:
 ;
 
 postgresqlViewOptions:
-    K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
+    K_WITH options+=postgresqlOption (COMMA options+=postgresqlOption)*
 ;
 
 // used also for materialized view and therefore name is a qualifiedName
-postgresqlViewOption:
+postgresqlOption:
     name=qualifiedName (EQUALS value=expression)?
 ;
 
