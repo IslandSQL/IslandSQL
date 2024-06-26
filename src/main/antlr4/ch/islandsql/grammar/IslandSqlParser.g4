@@ -51,6 +51,7 @@ ddlStatement:
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
+    | createTableStatement
     | createTriggerStatement
     | createTypeStatement
     | createTypeBodyStatement
@@ -92,7 +93,7 @@ plsqlFunctionOption:
     | sqlMacroClause
 ;
 
-// extended by options available in createView only
+// extended by options available in createView, craateTable only
 sharingClause:
     K_SHARING EQUALS (K_METADATA | K_NONE | K_DATA | K_EXTENDED K_DATA)
 ;
@@ -310,7 +311,7 @@ createMaterializedView:
     )?
     createMvRefresh?
     evaluationEditionClause? onQueryComputationClause?
-    queryRewriteClause? concurrentRefreshClause? annotationClause?
+    queryRewriteClause? concurrentRefreshClause? annotationsClause?
     K_AS subquery
     (K_WITH K_NO? K_DATA)?  // PostgreSQL only
 ;
@@ -318,13 +319,8 @@ createMaterializedView:
 // artificial clause
 // wrong documentation in 23.4: scoped_table_ref_constraint cannot follow a column alias
 mviewColumn:
-      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationClause?
+      alias=sqlName (K_ENCRYPT encryptionSpec)? annotationsClause?
     | scopedTableRefConstraint?
-;
-
-encryptionSpec:
-    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
-    integrityAlgorithm=string? (K_NO? K_SALT)?
 ;
 
 scopedTableRefConstraint:
@@ -413,15 +409,6 @@ createMvRefreshOption:
     | K_USING (K_ENFORCED | K_TRUSTED) K_CONSTRAINTS
 ;
 
-evaluationEditionClause:
-    K_EVALUATE K_USING
-    (
-          K_CURRENT K_EDITION
-        | K_EDITION edition=sqlName
-        | K_NULL K_EDITION
-    )
-;
-
 // artificial clause to avoid multiple enable/disable keywords in rule
 onQueryComputationClause:
     (K_ENABLE | K_DISABLE) K_ON K_QUERY K_COMPUTATION
@@ -430,11 +417,6 @@ onQueryComputationClause:
 // wrong documentation in 23.4: optionality of unusable_edition_clause
 queryRewriteClause:
     (K_ENABLE | K_DISABLE) K_QUERY K_REWRITE unusableEditionsClause
-;
-
-unusableEditionsClause:
-    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
-    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
 ;
 
 concurrentRefreshClause:
@@ -552,11 +534,362 @@ otherAtomicStatement:
 ;
 
 /*----------------------------------------------------------------------------*/
+// Create Table
+/*----------------------------------------------------------------------------*/
+
+createTableStatement:
+    createTable sqlEnd
+;
+
+createTable:
+    K_CREATE
+    (
+          (K_GLOBAL | K_PRIVATE) K_TEMPORARY
+        | K_SHARDED
+        | K_DUPLICATED
+        | K_IMMUTABLE? K_BLOCKCHAIN
+        | K_IMMUTABLE
+        | (K_GLOBAL | K_LOCAL) (K_TEMPORARY | K_TEMP)   // PostgreSQL
+        | K_UNLOGGED    // PostgreSQL
+    )?
+    K_TABLE (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? tableName=sqlName
+    sharingClause?
+    relationalTable
+    (K_MEMOPTIMIZED K_FOR K_READ)?
+    (K_MEMOPTIMIZED K_FOR K_WRITE)?
+    (K_PARENT (parentSchema=sqlName PERIOD)? parentTableName=sqlName)?
+    (
+          K_REFRESH K_INTERVAL refreshRate=expression (K_SECOND | K_MINUTE | K_HOUR)
+        | K_SYNCHRONOUS
+    )?
+;
+
+// simplified, handles also object_table and xmltype_table
+relationalTable:
+    (LPAR relationalProperties RPAR)?
+    (
+          tableProperties
+        | beforeTableProperties tableProperties
+    )
+;
+
+relationalProperties:
+    props+=relationalProperty (COMMA props+=relationalProperty)*
+;
+
+// artificial clause to handle list of properties
+// wrong documentation domain_clause does not exists (part of datatype_domain in column_definition)
+relationalProperty:
+      columnDefinition
+    | virtualColumnDefinition
+    | periodDefinition
+    | outOfLineConstraint
+    | outOfLineRefConstraint
+    | supplementalLoggingProps
+    | postgresqlLikeOptions
+;
+
+// wrong documentation in 23.4: expr should not be mandatory, it's part of the default clause
+columnDefinition:
+    column=sqlName typeName=datatypeDomain?
+    postgresqlStorage?
+    postgresqlCompression?
+    (
+          K_COLLATE collate=sqlName
+        | K_RESERVABLE
+    )?
+    K_SORT? (K_VISIBLE|K_INVISIBLE)?
+    (
+          K_DEFAULT ((K_ON K_NULL) (K_FOR K_INSERT (K_ONLY | K_AND K_UPDATE))?)? defaultExpr=expression
+        | identityClause
+    )?
+    (K_ENCRYPT encryptionSpec)?
+    (
+          inlineConstraints+=inlineConstraint+
+        | inlineRefConstraint
+    )?
+    annotationsClause?
+;
+
+// wrong documentation in 23.4: missing ref data type
+datatypeDomain:
+      K_REF? dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
+    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
+;
+
+postgresqlStorage:
+    K_STORAGE (K_PLAIN | K_EXTERNAL | K_EXTENDED | K_MAIN | K_DEFAULT)
+;
+
+postgresqlCompression:
+    K_COMPRESSION method=sqlName
+;
+
+identityClause:
+    K_GENERATED
+    (
+          K_ALWAYS // default
+        | K_BY K_DEFAULT (K_ON K_NULL (K_FOR K_INSERT (K_ONLY | K_AND K_UPDATE))?)?
+    )?
+    K_AS K_IDENTITY (LPAR identityOptions RPAR)?
+;
+
+identityOptions:
+    identityOption+
+;
+
+// artificial clause
+identityOption:
+      K_START K_WITH (expr=expression | K_LIMIT K_VALUE)    # startIdentityOption
+    | K_INCREMENT K_BY expr=expression                      # incrementIdentityOption
+    | K_MAXVALUE expr=expression                            # maxIdentityOption
+    | K_NOMAXVALUE                                          # nomaxIdentityOption
+    | K_NO K_MAXVALUE                                       # nomaxIdentityOption // PostgreSQL
+    | K_MINVALUE expr=expression                            # minIdentityOption
+    | K_NOMINVALUE                                          # nominIdentityOption
+    | K_NO K_MINVALUE                                       # nominIdentityOption // PostgreSQL
+    | K_CYCLE                                               # cycleIdentityOption
+    | K_NOCYCLE                                             # nocycleIdentityOption
+    | K_NO K_CYCLE                                          # nocycleIdentityOption // PostgreSQL
+    | K_CACHE expr=expression                               # cacheIdentityOption
+    | K_NOCACHE                                             # nocacheIdentityOption
+    | K_ORDER                                               # orderIdentityOption
+    | K_NOORDER                                             # noorderIdenityOption
+;
+
+encryptionSpec:
+    (K_USING encryptAlgorithm=string)? (K_IDENTIFIED K_BY password=expression)?
+    integrityAlgorithm=string? (K_NO? K_SALT)?
+;
+
+inlineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_NOT? K_NULL constraintState?
+        | K_UNIQUE constraintState?
+        | K_PRIMARY K_KEY constraintState?
+        | referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | postgresqlColumnConstraint constraintState?
+    )
+;
+
+// constraints not handled by inlineConstraint
+postgresqlColumnConstraint:
+        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
+      | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
+      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
+      | K_PRIMARY K_KEY postgresqlIndexParameters*
+      | K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+;
+
+postgresqlIndexParameters:
+      K_INCLUDE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+    | K_WITH LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
+    | K_USING K_INDEX K_TABLESPACE tablespaceName=sqlName
+;
+
+postgresqlReferentialAction:
+      K_NO K_ACTION
+    | K_RESTRICT
+    | K_CASCADE
+    | K_SET K_NULL LPAR (columns+=sqlName (COMMA columns+=sqlName)*)? RPAR
+    | K_SET K_DEFAULT LPAR (columns+=sqlName (COMMA columns+=sqlName)*)? RPAR
+;
+
+
+// wrong documentation in 23.4: first part is not mandatory
+// allow arbitrary order of states
+constraintState:
+    states+=constraintStateItem+
+;
+
+constraintStateItem:
+      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
+    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
+    | K_RELY                                    # relyConstraintStateItem
+    | K_NORELY                                  # norelyConstraintStateItem
+    | usingIndexClause                          # indexConstraintStateItem
+    | K_ENABLE                                  # enableConstraintStateItem
+    | K_DISABLE                                 # disableConstraintStateItem
+    | K_VALIDATE                                # validateConstraintStateItem
+    | K_NOVALIDATE                              # novalidateConstraintStateItem
+    | exceptionsClause                          # exceptionConstraintStateItem
+;
+
+referencesClause:
+    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
+    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
+    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
+;
+
+precheckState:
+      K_PRECHECK
+    | K_NOPRECHECK
+;
+
+// simplified, list of tokens is considered good enough
+usingIndexClause:
+    K_USING K_INDEX usingIndexClauseCode
+;
+
+// artificial clause to handle token stream in "using index (create index i on t(c))"
+// ensure that closing parentheses are consumed.
+usingIndexClauseCode:
+    .+? RPAR*
+;
+
+exceptionsClause:
+    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+inlineRefConstraint:
+      K_SCOPE K_IS (schema=sqlName PERIOD)? tableName=sqlName
+    | K_WITH K_ROWID
+    | (K_CONSTRAINT constraitnName=sqlName) referencesClause constraintState?
+;
+
+// wrong documentation in 23.4: optionality of unusable_edition_clause
+virtualColumnDefinition:
+    column=sqlName (typeName=datatypeDomain (K_COLLATE collate=sqlName)?)?
+    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR K_VIRTUAL?
+    evaluationEditionClause? unusableEditionsClause constraints+=inlineConstraint*
+;
+
+evaluationEditionClause:
+    K_EVALUATE K_USING
+    (
+          K_CURRENT K_EDITION
+        | K_EDITION edition=sqlName
+        | K_NULL K_EDITION
+    )
+;
+
+unusableEditionsClause:
+    (K_UNUSABLE K_BEFORE (K_CURRENT K_EDITION | K_EDITION edition=sqlName))?
+    (K_UNUSABLE K_BEGINNING K_WITH (K_CURRENT K_EDITION | K_EDITION edition=sqlName | K_NULL K_EDITION))?
+;
+
+periodDefinition:
+    K_PERIOD K_FOR validTimeColumn=sqlName (LPAR startTimeColumn=sqlName COMMA endTimeColumn=sqlName RPAR)?
+;
+
+outOfLineConstraint:
+    (K_CONSTRAINT name=sqlName)?
+    (
+          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
+        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
+        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | postgresqlTableConstraint constraintState?
+    )
+;
+
+// constraints not handled by outOflineConstraint
+postgresqlTableConstraint:
+        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
+            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+      | K_PRIMARY K_KEY
+            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+      | K_EXCLUDE (K_USING method=sqlName)?
+            LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
+            postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
+      | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+            K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+;
+
+postgresqlExcludeColumn:
+    excludeElement=sqlName K_WITH (binaryOperator | simpleComparisionOperator)
+;
+
+outOfLineRefConstraint:
+      K_SCOPE K_FOR LPAR refCol+=sqlName RPAR K_IS (schema=sqlName PERIOD)? tableName=sqlName
+    | K_REF LPAR refCol+=sqlName RPAR K_WITH K_ROWID
+    | (K_CONSTRAINT constraitnName=sqlName) K_FOREIGN K_KEY
+        LPAR refCol+=sqlName (COMMA refCol+=sqlName)* RPAR referencesClause constraintState?
+;
+
+supplementalLoggingProps:
+    K_SUPPLEMENTAL K_LOG (supplementalLogGrpClause | supplementalLogKeyClause)
+;
+
+supplementalLogGrpClause:
+    K_GROUP logGroup=sqlName
+    LPAR columns+=supplementalLogGrpClauseColumn (COMMA columns+=supplementalLogGrpClauseColumn)* RPAR
+    K_ALWAYS?
+;
+
+// artificial clause
+supplementalLogGrpClauseColumn:
+    column=sqlName (K_NO K_LOG)?
+;
+
+supplementalLogKeyClause:
+    K_DATA LPAR options+=supplementalLogKeyClauseOption (COMMA options+=supplementalLogKeyClauseOption)* RPAR K_COLUMNS
+;
+
+// artificial clause
+supplementalLogKeyClauseOption:
+      K_ALL
+    | K_PRIMARY K_KEY
+    | K_UNIQUE
+    | K_FOREIGN K_KEY
+;
+
+postgresqlLikeOptions:
+    K_LIKE sourceTable=qualifiedName options+=postgresqlLikeOption (COMMA options+=postgresqlLikeOption)*
+;
+
+postgresqlLikeOption:
+    (
+          K_INCLUDING
+        | K_EXCLUDING
+    )
+    (
+          K_COMMENTS
+        | K_COMPRESSION
+        | K_CONSTRAINTS
+        | K_DEFAULTS
+        | K_GENERATED
+        | K_IDENTITY
+        | K_INDEXES
+        | K_STATISTICS
+        | K_STORAGE
+        | K_ALL
+    )
+;
+
+// artificial clause to handle everything up to table_properties
+// simplified, list of tokens is considered good enough
+beforeTableProperties:
+    .+?
+;
+
+// simplified, interested primarily in subquery,
+// everything else is handled by beforeTableProperties
+tableProperties:
+    annotationsClause?
+    (
+           K_AS subquery
+        | K_FOR K_EXCHANGE K_WITH K_TABLE (schema=sqlName PERIOD)? tableName=sqlName
+    )?
+    (K_FOR K_STAGING)?
+;
+
+/*----------------------------------------------------------------------------*/
 // Create Trigger
 /*----------------------------------------------------------------------------*/
 
 createTriggerStatement:
-      createTrigger sqlEnd?
+    createTrigger sqlEnd?
 ;
 
 createTrigger:
@@ -882,17 +1215,13 @@ postgresqlEnumType:
 // simplified (making all options optional even if subtype is mandatory) to support arbitrary order
 // undocumented in 16:3: subtype does not need to be the first option
 postgresqlRangeType:
-    K_AS K_RANGE LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
-;
-
-postgresqlTypeOption:
-    name=sqlName (EQUALS value=expression)?
+    K_AS K_RANGE LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
 ;
 
 // simplified (making all options optional even if input, output are mandatory) to support arbitrary order
 // undocumented in 16:3: input, output do not need to be the first and second option
 postgresqlFunctionType:
-    LPAR options+=postgresqlTypeOption (COMMA options+=postgresqlTypeOption)* RPAR
+    LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -980,16 +1309,16 @@ createView:
     postgresqlViewOptions?
     defaultCollationClause?
     (K_BEQUEATH (K_CURRENT_USER | K_DEFINER))?
-    annotationClause?
+    annotationsClause?
     K_AS subquery subqueryRestrictionClause? (K_CONTAINER_MAP|K_CONTAINERS_DEFAULT)?
 ;
 
 postgresqlViewOptions:
-    K_WITH options+=postgresqlViewOption (COMMA options+=postgresqlViewOption)*
+    K_WITH options+=postgresqlOption (COMMA options+=postgresqlOption)*
 ;
 
 // used also for materialized view and therefore name is a qualifiedName
-postgresqlViewOption:
+postgresqlOption:
     name=qualifiedName (EQUALS value=expression)?
 ;
 
@@ -1000,69 +1329,7 @@ relationalViewClause:
 
 relationalViewClauseItem:
       alias=sqlName (K_VISIBLE | K_INVISIBLE)? inlineConstraint?
-    | outOflineConstraint
-;
-
-inlineConstraint:
-    (K_CONSTRAINT name=sqlName)?
-    (
-          K_NOT? K_NULL constraintState?
-        | K_UNIQUE constraintState?
-        | K_PRIMARY K_KEY constraintState?
-        | referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
-    )
-;
-
-// wrong documentation in 23.4: first part is not mandatory
-// allow arbitrary order of states
-constraintState:
-    states+=constraintStateItem+
-;
-
-constraintStateItem:
-      K_NOT? K_DEFERRABLE                       # deferrableConstraintStateItem
-    | K_INITIALLY (K_DEFERRED | K_IMMEDIATE)?   # initallyConstraintStateItem
-    | K_RELY                                    # relyConstraintStateItem
-    | K_NORELY                                  # norelyConstraintStateItem
-    | usingIndexClause                          # indexConstraintStateItem
-    | K_ENABLE                                  # enableConstraintStateItem
-    | K_DISABLE                                 # disableConstraintStateItem
-    | K_VALIDATE                                # validateConstraintStateItem
-    | K_NOVALIDATE                              # novalidateConstraintStateItem
-    | exceptionsClause                          # exceptionConstraintStateItem
-;
-
-// We do not fully parse the using_index_clause. The reason is that it is very extensive
-// (e.g. it contains the full create index statement) and not required for the forseen
-// use cases. Providing a list of tokens is considered sufficient for the time being.
-usingIndexClause:
-    K_USING K_INDEX code=.+?
-;
-
-exceptionsClause:
-    K_EXCEPTIONS K_INTO (schema=sqlName PERIOD)? tableName=sqlName
-;
-
-referencesClause:
-    K_REFERENCES (schema=sqlName PERIOD)? objectName=sqlName
-    (LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR)?
-    (K_ON K_DELETE (K_CASCADE | K_SET K_NULL))?
-;
-
-precheckState:
-      K_PRECHECK
-    | K_NOPRECHECK
-;
-
-outOflineConstraint:
-    (K_CONSTRAINT name=sqlName)?
-    (
-          K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
-        | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
-        | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
-    )
+    | outOfLineConstraint
 ;
 
 // oid is old syntax that is not documented anymore
@@ -1091,7 +1358,7 @@ xmlschemaSpec:
 ;
 
 // contains part of annotations_list clause to simplify grammar
-annotationClause:
+annotationsClause:
     K_ANNOTATIONS LPAR items+=annotationListItem (COMMA items+=annotationListItem)* RPAR
 ;
 
@@ -1972,19 +2239,6 @@ externalTableDataProps:
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
     .+?
-;
-
-// minimal clause for use in inlineExternalTable; the following is missing:
-// default clause, identity_clause, encryption_spec, inline_constraint, inline_ref_constraint
-columnDefinition:
-    column=sqlName typeName=datatypeDomain
-    K_RESERVABLE? (K_COLLATE collate=sqlName)? K_SORT? (K_VISIBLE|K_INVISIBLE)?
-;
-
-// simplified, reservable and collate are part of column_definition
-datatypeDomain:
-      dataType (K_DOMAIN (domainOwner=sqlName PERIOD)?  domainName=sqlName)?
-    | K_DOMAIN (domainOwner=sqlName PERIOD)? domainName=sqlName
 ;
 
 subqueryRestrictionClause:
@@ -5111,6 +5365,7 @@ keywordAsId:
     | K_ACCESSIBLE
     | K_ACCURACY
     | K_ACROSS
+    | K_ACTION
     | K_ADD
     | K_AFTER
     | K_AGENT
@@ -5118,6 +5373,7 @@ keywordAsId:
     | K_ALL
     | K_ALLOW
     | K_ALTER
+    | K_ALWAYS
     | K_ANALYTIC
     | K_ANALYZE
     | K_ANCESTOR
@@ -5160,6 +5416,7 @@ keywordAsId:
     | K_BLANKLINE
     | K_BLOB
     | K_BLOCK
+    | K_BLOCKCHAIN
     | K_BODY
     | K_BOOL
     | K_BOOLEAN
@@ -5203,10 +5460,12 @@ keywordAsId:
     | K_COLUMN
     | K_COLUMNS
     | K_COMMENT
+    | K_COMMENTS
     | K_COMMIT
     | K_COMMITTED
     | K_COMPLETE
     | K_COMPOUND
+    | K_COMPRESSION
     | K_COMPUTATION
     | K_CONCURRENT
     | K_CONDITIONAL
@@ -5280,6 +5539,7 @@ keywordAsId:
     | K_DOUBLE
     | K_DROP
     | K_DUALITY
+    | K_DUPLICATED
     | K_DURATION
     | K_EACH
     | K_EDITION
@@ -5310,7 +5570,9 @@ keywordAsId:
     | K_EXCEPTION
     | K_EXCEPTIONS
     | K_EXCEPTION_INIT
+    | K_EXCHANGE
     | K_EXCLUDE
+    | K_EXCLUDING
     | K_EXCLUSIVE
     | K_EXECUTE
     | K_EXISTING
@@ -5347,7 +5609,9 @@ keywordAsId:
     | K_FULL
     | K_FUNCTION
     | K_FUZZY_MATCH
+    | K_GENERATED
     | K_GENERIC_PLAN
+    | K_GLOBAL
     | K_GOTO
     | K_GRANT
     | K_GRAPH_TABLE
@@ -5376,19 +5640,23 @@ keywordAsId:
     | K_ID
     | K_IDENTIFIED
     | K_IDENTIFIER
+    | K_IDENTITY
     | K_IF
     | K_IGNORE
     | K_IMMEDIATE
     | K_IMMUTABLE
     | K_IN
     | K_INCLUDE
+    | K_INCLUDING
     | K_INCREMENT
     | K_INDENT
     | K_INDEX
+    | K_INDEXES
     | K_INDICATOR
     | K_INDICES
     | K_INET
     | K_INFINITE
+    | K_INHERIT
     | K_INITIALLY
     | K_INITRANS
     | K_INLINE
@@ -5485,12 +5753,15 @@ keywordAsId:
     | K_MATERIALIZED
     | K_MAX
     | K_MAXLEN
+    | K_MAXVALUE
     | K_MEASURES
     | K_MEMBER
+    | K_MEMOPTIMIZED
     | K_MERGE
     | K_METADATA
     | K_MINUS
     | K_MINUTE
+    | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
     | K_MLE
@@ -5527,9 +5798,12 @@ keywordAsId:
     | K_NOENTITYESCAPING
     | K_NOINSERT
     | K_NOLOGGING
+    | K_NOMAXVALUE
+    | K_NOMINVALUE
     | K_NONE
     | K_NONEDITIONABLE
     | K_NONSCHEMA
+    | K_NOORDER
     | K_NOPARALLEL
     | K_NOPRECHECK
     | K_NORELY
@@ -5577,6 +5851,7 @@ keywordAsId:
     | K_PARALLEL_ENABLE
     | K_PARAMETERS
     | K_PARENT
+    | K_PARTIAL
     | K_PARTITION
     | K_PARTITIONS
     | K_PARTITIONSET
@@ -5597,6 +5872,7 @@ keywordAsId:
     | K_PIPELINED
     | K_PIVOT
     | K_PLACING
+    | K_PLAIN
     | K_PLAN
     | K_PLUGGABLE
     | K_POINT
@@ -5619,6 +5895,7 @@ keywordAsId:
     | K_PRETTY
     | K_PRIMARY
     | K_PRIOR
+    | K_PRIVATE
     | K_PROBES
     | K_PROCEDURE
     | K_PUNCTUATION
@@ -5651,6 +5928,7 @@ keywordAsId:
     | K_REPLACE
     | K_RESERVABLE
     | K_RESPECT
+    | K_RESTRICT
     | K_RESTRICTED
     | K_RESTRICT_REFERENCES
     | K_RESULT
@@ -5706,6 +5984,7 @@ keywordAsId:
     | K_SET
     | K_SETOF
     | K_SETS
+    | K_SHARDED
     | K_SHARD_ENABLE
     | K_SHARE
     | K_SHARE_OF
@@ -5715,6 +5994,7 @@ keywordAsId:
     | K_SIBLINGS
     | K_SIGNATURE
     | K_SIMILAR
+    | K_SIMPLE
     | K_SINGLE
     | K_SIZE
     | K_SKIP
@@ -5729,6 +6009,7 @@ keywordAsId:
     | K_SQL
     | K_SQL_MACRO
     | K_STABLE
+    | K_STAGING
     | K_STANDALONE
     | K_START
     | K_STARTUP
@@ -5738,6 +6019,7 @@ keywordAsId:
     | K_STATISTICS
     | K_STORAGE
     | K_STORE
+    | K_STORED
     | K_STRICT
     | K_STRING
     | K_STRUCT
@@ -5747,10 +6029,12 @@ keywordAsId:
     | K_SUBSTRING
     | K_SUBTYPE
     | K_SUMMARY
+    | K_SUPPLEMENTAL
     | K_SUPPORT
     | K_SUPPRESSES_WARNING_6009
     | K_SUSPEND
     | K_SYMMETRIC
+    | K_SYNCHRONOUS
     | K_SYSTEM
     | K_TABLE
     | K_TABLES
@@ -5832,6 +6116,7 @@ keywordAsId:
     | K_VERSION
     | K_VERSIONS
     | K_VIEW
+    | K_VIRTUAL
     | K_VISIBLE
     | K_VOCABULARY
     | K_VOLATILE

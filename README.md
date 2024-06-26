@@ -37,7 +37,7 @@ The current islands of interests are:
 |       | `create package`                      | :white_check_mark: |        n/a         |
 |       | `create package body`                 | :white_check_mark: |        n/a         |
 |       | `create procedure`                    | :white_check_mark: | :white_check_mark: |
-|       | `create table`                        |   :construction:   |   :construction:   |
+|       | `create table`                        | :white_check_mark: | :white_check_mark: |
 |       | `create trigger`                      | :white_check_mark: | :white_check_mark: |
 |       | `create type`                         | :white_check_mark: | :white_check_mark: |
 |       | `create type body`                    | :white_check_mark: |        n/a         |
