@@ -5279,6 +5279,7 @@ keywordAsId:
     | K_ACCESSIBLE
     | K_ACCURACY
     | K_ACROSS
+    | K_ACTION
     | K_ADD
     | K_AFTER
     | K_AGENT
@@ -5373,10 +5374,12 @@ keywordAsId:
     | K_COLUMN
     | K_COLUMNS
     | K_COMMENT
+    | K_COMMENTS
     | K_COMMIT
     | K_COMMITTED
     | K_COMPLETE
     | K_COMPOUND
+    | K_COMPRESSION
     | K_COMPUTATION
     | K_CONCURRENT
     | K_CONDITIONAL
@@ -5483,6 +5486,7 @@ keywordAsId:
     | K_EXCEPTION_INIT
     | K_EXCHANGE
     | K_EXCLUDE
+    | K_EXCLUDING
     | K_EXCLUSIVE
     | K_EXECUTE
     | K_EXISTING
@@ -5557,13 +5561,16 @@ keywordAsId:
     | K_IMMUTABLE
     | K_IN
     | K_INCLUDE
+    | K_INCLUDING
     | K_INCREMENT
     | K_INDENT
     | K_INDEX
+    | K_INDEXES
     | K_INDICATOR
     | K_INDICES
     | K_INET
     | K_INFINITE
+    | K_INHERIT
     | K_INITIALLY
     | K_INITRANS
     | K_INLINE
@@ -5758,6 +5765,7 @@ keywordAsId:
     | K_PARALLEL_ENABLE
     | K_PARAMETERS
     | K_PARENT
+    | K_PARTIAL
     | K_PARTITION
     | K_PARTITIONS
     | K_PARTITIONSET
@@ -5778,6 +5786,7 @@ keywordAsId:
     | K_PIPELINED
     | K_PIVOT
     | K_PLACING
+    | K_PLAIN
     | K_PLAN
     | K_PLUGGABLE
     | K_POINT
@@ -5833,6 +5842,7 @@ keywordAsId:
     | K_REPLACE
     | K_RESERVABLE
     | K_RESPECT
+    | K_RESTRICT
     | K_RESTRICTED
     | K_RESTRICT_REFERENCES
     | K_RESULT
@@ -5898,6 +5908,7 @@ keywordAsId:
     | K_SIBLINGS
     | K_SIGNATURE
     | K_SIMILAR
+    | K_SIMPLE
     | K_SINGLE
     | K_SIZE
     | K_SKIP
@@ -5922,6 +5933,7 @@ keywordAsId:
     | K_STATISTICS
     | K_STORAGE
     | K_STORE
+    | K_STORED
     | K_STRICT
     | K_STRING
     | K_STRUCT
