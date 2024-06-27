@@ -1184,10 +1184,17 @@ nestedTableTypeSpec:
     )
 ;
 
+// not documented in 23.4: optionality of attributes
 objectSubtypeDef:
     K_UNDER (schema=sqlName PERIOD)? superType=sqlName
-    (LPAR attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)* RPAR)?
+    (LPAR objectSubtypeElements RPAR)?
     options+=objectTypeDefOption*
+;
+
+// artificial clause to handle optionality of attributes
+objectSubtypeElements:
+      attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)*
+    | elements+=elementSpec (COMMA elements+=elementSpec)*
 ;
 
 postgresqlTypeSource:
