@@ -1194,7 +1194,7 @@ objectSubtypeDef:
 // artificial clause to handle optionality of attributes
 objectSubtypeElements:
       attributes+=attribute (COMMA attributes+=attribute)* (COMMA elements+=elementSpec)*
-    | elements+=elementSpec
+    | elements+=elementSpec (COMMA elements+=elementSpec)*
 ;
 
 postgresqlTypeSource:
