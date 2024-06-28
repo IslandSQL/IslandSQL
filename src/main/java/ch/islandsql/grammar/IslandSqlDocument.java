@@ -188,10 +188,20 @@ public class IslandSqlDocument {
         return syntaxErrors;
     }
 
+    /**
+     * Get the lexer metrics gathered during construction with hideOutOfScopeTokens.
+     *
+     * @return The lexer metrics gathered during construction with hideOutOfScopeTokens.
+     */
     public LexerMetrics getLexerMetrics() {
         return lexerMetrics;
     }
 
+    /**
+     * Get the parser metrics gathered during construction with or without profiling.
+     *
+     * @return The parser metrics gathered during construction with or without profiling.
+     */
     public ParserMetrics getParserMetrics() {
         return parserMetrics;
     }
