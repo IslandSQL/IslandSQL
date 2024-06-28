@@ -16,7 +16,9 @@
 
 package ch.islandsql.grammar;
 
+import ch.islandsql.grammar.util.LexerMetrics;
 import ch.islandsql.grammar.util.ParseTreeUtil;
+import ch.islandsql.grammar.util.ParserMetrics;
 import ch.islandsql.grammar.util.SyntaxErrorEntry;
 import ch.islandsql.grammar.util.SyntaxErrorListener;
 import ch.islandsql.grammar.util.TokenStreamUtil;
@@ -36,14 +38,18 @@ public class IslandSqlDocument {
     private final CommonTokenStream tokenStream;
     private final IslandSqlParser.FileContext file;
     private final List<SyntaxErrorEntry> syntaxErrors;
+    private final LexerMetrics lexerMetrics;
+    private final ParserMetrics parserMetrics;
 
     /**
      * Constructor. Private to allow future optimization such as caching.
      *
      * @param sql SQL-script as string.
      * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
+     * @param dialect The SQL dialect to be used.
+     * @param profile collect ANTLR profiling data during lexing/parsing
      */
-    private IslandSqlDocument(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect) {
+    private IslandSqlDocument(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect, boolean profile) {
         assert sql != null : "sql must not be null";
         this.dialect = dialect == null ? guessDialect(sql) : dialect;
         CodePointCharStream charStream = CharStreams.fromString(sql);
@@ -54,12 +60,22 @@ public class IslandSqlDocument {
         lexer.addErrorListener(errorListener);
         this.tokenStream = new CommonTokenStream(lexer);
         if (hideOutOfScopeTokens) {
-            TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
+            lexerMetrics = TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
+        } else {
+            lexerMetrics = null;
         }
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
+        if (profile) {
+            parser.setProfile(true);
+        }
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
+        long parserStartTime = System.currentTimeMillis();
+        long parserStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         this.file = parser.file();
+        long parserTime = System.currentTimeMillis() - parserStartTime;
+        long parserMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - parserStartMemory;
+        this.parserMetrics = new ParserMetrics(parserTime, parserMemory, parser.getParseInfo());
         this.syntaxErrors = errorListener.getSyntaxErrors();
     }
 
@@ -94,7 +110,7 @@ public class IslandSqlDocument {
      * @return Constructed IslandSqlDocument.
      */
     public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens) {
-        return new IslandSqlDocument(sql, hideOutOfScopeTokens, null);
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens, null, false);
     }
 
     /**
@@ -106,7 +122,20 @@ public class IslandSqlDocument {
      * @return Constructed IslandSqlDocument.
      */
     public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect) {
-        return new IslandSqlDocument(sql, hideOutOfScopeTokens, dialect);
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens, dialect, false);
+    }
+
+    /**
+     * Factory to construct an IslandSqlDocument.
+     *
+     * @param sql SQL-script as string.
+     * @param hideOutOfScopeTokens hide out of scope tokens before calling parser?
+     * @param dialect The SQL dialect to be used.
+     * @param profile collect ANTLR profiling data during lexing/parsing
+     * @return Constructed IslandSqlDocument.
+     */
+    public static IslandSqlDocument parse(String sql, boolean hideOutOfScopeTokens, IslandSqlDialect dialect, boolean profile) {
+        return new IslandSqlDocument(sql, hideOutOfScopeTokens, dialect, profile);
     }
 
     /**
@@ -157,5 +186,13 @@ public class IslandSqlDocument {
      */
     public List<SyntaxErrorEntry> getSyntaxErrors() {
         return syntaxErrors;
+    }
+
+    public LexerMetrics getLexerMetrics() {
+        return lexerMetrics;
+    }
+
+    public ParserMetrics getParserMetrics() {
+        return parserMetrics;
     }
 }
