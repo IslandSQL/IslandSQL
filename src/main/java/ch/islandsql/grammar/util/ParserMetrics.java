@@ -110,11 +110,9 @@ public class ParserMetrics {
         sb.append("Total time spent in parser     : ");
         sb.append(df.format(getTime()));
         sb.append(" ms\n");
-        if (getParseInfo() != null) {
-            sb.append("Total time recorded by profiler: ");
-            sb.append(df.format(Math.round((float) getParseInfo().getTotalTimeInPrediction() / 1000000)));
-            sb.append(" ms\n");
-        }
+        sb.append("Total time recorded by profiler: ");
+        sb.append(df.format(getParseInfo() == null ? 0 : Math.round((float) getParseInfo().getTotalTimeInPrediction() / 1000000)));
+        sb.append(" ms\n");
         sb.append("\n");
         sb.append("Rule Name (Decision)                     Time (ms) Invocations Lookahead Max Lookahead Ambiguities Errors\n");
         sb.append("---------------------------------------- --------- ----------- --------- ------------- ----------- ------\n");
