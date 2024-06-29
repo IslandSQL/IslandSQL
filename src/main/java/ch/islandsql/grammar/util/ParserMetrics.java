@@ -108,7 +108,7 @@ public class ParserMetrics {
         sb.append(df.format(Math.round((float) getMemory() / 1024)));
         sb.append(" KB\n");
         sb.append("Total time spent in parser     : ");
-        sb.append(getTime());
+        sb.append(df.format(getTime()));
         sb.append(" ms\n");
         if (getParseInfo() != null) {
             sb.append("Total time recorded by profiler: ");
