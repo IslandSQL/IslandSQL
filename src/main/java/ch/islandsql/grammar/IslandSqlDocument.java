@@ -65,9 +65,7 @@ public class IslandSqlDocument {
             lexerMetrics = null;
         }
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
-        if (profile) {
-            parser.setProfile(true);
-        }
+        parser.setProfile(profile);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
         long parserStartTime = System.currentTimeMillis();
