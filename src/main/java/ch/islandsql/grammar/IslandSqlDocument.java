@@ -59,11 +59,7 @@ public class IslandSqlDocument {
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
         this.tokenStream = new CommonTokenStream(lexer);
-        if (hideOutOfScopeTokens) {
-            lexerMetrics = TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
-        } else {
-            lexerMetrics = null;
-        }
+        this.lexerMetrics = !hideOutOfScopeTokens ? null : TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener);
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
         parser.setProfile(profile);
         parser.removeErrorListeners();
