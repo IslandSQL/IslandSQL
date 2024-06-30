@@ -100,32 +100,35 @@ public class ParserMetrics {
      * @return The text report based on the statistics gathered during profiling of the parser.
      */
     public String printProfile() {
-        DecimalFormat df = new DecimalFormat("###,###,###");
+        DecimalFormat dft = new DecimalFormat("##,###,##0.000");
+        DecimalFormat dfi = new DecimalFormat("###,###,##0");
+        DecimalFormat dfp = new DecimalFormat("##0.00");
         StringBuilder sb = new StringBuilder();
         sb.append("Profile\n");
         sb.append("=======\n\n");
         sb.append("Total memory used by parser    : ");
-        sb.append(df.format(Math.round((float) getMemory() / 1024)));
+        sb.append(dfi.format(Math.round((float) getMemory() / 1024)));
         sb.append(" KB\n");
         sb.append("Total time spent in parser     : ");
-        sb.append(df.format(getTime()));
+        sb.append(dfi.format(getTime()));
         sb.append(" ms\n");
         sb.append("Total time recorded by profiler: ");
-        sb.append(df.format(getParseInfo() == null ? 0 : Math.round((float) getParseInfo().getTotalTimeInPrediction() / 1000000)));
-        sb.append(" ms\n");
+        sb.append(dft.format(getParseInfo() == null ? 0 : (float) getParseInfo().getTotalTimeInPrediction() / 1000000));
+        sb.append(" ms (100%)\n");
         sb.append("\n");
-        sb.append("Rule Name (Decision)                     Time (ms) Invocations Lookahead Max Lookahead Ambiguities Errors\n");
-        sb.append("---------------------------------------- --------- ----------- --------- ------------- ----------- ------\n");
+        sb.append("Rule Name (Decision)                          Time (ms) Percent Invocations Lookahead Max Lookahead Ambiguities Errors\n");
+        sb.append("---------------------------------------- -------------- ------- ----------- --------- ------------- ----------- ------\n");
         for (DecisionInfo info : getRelevantDecisionInfo()) {
             DecisionState ds = IslandSqlParser._ATN.getDecisionState(info.decision);
             String ruleNameAndDecision = IslandSqlParser.ruleNames[ds.ruleIndex] + " (" + info.decision + ")";
             sb.append(String.format("%-40.40s", ruleNameAndDecision));
-            sb.append(String.format("%10s", df.format(Math.round((float) info.timeInPrediction / 1000000))));
-            sb.append(String.format("%12s", df.format(info.invocations)));
-            sb.append(String.format("%10s", df.format(info.LL_TotalLook)));
-            sb.append(String.format("%14s", df.format(info.LL_MaxLook)));
-            sb.append(String.format("%12s", df.format(info.ambiguities.size())));
-            sb.append(String.format("%7s", df.format(info.errors.size())));
+            sb.append(String.format("%15s", dft.format((float) info.timeInPrediction / 1000000)));
+            sb.append(String.format("%8s", dfp.format((float) 100 * info.timeInPrediction / getParseInfo().getTotalTimeInPrediction())));
+            sb.append(String.format("%12s", dfi.format(info.invocations)));
+            sb.append(String.format("%10s", dfi.format(info.LL_TotalLook)));
+            sb.append(String.format("%14s", dfi.format(info.LL_MaxLook)));
+            sb.append(String.format("%12s", dfi.format(info.ambiguities.size())));
+            sb.append(String.format("%7s", dfi.format(info.errors.size())));
             sb.append("\n");
         }
         return sb.toString();
