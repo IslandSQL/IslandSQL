@@ -64,10 +64,10 @@ public class IslandSqlDocument {
         parser.setProfile(profile);
         parser.removeErrorListeners();
         parser.addErrorListener(errorListener);
-        long parserStartTime = System.currentTimeMillis();
+        long parserStartTime = System.nanoTime();
         long parserStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         this.file = parser.file();
-        long parserTime = System.currentTimeMillis() - parserStartTime;
+        long parserTime = System.nanoTime() - parserStartTime;
         long parserMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - parserStartMemory;
         this.parserMetrics = new ParserMetrics(parserTime, parserMemory, parser.getParseInfo());
         this.syntaxErrors = errorListener.getSyntaxErrors();

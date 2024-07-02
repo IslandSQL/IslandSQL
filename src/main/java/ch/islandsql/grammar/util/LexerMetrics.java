@@ -27,9 +27,9 @@ public class LexerMetrics {
     /**
      * Constructor.
      *
-     * @param scopeTime   Number of milliseconds spent in the scope lexer.
+     * @param scopeTime   Number of nanoseconds spent in the scope lexer.
      * @param scopeMemory Number of bytes used by the scope lexer.
-     * @param time        Number of milliseconds spent in the lexer.
+     * @param time        Number of nanoseconds spent in the lexer.
      * @param memory      Number of bytes used by the lexer.
      */
     public LexerMetrics(long scopeTime, long scopeMemory, long time, long memory) {
@@ -40,9 +40,9 @@ public class LexerMetrics {
     }
 
     /**
-     * Get the number of milliseconds spent in the scope lexer.
+     * Get the number of nanoseconds spent in the scope lexer.
      *
-     * @return The number of milliseconds spent in the scope lexer.
+     * @return The number of nanoseconds spent in the scope lexer.
      */
     public long getScopeTime() {
         return scopeTime;
@@ -58,9 +58,9 @@ public class LexerMetrics {
     }
 
     /**
-     * Get the number of milliseconds spent in the lexer.
+     * Get the number of nanoseconds spent in the lexer.
      *
-     * @return The number of milliseconds spent in the lexer.
+     * @return The number of nanoseconds spent in the lexer.
      */
     public long getTime() {
         return time;

@@ -37,7 +37,7 @@ public class ParserMetrics {
     /**
      * Constructor.
      *
-     * @param time      Number of milliseconds spent in the parser.
+     * @param time      Number of nanoseconds spent in the parser.
      * @param memory    Number of bytes used by the parser.
      * @param parseInfo Statistics gathered during profiling of the parser.
      */
@@ -48,9 +48,9 @@ public class ParserMetrics {
     }
 
     /**
-     * Get the number of milliseconds spent in the parser.
+     * Get the number of nanoseconds spent in the parser.
      *
-     * @return The number of milliseconds spent in the parser.
+     * @return The number of nanoseconds spent in the parser.
      */
     public long getTime() {
         return time;
@@ -110,7 +110,7 @@ public class ParserMetrics {
         sb.append(dfi.format(Math.round((float) getMemory() / 1024)));
         sb.append(" KB\n");
         sb.append("Total time spent in parser     : ");
-        sb.append(dfi.format(getTime()));
+        sb.append(dft.format((float) getTime() / 1000000));
         sb.append(" ms\n");
         sb.append("Total time recorded by profiler: ");
         sb.append(dft.format(getParseInfo() == null ? 0 : (float) getParseInfo().getTotalTimeInPrediction() / 1000000));

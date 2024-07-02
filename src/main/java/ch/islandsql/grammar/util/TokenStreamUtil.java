@@ -41,7 +41,7 @@ public class TokenStreamUtil {
      * @return The lexer metrics.
      */
     static public LexerMetrics hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener) {
-        long lexerStartTime = System.currentTimeMillis();
+        long lexerStartTime = System.nanoTime();
         long lexerStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         try {
             tokenStream.fill();
@@ -61,7 +61,7 @@ public class TokenStreamUtil {
                 errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlLexer)", null);
             }
         }
-        long lexerTime = System.currentTimeMillis() - lexerStartTime;
+        long lexerTime = System.nanoTime() - lexerStartTime;
         long lexerMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - lexerStartMemory;
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
@@ -71,7 +71,7 @@ public class TokenStreamUtil {
             scopeLexer.addErrorListener(errorListener);
         }
         CommonTokenStream scopeStream = new CommonTokenStream(scopeLexer);
-        long scopeLexerStartTime = System.currentTimeMillis();
+        long scopeLexerStartTime = System.nanoTime();
         long scopeLexerStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         try {
             scopeStream.fill();
@@ -91,7 +91,7 @@ public class TokenStreamUtil {
                 errorListener.syntaxError(null, offendingToken, line, charPositionInLine, e.getMessage() + " (IslandSqlScopeLexer)", null);
             }
         }
-        long scopeLexerTime = System.currentTimeMillis() - scopeLexerStartTime;
+        long scopeLexerTime = System.nanoTime() - scopeLexerStartTime;
         long scopeLexerMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - scopeLexerStartMemory;
         List<Token> scopeTokens = new ArrayList<>(scopeStream.getTokens());
         int scopeIndex = 0;
