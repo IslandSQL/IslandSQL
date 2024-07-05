@@ -3160,8 +3160,22 @@ exceptionHandler:
     K_WHEN exceptions+=qualifiedName (K_OR exceptions+=qualifiedName)* K_THEN stmts+=plsqlStatement+
 ;
 
+// "end" is not allowed as procedure call to avoid conflicts with end keyword of a PL/SQL block.
+// ANTLR can handle this conflict, however the parsing times increase with the number of nested blocks.
+// "end" is allowed as column name, column alias, table name, table alias etc.
+// Threfore we do not use "expr=expression SEMI" for this rule.
 procedureCall:
-    expr=expression SEMI
+    (LPAR castExpr=expression K_AS typeName=qualifiedName RPAR PERIOD)?
+    qualifiedProcedureName
+        (COMMAT dblink=qualifiedName)?
+        (LPAR ((params+=functionParameter (COMMA params+=functionParameter)*)? | functionParameterSuffix?) RPAR)?
+        (PERIOD expr=expression)?
+    SEMI
+;
+
+// as qualifiedName but must not start with a reservedKeywordAsId
+qualifiedProcedureName:
+    procSqlName (PERIOD sqlName)*
 ;
 
 raiseStatement:
@@ -5561,7 +5575,6 @@ keywordAsId:
     | K_ENABLE
     | K_ENCODING
     | K_ENCRYPT
-    | K_END
     | K_ENFORCED
     | K_ENTITYESCAPING
     | K_ENUM
@@ -6168,13 +6181,28 @@ keywordAsId:
     | K_ZONE
 ;
 
+reservedKeywordAsId:
+    K_END
+;
+
 unquotedId:
       ID
     | keywordAsId
 ;
 
+procSqlName:
+      unquotedId
+    | QUOTED_ID
+    | PLSQL_INQUIRY_DIRECTIVE
+    | substitionVariable+
+    | POSITIONAL_PARAMETER          // PostgreSQL
+    | unicodeIdentifier             // PostgreSQL
+    | psqlVariable                  // PostgreSQL
+;
+
 sqlName:
       unquotedId
+    | reservedKeywordAsId
     | QUOTED_ID
     | PLSQL_INQUIRY_DIRECTIVE
     | substitionVariable+
