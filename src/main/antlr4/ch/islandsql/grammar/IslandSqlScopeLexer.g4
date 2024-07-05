@@ -399,7 +399,7 @@ UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_O
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
 UNIT_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
-UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' COMMENT_OR_WS+ -> more, pushMode(CODE_BLOCK_MODE);
+UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' COMMENT_OR_WS+ .+? COMMENT_OR_WS+ SQL_END -> popMode;
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
@@ -502,7 +502,8 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
 CB_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
-CB_EXPR: 'end' -> popMode; // including PostgreSQL atomic block
+// stay in current mode when 'end' seems to be an identifier
+CB_CASE_EXPR: 'end' {_modeStack.size() > 2}? -> popMode;
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
