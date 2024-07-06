@@ -124,7 +124,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      *
      * @return identifier in dollar-quoted string constant.
      */
-    private String getDollerIdentifier() {
+    private String getDollarIdentifier() {
         String identifier = null;
         if (_input.index() > 2) {
             int start = _input.index() - 2;
@@ -145,7 +145,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     @SuppressWarnings("SameReturnValue")
     public boolean saveDollarIdentifier1() {
-        String id = getDollerIdentifier();
+        String id = getDollarIdentifier();
         if (!id.isEmpty()) {
             dollarIdentifier1 = id;
         }
@@ -159,7 +159,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * @return Returns true if character matches quoteDelimiter1.
      */
     public boolean checkDollarIdentifier2() {
-        String dollarIdentifier2 = getDollerIdentifier();
+        String dollarIdentifier2 = getDollarIdentifier();
         return dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1);
     }
 
