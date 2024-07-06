@@ -76,16 +76,6 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if text is the next character sequence in the character stream.
-     *
-     * @return Returns true if text is the next character sequence in the character stream.
-     */
-    public boolean isText(String text) {
-        return text.equalsIgnoreCase(getInputStream()
-                .getText(Interval.of(_input.index(), _input.index() + text.length() - 1)));
-    }
-
-    /**
      * Determines if the start of the current lexer token looks like a PL/SQL inquiry directive.
      *
      * @return Returns true if the current texts starts with a PL/SQL inquiry directive.
@@ -134,7 +124,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      *
      * @return identifier in dollar-quoted string constant.
      */
-    private String getDollerIdentifier() {
+    private String getDollarIdentifier() {
         String identifier = null;
         if (_input.index() > 2) {
             int start = _input.index() - 2;
@@ -155,7 +145,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     @SuppressWarnings("SameReturnValue")
     public boolean saveDollarIdentifier1() {
-        String id = getDollerIdentifier();
+        String id = getDollarIdentifier();
         if (!id.isEmpty()) {
             dollarIdentifier1 = id;
         }
@@ -169,7 +159,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * @return Returns true if character matches quoteDelimiter1.
      */
     public boolean checkDollarIdentifier2() {
-        String dollarIdentifier2 = getDollerIdentifier();
+        String dollarIdentifier2 = getDollarIdentifier();
         return dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1);
     }
 
@@ -214,9 +204,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * Determines if the position beforeString is valid for a SQL statement.
      * A SQL statement starts after a semicolon or slash.
      * A SQL statement can start at begin-of-file.
-     * Temporary solution to identify start of statement:
-     * - TODO: remove with <a href="https://github.com/IslandSQL/IslandSQL/issues/35">Fully parse view statement</a>
-     *     - after the keywords AS, IS
+     *
      * @param beforeString String used to determine start of the statement.
      * @return Returns true if the current position is valid for a SQL statement.
      */
@@ -232,7 +220,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
             } else {
                 // decide according previous token if it is a statement
                 String text = lastToken.getText().toLowerCase().trim();
-                if (text.endsWith(";") || text.endsWith("/") || text.equals("as") || text.equals("is")) {
+                if (text.endsWith(";") || text.endsWith("/")) {
                     return true;
                 }
             }
