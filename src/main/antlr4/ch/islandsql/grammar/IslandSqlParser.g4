@@ -72,16 +72,16 @@ createFunction:
 ;
 
 // supporting function without body, e.g. when using aggregate_clause
+// wrong documentation in 23.4: position of sharing_clause
 plsqlFunctionSource:
-    (schema=sqlName PERIOD)? functionName=sqlName
+    (schema=sqlName PERIOD)? functionName=sqlName sharingClause?
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         K_RETURN returnType=plsqlDataType options+=plsqlFunctionOption*
         ((K_IS | K_AS) (declareSection? body | callSpec SEMI) | SEMI)
 ;
 
 plsqlFunctionOption:
-      sharingClause
-    | invokerRightsclause
+      invokerRightsclause
     | accessibleByClause
     | defaultCollationClause
     | deterministicClause
