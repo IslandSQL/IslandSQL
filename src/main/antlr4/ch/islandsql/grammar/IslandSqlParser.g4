@@ -63,7 +63,7 @@ ddlStatement:
 /*----------------------------------------------------------------------------*/
 
 createFunctionStatement:
-      createFunction sqlEnd?
+    createFunction sqlEnd?
 ;
 
 createFunction:
@@ -454,7 +454,7 @@ plsqlPackageOption:
 /*----------------------------------------------------------------------------*/
 
 createPackageBodyStatement:
-      createPackageBody sqlEnd?
+    createPackageBody sqlEnd?
 ;
 
 createPackageBody:
@@ -479,7 +479,7 @@ initializeSection:
 /*----------------------------------------------------------------------------*/
 
 createProcedureStatement:
-      createProcedure sqlEnd?
+    createProcedure sqlEnd?
 ;
 
 createProcedure:
@@ -676,15 +676,15 @@ inlineConstraint:
 
 // constraints not handled by inlineConstraint
 postgresqlColumnConstraint:
-        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
-      | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
-      | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
-      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
-      | K_PRIMARY K_KEY postgresqlIndexParameters*
-      | K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
-            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
-            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
-            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+    | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
+    | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
+    | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
+    | K_PRIMARY K_KEY postgresqlIndexParameters*
+    | K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+        (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+        (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+        (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
 ;
 
 postgresqlIndexParameters:
@@ -791,19 +791,19 @@ outOfLineConstraint:
 
 // constraints not handled by outOflineConstraint
 postgresqlTableConstraint:
-        K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
-      | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
-            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
-      | K_PRIMARY K_KEY
-            LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
-      | K_EXCLUDE (K_USING method=sqlName)?
-            LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
-            postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
-      | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-            K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
-            (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
-            (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
-            (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
+      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+    | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
+        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+    | K_PRIMARY K_KEY
+        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+    | K_EXCLUDE (K_USING method=sqlName)?
+        LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
+        postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
+    | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+        K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+        (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
+        (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
+        (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
 ;
 
 postgresqlExcludeColumn:
@@ -2310,7 +2310,7 @@ unpivotInClause:
 ;
 
 unpivotInClauseColumn:
-     column=expression (K_AS? literal=expression)?
+    column=expression (K_AS? literal=expression)?
 ;
 
 rowPatternClause:
@@ -4139,7 +4139,7 @@ graphTableColumnDefinition:
 
 // simplified, includes path_pattern, path_pattern_expression, path_concatenation (to handle left-recursion)
 pathTerm:
-      pathFactor+
+    pathFactor+
 ;
 
 pathFactor:
