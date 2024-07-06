@@ -2713,6 +2713,7 @@ functionDeclaration:
 ;
 
 // contains also options in package_function_declaration
+// not documented in 23.4: aggregarte_clause, sql_macro_clause
 functionDeclarationOption:
       accessibleByClause
     | deterministicClause
@@ -2720,6 +2721,8 @@ functionDeclarationOption:
     | shardEnableClause
     | parallelEnableClause
     | resultCacheClause
+    | aggreagateClause
+    | sqlMacroClause
 ;
 
 deterministicClause:
