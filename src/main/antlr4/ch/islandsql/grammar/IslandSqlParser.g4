@@ -487,16 +487,16 @@ createProcedure:
     (K_IF K_NOT K_EXISTS)? (plsqlProcedureSource | postgresqlProcedureSource)
 ;
 
+// wrong documentation in 23.4: position of sharing clause
 plsqlProcedureSource:
-    (schema=sqlName PERIOD)? procedureName=sqlName
+    (schema=sqlName PERIOD)? procedureName=sqlName sharingClause?
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         options+=plsqlProcedureOption*
         (K_IS | K_AS) (declareSection? body | callSpec SEMI)
 ;
 
 plsqlProcedureOption:
-      sharingClause
-    | defaultCollationClause
+      defaultCollationClause
     | invokerRightsclause
     | accessibleByClause
 ;
