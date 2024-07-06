@@ -72,16 +72,16 @@ createFunction:
 ;
 
 // supporting function without body, e.g. when using aggregate_clause
+// wrong documentation in 23.4: position of sharing_clause
 plsqlFunctionSource:
-    (schema=sqlName PERIOD)? functionName=sqlName
+    (schema=sqlName PERIOD)? functionName=sqlName sharingClause?
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         K_RETURN returnType=plsqlDataType options+=plsqlFunctionOption*
         ((K_IS | K_AS) (declareSection? body | callSpec SEMI) | SEMI)
 ;
 
 plsqlFunctionOption:
-      sharingClause
-    | invokerRightsclause
+      invokerRightsclause
     | accessibleByClause
     | defaultCollationClause
     | deterministicClause
@@ -487,16 +487,16 @@ createProcedure:
     (K_IF K_NOT K_EXISTS)? (plsqlProcedureSource | postgresqlProcedureSource)
 ;
 
+// wrong documentation in 23.4: position of sharing clause
 plsqlProcedureSource:
-    (schema=sqlName PERIOD)? procedureName=sqlName
+    (schema=sqlName PERIOD)? procedureName=sqlName sharingClause?
         (LPAR parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR)?
         options+=plsqlProcedureOption*
         (K_IS | K_AS) (declareSection? body | callSpec SEMI)
 ;
 
 plsqlProcedureOption:
-      sharingClause
-    | defaultCollationClause
+      defaultCollationClause
     | invokerRightsclause
     | accessibleByClause
 ;
@@ -2713,6 +2713,7 @@ functionDeclaration:
 ;
 
 // contains also options in package_function_declaration
+// not documented in 23.4: aggregarte_clause, sql_macro_clause
 functionDeclarationOption:
       accessibleByClause
     | deterministicClause
@@ -2720,6 +2721,8 @@ functionDeclarationOption:
     | shardEnableClause
     | parallelEnableClause
     | resultCacheClause
+    | aggreagateClause
+    | sqlMacroClause
 ;
 
 deterministicClause:
@@ -3163,11 +3166,9 @@ exceptionHandler:
 // "end" is not allowed as procedure call to avoid conflicts with end keyword of a PL/SQL block.
 // ANTLR can handle this conflict, however the parsing times increase with the number of nested blocks.
 // "end" is allowed as column name, column alias, table name, table alias etc.
-// The semantic predicate alone helps to improve the parse time. However, the combination with
-// a grammar that does not allow procedure call with "end" as first segment leads to the best results.
-// Therfore we do not use "expr=expression SEMI" for this rule.
+// A semantic predicate can improve the parse time. However, a grammar that does not allow
+// a procedure call with "end" as first segment leads to the best results.
 procedureCall:
-    {!(_input.LA(1) == K_END && _input.LA(2) == SEMI)}?
     (LPAR castExpr=expression K_AS typeName=qualifiedName RPAR PERIOD)?
     (
           specialFunctionExpression
