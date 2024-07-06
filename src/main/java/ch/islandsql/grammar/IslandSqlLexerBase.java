@@ -76,16 +76,6 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * Determines if text is the next character sequence in the character stream.
-     *
-     * @return Returns true if text is the next character sequence in the character stream.
-     */
-    public boolean isText(String text) {
-        return text.equalsIgnoreCase(getInputStream()
-                .getText(Interval.of(_input.index(), _input.index() + text.length() - 1)));
-    }
-
-    /**
      * Determines if the start of the current lexer token looks like a PL/SQL inquiry directive.
      *
      * @return Returns true if the current texts starts with a PL/SQL inquiry directive.
