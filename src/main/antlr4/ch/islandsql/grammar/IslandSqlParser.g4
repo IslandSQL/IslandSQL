@@ -93,7 +93,7 @@ plsqlFunctionOption:
     | sqlMacroClause
 ;
 
-// extended by options available in createView, craateTable only
+// extended by options available in createView, createTable only
 sharingClause:
     K_SHARING EQUALS (K_METADATA | K_NONE | K_DATA | K_EXTENDED K_DATA)
 ;
