@@ -3166,11 +3166,9 @@ exceptionHandler:
 // "end" is not allowed as procedure call to avoid conflicts with end keyword of a PL/SQL block.
 // ANTLR can handle this conflict, however the parsing times increase with the number of nested blocks.
 // "end" is allowed as column name, column alias, table name, table alias etc.
-// The semantic predicate alone helps to improve the parse time. However, the combination with
-// a grammar that does not allow procedure call with "end" as first segment leads to the best results.
-// Therfore we do not use "expr=expression SEMI" for this rule.
+// A semantic predicate can improve the parse time. However, a grammar that does not allow
+// a procedure call with "end" as first segment leads to the best results.
 procedureCall:
-    {!(_input.LA(1) == K_END && _input.LA(2) == SEMI)}?
     (LPAR castExpr=expression K_AS typeName=qualifiedName RPAR PERIOD)?
     (
           specialFunctionExpression
