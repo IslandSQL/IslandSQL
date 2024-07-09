@@ -22,10 +22,30 @@ options {
 }
 
 /*----------------------------------------------------------------------------*/
-// Start rule
+// Start rules
 /*----------------------------------------------------------------------------*/
 
-file: statement* EOF;
+// used in constructor of IslandSqlDocument
+file:
+    statement* EOF
+;
+
+// used in constructor of IslandSqlDocument for GENERIC and POSTGRESQL dialect with enabled subtrees option
+postgresqlSqlCode:
+    atomicStatement* EOF
+;
+
+// used in constructor of IslandSqlDocument for GENERIC and POSTGRESQL dialect with enabled subtrees option
+// difference to OracleDB PL/SQL block: only one label allowed and final semicolon is optional
+// other differences are handled in the PL/SQL specific rules
+postgresqlPlpgsqlCode:
+    label?
+    (K_DECLARE declareSection?)?
+    K_BEGIN
+    stmts+=plsqlStatement+
+    (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
+    K_END name=sqlName? SEMI? EOF
+;
 
 /*----------------------------------------------------------------------------*/
 // Statement
