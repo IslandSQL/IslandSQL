@@ -6260,17 +6260,19 @@ qualifiedName:
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
 string:
-      STRING                                # simpleString
-    | N_STRING                              # nationalString
-    | N_STRING STRING+                      # concatenatedNationalString            // PostgreSQL, MySQL
-    | E_STRING                              # escapedString                         // PostgreSQL
-    | U_AMP_STRING (K_UESCAPE STRING)?      # unicodeString                         // PostgreSQL
-    | B_STRING                              # bitString                             // PostgreSQL
-    | STRING STRING+                        # concatenatedString                    // PostgreSQL, MySQL
-    | Q_STRING                              # quoteDelimiterString
-    | NQ_STRING                             # nationalQuoteDelimiterString
-    | DOLLAR_STRING                         # dollarString                          // PostgreSQL
-    | DOLLAR_ID_STRING                      # dollarIdentifierString                // PostgreSQL
+      STRING                            # simpleString
+    | N_STRING                          # nationalString
+    | N_STRING STRING+                  # concatenatedNationalString    // PostgreSQL, MySQL
+    | E_STRING STRING*                  # escapedString                 // PostgreSQL
+    | U_AMP_STRING concats+=STRING*
+        (K_UESCAPE escapeChar=STRING)?  # unicodeString                 // PostgreSQL
+    | B_STRING STRING*                  # bitString                     // PostgreSQL bit string in binary format
+    | X_STRING STRING*                  # bitString                     // PostgreSQL bit string in hex format
+    | STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
+    | Q_STRING                          # quoteDelimiterString
+    | NQ_STRING                         # nationalQuoteDelimiterString
+    | DOLLAR_STRING                     # dollarString                  // PostgreSQL (no concatenation!)
+    | DOLLAR_ID_STRING                  # dollarIdentifierString        // PostgreSQL (no concatenation!)
 ;
 
 /*----------------------------------------------------------------------------*/
