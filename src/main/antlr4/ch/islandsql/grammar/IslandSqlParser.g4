@@ -332,9 +332,9 @@ physicalProperties:
     (
           deferredSegmentCreation
         | segmentAttributesClause
-        | K_ORGANIZATION .+?
-        | K_EXTERNAL .+?
-        | K_CLUSTER .+?
+        | K_ORGANIZATION ~SEMI+?
+        | K_EXTERNAL ~SEMI+?
+        | K_CLUSTER ~SEMI+?
     )
 ;
 
@@ -353,7 +353,7 @@ segmentAttributesClause:
         | K_LOGGING
         | K_NOLOGGING
         | K_FILESYSTEM_LIKE_LOGGING
-    ) .+?
+    ) ~SEMI+?
 ;
 
 materializedViewProps:
@@ -370,12 +370,12 @@ columnProperties:
         | K_LOB
         | K_XMLTYPE
         | K_JSON
-    ) .+?
+    ) ~SEMI+?
 ;
 
 // simplified as list of tokens
 tablePartitioningClauses:
-    (K_PARTITION | K_PARTITIONSET) K_BY .+?
+    (K_PARTITION | K_PARTITIONSET) K_BY ~SEMI+?
 ;
 
 parallelClause:
@@ -389,7 +389,7 @@ buildClause:
 
 // simplified as list of tokens
 physicalAttributesClause:
-    .+?
+    ~SEMI+?
 ;
 
 createMvRefresh:
@@ -740,7 +740,7 @@ usingIndexClause:
 // artificial clause to handle token stream in "using index (create index i on t(c))"
 // ensure that closing parentheses are consumed.
 usingIndexClauseCode:
-    .+? RPAR*
+    ~SEMI+? RPAR*
 ;
 
 exceptionsClause:
@@ -870,7 +870,7 @@ postgresqlLikeOption:
 // artificial clause to handle everything up to table_properties
 // simplified, list of tokens is considered good enough
 beforeTableProperties:
-    .+?
+    ~SEMI+?
 ;
 
 // simplified, interested primarily in subquery,
@@ -2245,7 +2245,7 @@ externalTableDataProps:
 // https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
-    .+?
+    ~SEMI+?
 ;
 
 subqueryRestrictionClause:
