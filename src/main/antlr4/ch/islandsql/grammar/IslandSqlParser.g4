@@ -507,12 +507,13 @@ postgresqlProcedureSource:
         postgresqlProcedureOption+
 ;
 
+// postgresqlSqlCode/postgresqlPlpgsqlCode is optionally populated when creating an IslandSqlDocument instance
 postgresqlProcedureOption:
-      K_LANGUAGE languageName=sqlName
+      K_LANGUAGE languageName=expression
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression
+    | K_AS definition=expression // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | atomicBlock // subset of sql_body used in PostgreSQL function
 ;
