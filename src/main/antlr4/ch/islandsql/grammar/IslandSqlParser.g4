@@ -3296,7 +3296,42 @@ sqlStatement:
         | savepoint
         | setTransaction
         | update
+        | postgresqlSqlStatement
     ) SEMI
+;
+
+// SQL statements that are allowed in an PL/pgSQL block
+// not allowed in PL/pgSQL or not handled in this rule: ABORT, BEGIN, DECLARE, END, EXECUTE, EXPLAIN, FETCH,
+// LISTEN, LOAD, MOVE, NOTIFY, PREPARE TRANSACTION, RELEASE SAVEPOINT, SHOW, START TRANSACTION, UNLISTEN, VACUUM, VALUES
+postgresqlSqlStatement:
+      createTable
+    | call
+    | lockTable
+    | postgresqlDo
+    | K_ALTER postgreSqlStatementTrailingTokens
+    | K_ANALYZE postgreSqlStatementTrailingTokens
+    | K_CHECKPOINT
+    | K_CLUSTER postgreSqlStatementTrailingTokens
+    | K_COMMENT postgreSqlStatementTrailingTokens
+    | K_COPY postgreSqlStatementTrailingTokens
+    | K_CREATE postgreSqlStatementTrailingTokens
+    | K_DEALLOCATE postgreSqlStatementTrailingTokens
+    | K_DISCARD postgreSqlStatementTrailingTokens
+    | K_DROP postgreSqlStatementTrailingTokens
+    | K_GRANT postgreSqlStatementTrailingTokens
+    | K_IMPORT postgreSqlStatementTrailingTokens
+    | K_PREPARE postgreSqlStatementTrailingTokens
+    | K_REASSIGN postgreSqlStatementTrailingTokens
+    | K_REFRESH postgreSqlStatementTrailingTokens
+    | K_REINDEX postgreSqlStatementTrailingTokens
+    | K_RESET postgreSqlStatementTrailingTokens
+    | K_SECURITY postgreSqlStatementTrailingTokens
+    | K_SET postgreSqlStatementTrailingTokens
+    | K_TRUNCATE postgreSqlStatementTrailingTokens
+;
+
+postgreSqlStatementTrailingTokens:
+    ~SEMI*?
 ;
 
 whileLoopStatement:
