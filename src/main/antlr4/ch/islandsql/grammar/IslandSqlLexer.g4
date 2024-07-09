@@ -979,6 +979,10 @@ B_STRING:
     'b' STRING
 ;
 
+X_STRING:
+    'x' STRING
+;
+
 U_AMP_STRING:
     'u&' STRING
 ;
