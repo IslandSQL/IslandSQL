@@ -140,6 +140,7 @@ argmode:
     | K_VARIADIC
 ;
 
+// postgresqlSqlCode/postgresqlPlpgsqlCode is optionally populated when creating an IslandSqlDocument instance
 postgresqlFunctionOption:
       K_LANGUAGE languageName=expression // expected sqlName, string is allowed but deprecated
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
@@ -157,10 +158,10 @@ postgresqlFunctionOption:
     | K_ROWS resultRows=expression
     | K_SUPPORT (supportSchema=sqlName PERIOD)? supportFunction=sqlName
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression
+    | K_AS definition=expression // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | sqlBody
-    | otherOption=sqlName // e.g. _cost_low, _cost_medium, _cost_high, _cost_default
+    | otherOption=sqlName // e.g. used by PostGIS: _cost_low, _cost_medium, _cost_high, _cost_default
 ;
 
 transformItem:
