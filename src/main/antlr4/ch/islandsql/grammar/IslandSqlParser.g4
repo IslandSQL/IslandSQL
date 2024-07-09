@@ -5476,6 +5476,7 @@ keywordAsId:
     | K_CHARSETID
     | K_CHAR_CS
     | K_CHECK
+    | K_CHECKPOINT
     | K_CIDR
     | K_CIRCLE
     | K_CLOB
@@ -5536,6 +5537,7 @@ keywordAsId:
     | K_DBTIMEZONE
     | K_DB_ROLE_CHANGE
     | K_DDL
+    | K_DEALLOCATE
     | K_DEC
     | K_DECIMAL
     | K_DECLARE
@@ -5672,6 +5674,7 @@ keywordAsId:
     | K_IGNORE
     | K_IMMEDIATE
     | K_IMMUTABLE
+    | K_IMPORT
     | K_IN
     | K_INCLUDE
     | K_INCLUDING
@@ -5915,6 +5918,7 @@ keywordAsId:
     | K_PREDICTION
     | K_PREDICTION_COST
     | K_PREDICTION_DETAILS
+    | K_PREPARE
     | K_PREPARED
     | K_PREPEND
     | K_PRESENT
@@ -5934,6 +5938,7 @@ keywordAsId:
     | K_RAW
     | K_READ
     | K_REAL
+    | K_REASSIGN
     | K_RECORD
     | K_RECURSIVE
     | K_RECURSIVELY
@@ -5943,6 +5948,7 @@ keywordAsId:
     | K_REFERENCES
     | K_REFERENCING
     | K_REFRESH
+    | K_REINDEX
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELATIONAL
@@ -5954,6 +5960,7 @@ keywordAsId:
     | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
+    | K_RESET
     | K_RESPECT
     | K_RESTRICT
     | K_RESTRICTED
