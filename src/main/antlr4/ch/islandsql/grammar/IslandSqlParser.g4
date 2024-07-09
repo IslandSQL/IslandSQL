@@ -1484,6 +1484,7 @@ doStatement:
 ;
 
 // undocumented in PostgreSQL 16.3: language option after code
+// subtree is optionally populated when creating an IslandSqlDocument instance
 postgresqlDo:
     K_DO (
           code=string
