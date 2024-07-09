@@ -1002,7 +1002,7 @@ DOLLAR_STRING:
 ;
 
 DOLLAR_ID_STRING:
-    '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
+    '$' ID '$' {saveDollarIdentifier1()}? .*? '$' ID '$' {checkDollarIdentifier2()}?
 ;
 
 NUMBER:
