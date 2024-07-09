@@ -165,8 +165,8 @@ public class IslandSqlDocument {
      * Start node is file.
      *
      * @param desiredType Desired class (must be a descendant of ParseTree).
+     * @param <T>         The return type of the result.
      * @return List of nodes that are instances of the of desired class.
-     * @param <T> The return type of the result.
      */
     public <T extends ParseTree> List<T> getAllContentsOfType(Class<T> desiredType) {
         return ParseTreeUtil.getAllContentsOfType(file, desiredType);
