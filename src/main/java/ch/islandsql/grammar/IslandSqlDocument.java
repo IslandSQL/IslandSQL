@@ -184,12 +184,11 @@ public class IslandSqlDocument {
                                         ParserRuleContext parent) {
         String language = ConverterUtil.fromLanguage(languageName);
         if (codeAsString != null && (language.equals("sql") || language.equals("plpgsql"))) {
-            int startOffsetContent = ConverterUtil.startOffsetFromString(codeAsString);
             CodePointCharStream charStream = CharStreams.fromString(ConverterUtil.fromString(codeAsString));
             lexer.setInputStream(charStream);
             // match original character stream, is accurate if a single string segment is used in codeAsString without escaped characters.
             lexer.setLine(codeAsString.start.getLine());
-            lexer.setCharPositionInLine(codeAsString.start.getCharPositionInLine() + startOffsetContent);
+            lexer.setCharPositionInLine(codeAsString.start.getCharPositionInLine() + ConverterUtil.startOffsetFromString(codeAsString));
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             parser.setTokenStream(tokenStream);
             ParserRuleContext codeSubtree = language.equals("sql") ? parser.postgresqlSqlCode() : parser.postgresqlPlpgsqlCode();
