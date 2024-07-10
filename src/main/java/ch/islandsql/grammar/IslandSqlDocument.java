@@ -46,7 +46,7 @@ public class IslandSqlDocument {
     private final ParserMetrics parserMetrics;
 
     /**
-     * Constructor. Private to allow future optimization such as caching.
+     * Constructor.
      *
      * @param builder The builder instance.
      */
@@ -168,10 +168,10 @@ public class IslandSqlDocument {
     }
 
     /**
-     * Parses the code and adds a single subtree to the main parse tree.
+     * Parses the code and adds the resulting subtree to the main parse tree.
      * Optionally removes the code as string from the parse tree.
      *
-     * @param builder The builder with parameters used to build the IslandSqlDocument
+     * @param builder The builder with parameters used to build the IslandSqlDocument.
      * @param lexer The lexer used to produce the main parse tree.
      * @param parser The parser used to produce the main parse tree.
      * @param codeAsString The code to be parsed.
@@ -238,7 +238,7 @@ public class IslandSqlDocument {
         }
 
         /**
-         * Sets flag to hide out of scope tokens before calling parser.
+         * Sets flag to hide out of scope tokens before calling the parser.
          * Default is true, this means the scope lexer is used to hide out of scope tokens.
          *
          * @param hideOutOfScopeTokens Hide out of scope tokens before calling parser?
@@ -275,9 +275,9 @@ public class IslandSqlDocument {
 
         /**
          * Sets the flag to add subtrees for code provided as string.
-         * Default is true, this means that SQL and PL/pgSQL code in provided in
+         * Default is true, this means that SQL and PL/pgSQL code provided in
          * <code>create function</code>, <code>create procedure</code>,
-         * <code>create trigger</code> and <code>do</code> statements is parsed and
+         * and <code>do</code> statements is parsed and
          * the resulting parse tree is added to the main parse tree.
          * This flag is only considered for {@link IslandSqlDialect#GENERIC GENERIC} and
          * {@link IslandSqlDialect#POSTGRESQL POSTGRESQL} dialect.
