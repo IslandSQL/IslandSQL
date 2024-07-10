@@ -51,7 +51,6 @@ public class IslandSqlDocument {
      * @param builder The builder instance.
      */
     private IslandSqlDocument(Builder builder) {
-        assert builder.sql != null : "sql must not be null";
         this.dialect = builder.dialect;
         CodePointCharStream charStream = CharStreams.fromString(builder.sql);
         IslandSqlLexer lexer = new IslandSqlLexer(charStream);
@@ -233,7 +232,7 @@ public class IslandSqlDocument {
          * @return The builder instance.
          */
         public Builder sql(String sql) {
-            this.sql = sql;
+            this.sql = sql != null ? sql : "";
             return this;
         }
 
