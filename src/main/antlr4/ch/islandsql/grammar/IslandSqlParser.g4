@@ -2718,6 +2718,7 @@ cursorDefinition:
 itemDeclaration:
       constantDeclaration
     | variableDeclaration
+    | postgresqlAliasDeclaration
 ;
 
 // not documented in 23.4: optionality of "not"
@@ -2736,6 +2737,9 @@ variableDeclaration:
 postgresqlCollation:
     K_COLLATE collate=sqlName
 ;
+
+postgresqlAliasDeclaration:
+    alias=sqlName K_ALIAS K_FOR POSITIONAL_PARAMETER SEMI
 ;
 
 functionDeclaration:
