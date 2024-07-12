@@ -5456,6 +5456,7 @@ keywordAsId:
     | K_AFTER
     | K_AGENT
     | K_AGGREGATE
+    | K_ALIAS
     | K_ALL
     | K_ALLOW
     | K_ALTER

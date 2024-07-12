@@ -72,6 +72,7 @@ K_ADD: 'add';
 K_AFTER: 'after';
 K_AGENT: 'agent';
 K_AGGREGATE: 'aggregate';
+K_ALIAS: 'alias';
 K_ALL: 'all';
 K_ALLOW: 'allow';
 K_ALTER: 'alter';
