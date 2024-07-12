@@ -2722,13 +2722,20 @@ itemDeclaration:
 
 // not documented in 23.4: optionality of "not"
 constantDeclaration:
-    constant=sqlName K_CONSTANT type=plsqlDataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+    constant=sqlName K_CONSTANT type=plsqlDataType postgresqlCollation?
+        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
 ;
 
 // not documented in 23.4: optionality of "not"
 // not documented in 23.4: use of null without assignment
 variableDeclaration:
-    variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression | K_NULL)? SEMI
+    variable=sqlName type=plsqlDataType postgresqlCollation?
+        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression | K_NULL)? SEMI
+;
+
+postgresqlCollation:
+    K_COLLATE collate=sqlName
+;
 ;
 
 functionDeclaration:
