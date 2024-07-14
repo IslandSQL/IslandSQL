@@ -3008,6 +3008,7 @@ cursorForLoopStatement:
     K_FOR targets+=qualifiedName (COMMA targets+=qualifiedName)* K_IN (
           cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
+        | select    // PosgreSQL
     ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
