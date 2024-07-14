@@ -691,14 +691,14 @@ inlineConstraint:
         | K_UNIQUE constraintState?
         | K_PRIMARY K_KEY constraintState?
         | referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | K_CHECK LPAR cond=expression RPAR constraintState? precheckState?
         | postgresqlColumnConstraint constraintState?
     )
 ;
 
 // constraints not handled by inlineConstraint
 postgresqlColumnConstraint:
-      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
     | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
@@ -806,21 +806,21 @@ outOfLineConstraint:
           K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
         | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
         | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | K_CHECK LPAR cond=expression RPAR constraintState? precheckState?
         | postgresqlTableConstraint constraintState?
     )
 ;
 
 // constraints not handled by outOflineConstraint
 postgresqlTableConstraint:
-      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
         LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
     | K_PRIMARY K_KEY
         LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
     | K_EXCLUDE (K_USING method=sqlName)?
         LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
-        postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
+        postgresqlIndexParameters* (K_WHERE LPAR predicate=expression RPAR)?
     | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
         K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
         (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
@@ -932,7 +932,7 @@ plsqlTriggerSource:
 simpleDmlTrigger:
     (K_BEFORE | K_AFTER) dmlEventClause referencingClause? (K_FOR K_EACH K_ROW)?
     triggerEditionClause? triggerOrderingClause? (K_ENABLE | K_DISABLE)?
-    (K_WHEN LPAR cond=condition RPAR)? triggerBody
+    (K_WHEN LPAR cond=expression RPAR)? triggerBody
 ;
 
 dmlEventClause:
@@ -985,7 +985,7 @@ insteadOfDmlTrigger:
 
 compoundDmlTrigger:
     K_FOR dmlEventClause referencingClause? triggerEditionClause? triggerOrderingClause?
-    (K_ENABLE | K_DISABLE)? (K_WHEN LPAR cond=condition RPAR)? compoundTriggerBlock
+    (K_ENABLE | K_DISABLE)? (K_WHEN LPAR cond=expression RPAR)? compoundTriggerBlock
 ;
 
 compoundTriggerBlock:
@@ -1072,7 +1072,7 @@ postgresqlTriggerOption:
     | K_INITIALLY (K_IMMEDIATE | K_DEFERRED)
     | K_REFERENCING referencing+=postgresqlReferencing+
     | K_FOR K_EACH? (K_ROW | K_STATEMENT)
-    | K_WHEN cond=condition
+    | K_WHEN cond=expression
 ;
 
 postgresqlReferencing:
@@ -1629,7 +1629,7 @@ conditionalInsertClause:
 ;
 
 conditionalInsertWhenClause:
-    K_WHEN cond=condition K_THEN intoClauses+=multiTableInsertClause+
+    K_WHEN cond=expression K_THEN intoClauses+=multiTableInsertClause+
 ;
 
 postgresqlOverridingClause:
@@ -1645,7 +1645,7 @@ postgresqlOnConflictClause:
 ;
 
 postgresqlOnConflictTarget:
-      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=condition)?
+      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=expression)?
     | K_ON K_CONSTRAINT constraintName=sqlName
 ;
 
@@ -1671,7 +1671,7 @@ postgresqlOnConflictActionDoUpdate:
         | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
             EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
     )
-    (K_WHERE cond=condition)?
+    (K_WHERE cond=expression)?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1733,8 +1733,8 @@ merge:
     mergeIntoClause
     mergeUsingClause
     K_ON (
-          LPAR cond=condition RPAR  // OracleDB
-        | cond=condition            // PostgreSQL
+          LPAR cond=expression RPAR  // OracleDB
+        | cond=expression            // PostgreSQL
     )
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
@@ -1776,8 +1776,8 @@ mergeInsertClause:
 
 // PostgreSQL
 mergeWhenClause:
-      K_WHEN K_MATCHED (K_AND cond=condition)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
-    | K_WHEN K_NOT K_MATCHED (K_AND cond=condition)? K_THEN (mergeInsert | K_DO K_NOTHING)
+      K_WHEN K_MATCHED (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
 ;
 
 // PostgreSQL
@@ -1936,7 +1936,7 @@ filterClauses:
 
 // combinded filter_clause and hier_ids
 filterClause:
-    ids+=hierId (COMMA ids+=hierId)* K_TO predicate=condition
+    ids+=hierId (COMMA ids+=hierId)* K_TO predicate=expression
 ;
 
 hierId:
@@ -1981,18 +1981,18 @@ selectItem:
 ;
 
 whereClause:
-    K_WHERE cond=condition
+    K_WHERE cond=expression
 ;
 
 hierarchicalQueryClause:
-      K_CONNECT K_BY K_NOCYCLE? connectByCond=condition (K_START K_WITH startWithCond=condition)?
-    | K_START K_WITH startWithCond=condition K_CONNECT K_BY K_NOCYCLE? connectByCond=condition
+      K_CONNECT K_BY K_NOCYCLE? connectByCond=expression (K_START K_WITH startWithCond=expression)?
+    | K_START K_WITH startWithCond=expression K_CONNECT K_BY K_NOCYCLE? connectByCond=expression
 ;
 
 // PostgreSQL: all, distinct
 groupByClause:
-      K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
-    | K_HAVING cond=condition (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
+      K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=expression)?
+    | K_HAVING cond=expression (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
 ;
 
 // rollupCubeClause treated as expression
@@ -2047,7 +2047,7 @@ modelRuleClause:
 
 // undocumented: parenthesis around condition are documented, but not necessary
 modelIterateClause:
-    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL cond=condition)?
+    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL cond=expression)?
 ;
 
 modelRule:
@@ -2063,7 +2063,7 @@ cellAssignmentList:
 ;
 
 callAssignmentListItem:
-      condition
+      expression
     | singleColumnForLoop
 ;
 
@@ -2426,7 +2426,7 @@ rowPatternDefinitionList:
 ;
 
 rowPatternDefinition:
-    variableName=sqlName K_AS cond=condition
+    variableName=sqlName K_AS cond=expression
 ;
 
 joinVariant:
@@ -2440,7 +2440,7 @@ joinVariant:
 innerCrossJoinClause:
       K_INNER? K_JOIN fromItem
       (
-            K_ON cond=condition
+            K_ON cond=expression
           | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
       )
     | K_CROSS K_JOIN fromItem
@@ -2452,7 +2452,7 @@ outerJoinClause:
     left=queryPartitionClause? K_NATURAL? outerJoinType K_JOIN
     fromItem right=queryPartitionClause?
     (
-          K_ON cond=condition
+          K_ON cond=expression
         | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
     )?
 ;
@@ -3174,7 +3174,7 @@ ifStatement:
 
 // artificial clause
 conditionToStatements:
-    cond=condition K_THEN stmts+=plsqlStatement+
+    cond=expression K_THEN stmts+=plsqlStatement+
 ;
 
 nullStatement:
@@ -3381,7 +3381,7 @@ raiseOptionType:
 
 // artificial clause
 selectionDirectiveConditionToStatements:
-    cond=condition DOLLAR_THEN texts+=selectionDirectiveText*
+    cond=expression DOLLAR_THEN texts+=selectionDirectiveText*
 ;
 
 selectionDirectiveText:
@@ -3447,7 +3447,7 @@ postgreSqlStatementTrailingTokens:
 ;
 
 whileLoopStatement:
-    K_WHILE cond=condition K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_WHILE cond=expression K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3993,7 +3993,7 @@ searchedCaseExpression:
     whens+=searchedCaseExpressionWhenClause+
 ;
 searchedCaseExpressionWhenClause:
-    K_WHEN cond=condition K_THEN expr=expression
+    K_WHEN cond=expression K_THEN expr=expression
 ;
 
 elseClause:
@@ -4283,7 +4283,7 @@ graphTable:
     K_GRAPH_TABLE LPAR
     (schema=sqlName PERIOD)?
     graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
-    (K_WHERE cond=condition)?
+    (K_WHERE cond=expression)?
     K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
     RPAR
 ;
@@ -4332,7 +4332,7 @@ elementPattern:
 
 // simplified, includes parenthesized_path_pattern_where_clause
 parenthesizedPathPatternExpression:
-    LPAR expr=pathTerm (K_WHERE cond=condition)? RPAR
+    LPAR expr=pathTerm (K_WHERE cond=expression)? RPAR
 ;
 
 vertexPattern:
@@ -4342,7 +4342,7 @@ vertexPattern:
 // simplified, includes: element_variable_declaration, element_variable, isLabelExpression/isLabelDeclaration,
 // element_pattern_where_clause, is_label_declaration
 elementPatternFiller:
-    var=sqlName? (K_IS labelName=labelExpression)? (K_WHERE cond=condition)?
+    var=sqlName? (K_IS labelName=labelExpression)? (K_WHERE cond=expression)?
 ;
 
 // simplified, includes: label, label_disjunction
@@ -4791,7 +4791,7 @@ caseOp:
 ;
 
 caseOpWhenClause:
-    K_WHEN cond=condition K_THEN LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
+    K_WHEN cond=expression K_THEN LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 caseOpElseClause:
@@ -5442,12 +5442,6 @@ postgresqlArrayElement:
 /*----------------------------------------------------------------------------*/
 // Condition
 /*----------------------------------------------------------------------------*/
-
-// starting with 23.2 a condition is treated as a synonym to an expression
-// therefore condition is implementend in expression
-condition:
-      cond=expression
-;
 
 // based on condition, considering only those conditions with a leading expression predicate
 // that can be ommitted in a dangling_predicate of a case expression and case statement
