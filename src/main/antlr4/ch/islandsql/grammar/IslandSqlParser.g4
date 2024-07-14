@@ -3003,8 +3003,9 @@ continueStatement:
 ;
 
 // wrong documentation in 23.3 regarding parentheses for cursor parameters
+// PostgreSQL allows either record target or a list of scalar targets
 cursorForLoopStatement:
-    K_FOR record=sqlName K_IN (
+    K_FOR targets+=qualifiedName (COMMA targets+=qualifiedName)* K_IN (
           cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
     ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
