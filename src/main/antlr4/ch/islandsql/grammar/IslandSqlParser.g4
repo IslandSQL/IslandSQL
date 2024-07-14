@@ -5458,6 +5458,7 @@ keywordAsId:
       K_A
     | K_ABS
     | K_ABSENT
+    | K_ABSOLUTE
     | K_ACCESS
     | K_ACCESSIBLE
     | K_ACCURACY
@@ -5496,6 +5497,7 @@ keywordAsId:
     | K_AUTOMATIC
     | K_AUTONOMOUS_TRANSACTION
     | K_AVERAGE_RANK
+    | K_BACKWARD
     | K_BADFILE
     | K_BATCH
     | K_BEFORE
@@ -5608,6 +5610,7 @@ keywordAsId:
     | K_DB_ROLE_CHANGE
     | K_DDL
     | K_DEALLOCATE
+    | K_DEBUG
     | K_DEC
     | K_DECIMAL
     | K_DECLARE
@@ -5625,6 +5628,7 @@ keywordAsId:
     | K_DEPTH
     | K_DESC
     | K_DESTINATION
+    | K_DETAIL
     | K_DETERMINISTIC
     | K_DIMENSION
     | K_DIRECTORY
@@ -5658,6 +5662,7 @@ keywordAsId:
     | K_ENTITYESCAPING
     | K_ENUM
     | K_ENV
+    | K_ERRCODE
     | K_ERROR
     | K_ERRORS
     | K_ESCAPE
@@ -5700,6 +5705,7 @@ keywordAsId:
     | K_FOR
     | K_FORALL
     | K_FORCE
+    | K_FOREACH
     | K_FOREIGN
     | K_FORMAT
     | K_FORWARD
@@ -5735,6 +5741,7 @@ keywordAsId:
     | K_HIER_PARENT
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
+    | K_HINT
     | K_HOUR
     | K_ID
     | K_IDENTIFIED
@@ -5756,6 +5763,7 @@ keywordAsId:
     | K_INDICES
     | K_INET
     | K_INFINITE
+    | K_INFO
     | K_INHERIT
     | K_INITIALLY
     | K_INITRANS
@@ -5858,6 +5866,7 @@ keywordAsId:
     | K_MEMBER
     | K_MEMOPTIMIZED
     | K_MERGE
+    | K_MESSAGE
     | K_METADATA
     | K_MINUS
     | K_MINUTE
@@ -5911,6 +5920,7 @@ keywordAsId:
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
+    | K_NOTICE
     | K_NOTNULL
     | K_NOUPDATE
     | K_NOVALIDATE
@@ -6022,6 +6032,7 @@ keywordAsId:
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELATIONAL
+    | K_RELATIVE
     | K_RELIES_ON
     | K_RELY
     | K_REMOVE
@@ -6065,6 +6076,7 @@ keywordAsId:
     | K_SCHEMACHECK
     | K_SCN
     | K_SCOPE
+    | K_SCROLL
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
@@ -6111,6 +6123,7 @@ keywordAsId:
     | K_SPACE
     | K_SPLIT
     | K_SQL
+    | K_SQLSTATE
     | K_SQL_MACRO
     | K_STABLE
     | K_STAGING
@@ -6226,6 +6239,7 @@ keywordAsId:
     | K_VOLATILE
     | K_WAIT
     | K_WAL
+    | K_WARNING
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
