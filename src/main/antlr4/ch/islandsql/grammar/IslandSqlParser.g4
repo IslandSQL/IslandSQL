@@ -2724,14 +2724,14 @@ itemDeclaration:
 // not documented in 23.4: optionality of "not"
 constantDeclaration:
     constant=sqlName K_CONSTANT type=plsqlDataType postgresqlCollation?
-        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=postgresqlSqlExpression SEMI
 ;
 
 // not documented in 23.4: optionality of "not"
 // not documented in 23.4: use of null without assignment
 variableDeclaration:
     variable=sqlName type=plsqlDataType postgresqlCollation?
-        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression | K_NULL)? SEMI
+        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=postgresqlSqlExpression | K_NULL)? SEMI
 ;
 
 postgresqlCollation:
@@ -2959,7 +2959,7 @@ plsqlStatement:
 ;
 
 assignmentStatement:
-    target=expression COLON_EQUALS value=expression SEMI
+    target=expression COLON_EQUALS value=postgresqlSqlExpression SEMI
 ;
 
 basicLoopStatement:
@@ -2972,7 +2972,7 @@ caseStatement:
 ;
 
 simpleCaseStatement:
-    K_CASE selector=expression whens+=simpleCaseStatementWhenClause+
+    K_CASE selector=postgresqlSqlExpression whens+=simpleCaseStatementWhenClause+
     (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
 ;
 
@@ -2986,7 +2986,7 @@ searchedCaseStatement:
 ;
 
 searchedCaseStatementWhenClause:
-    K_WHEN cond=condition K_THEN stmts+=plsqlStatement+
+    K_WHEN cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement+
 ;
 
 closeStatment:
@@ -2994,7 +2994,7 @@ closeStatment:
 ;
 
 continueStatement:
-    K_CONTINUE toLabel=sqlName? (K_WHEN cond=condition)? SEMI
+    K_CONTINUE toLabel=sqlName? (K_WHEN cond=postgresqlSqlExpression)? SEMI
 ;
 
 // wrong documentation in 23.3 regarding parentheses for cursor parameters
@@ -3035,7 +3035,7 @@ dynamicReturnClause:
 ;
 
 exitStatement:
-    K_EXIT toLabel=sqlName? (K_WHEN expr=expression)? SEMI
+    K_EXIT toLabel=sqlName? (K_WHEN expr=postgresqlSqlExpression)? SEMI
 ;
 
 fetchStatement:
@@ -3084,7 +3084,7 @@ predClauseSeq:
 
 // no space allowed between periods, however we allow it to avoid conflict with substitugion variable ending on period
 steppedControl:
-    lowerBound=expression PERIOD PERIOD upperBound=expression (K_BY step=expression)?
+    lowerBound=postgresqlSqlExpression PERIOD PERIOD upperBound=postgresqlSqlExpression (K_BY step=postgresqlSqlExpression)?
 ;
 
 singleExpressionControl:
@@ -3224,7 +3224,7 @@ raiseStatement:
 ;
 
 returnStatement:
-    K_RETURN value=condition SEMI
+    K_RETURN value=postgresqlSqlExpression SEMI
 ;
 
 selectionDirective:
@@ -3822,6 +3822,14 @@ expression:
         K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
     | left=expression
         K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
+;
+
+// PostgreSQL: single column, 0-1 result rows
+// not part of expression to avoid left-recursive use of this rule
+// used in PL/SQL elements instead of expression for PL/pgSQL compatiblity
+postgresqlSqlExpression:
+    expr=expression (K_AS? cAlias=sqlName)?
+    fromClause? whereClause? groupByClause? windowClause? orderByClause? rowLimitingClause?
 ;
 
 intervalExpression:
@@ -5093,7 +5101,7 @@ functionExpression:
 functionParameter:
     // PostgreSQL := is older syntax supported for backward compatiblity only
     // OracleDB: no space between '=>' allowed
-    (name=sqlName (EQUALS_GT | COLON_EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
+    (name=sqlName (EQUALS_GT | COLON_EQUALS))? functionParameterPrefix? expr=postgresqlSqlExpression functionParameterSuffix?
 ;
 
 functionParameterPrefix:
