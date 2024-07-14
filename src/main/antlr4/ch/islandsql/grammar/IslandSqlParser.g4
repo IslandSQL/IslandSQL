@@ -2629,6 +2629,7 @@ itemlistItem:
     | procedureDeclaration
     | procedureDefinition
     | selectionDirective
+    | postgresqlCursorDefinition
 ;
 
 typeDefinition:
@@ -2955,6 +2956,10 @@ plsqlStatement:
         | sqlStatement
         | whileLoopStatement
         | pragma SEMI
+        | postgresqlExecuteStatement
+        | postgresqlFetchStatement
+        | postgresqlForEachStatement
+        | postgresqlRaiseStatement
     )
 ;
 
@@ -3234,6 +3239,16 @@ selectionDirective:
     DOLLAR_END
 ;
 
+postgresqlCursorDefinition:
+    name=sqlName (K_NO? K_SCROLL)? K_CURSOR
+        (LPAR arguments+=postgresqlCursorArgument (COMMA arguments+=postgresqlCursorArgument)? RPAR)?
+        K_FOR query=subquery SEMI
+;
+
+postgresqlCursorArgument:
+    name=sqlName plsqlDataType
+;
+
 // unterminated pragma (not ending on semicolon)
 pragma:
       autonomousTransPragma
@@ -3299,6 +3314,67 @@ udfPragma:
 // better support them in a generic way than to cause a parse error
 namedPragma:
 	K_PRAGMA name=sqlName (LPAR params+=expression (COMMA params+=expression) RPAR)?
+;
+
+postgresqlExecuteStatement:
+    K_EXECUTE dynamicSqlStmt=postgresqlSqlExpression
+        (K_INTO K_STRICT? targets+=qualifiedName (COMMA targets+=qualifiedName)*)?
+        (K_USING usings+=postgresqlSqlExpression (COMMA usings+=postgresqlSqlExpression)*)? SEMI
+;
+
+postgresqlFetchStatement:
+    K_FETCH (direction=fetchDirection (K_FROM | K_IN))? cursor=qualifiedName
+        K_INTO targets+=qualifiedName (COMMA targets+=qualifiedName)* SEMI
+;
+
+fetchDirection:
+      K_NEXT
+    | K_PRIOR
+    | K_FIRST
+    | K_LAST
+    | K_ABSOLUTE count=postgresqlSqlExpression
+    | K_RELATIVE count=postgresqlSqlExpression
+    | K_FORWARD
+    | K_BACKWARD
+;
+
+postgresqlForEachStatement:
+    K_FOREACH targets+=qualifiedName (COMMA targets+=qualifiedName) K_IN K_ARRAY expr=postgresqlSqlExpression
+        K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+postgresqlRaiseStatement:
+      K_RAISE raiseLevel?
+      (
+          format=string (COMMA formatExprs+=postgresqlSqlExpression)* (K_USING options+=raiseOption+)?
+        | conditionName=qualifiedName (K_USING options+=raiseOption+)?
+        | K_SQLSTATE sqlState=string (K_USING options+=raiseOption+)?
+        | K_USING options+=raiseOption+
+      )? SEMI
+;
+
+raiseLevel:
+      K_DEBUG
+    | K_LOG
+    | K_INFO
+    | K_NOTICE
+    | K_WARNING
+    | K_EXCEPTION
+;
+
+raiseOption:
+    option=raiseOptionType EQUALS value=postgresqlSqlExpression
+;
+
+raiseOptionType:
+      K_MESSAGE
+    | K_DETAIL
+    | K_HINT
+    | K_ERRCODE
+    | K_COLUMN
+    | K_CONSTRAINT
+    | K_TABLE
+    | K_SCHEMA
 ;
 
 // artificial clause
