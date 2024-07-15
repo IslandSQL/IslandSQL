@@ -579,6 +579,7 @@ K_PCTFREE: 'pctfree';
 K_PCTUSED: 'pctused';
 K_PER: 'per';
 K_PERCENT: 'percent';
+K_PERFORM: 'perform';
 K_PERIOD: 'period';
 K_PERMUTE: 'permute';
 K_PERSISTABLE: 'persistable';

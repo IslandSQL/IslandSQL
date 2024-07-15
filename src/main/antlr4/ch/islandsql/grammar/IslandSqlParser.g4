@@ -6057,6 +6057,7 @@ keywordAsId:
     | K_PCTUSED
     | K_PER
     | K_PERCENT
+    | K_PERFORM
     | K_PERIOD
     | K_PERMUTE
     | K_PERSISTABLE
