@@ -2959,6 +2959,7 @@ plsqlStatement:
         | postgresqlExecuteStatement
         | postgresqlFetchStatement
         | postgresqlForEachStatement
+        | postgresqlPerformStatement
         | postgresqlRaiseStatement
     )
 ;
@@ -3347,6 +3348,17 @@ fetchDirection:
 postgresqlForEachStatement:
     K_FOREACH targets+=qualifiedName (COMMA targets+=qualifiedName) K_IN K_ARRAY expr=postgresqlSqlExpression
         K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+postgresqlPerformStatement:
+    K_PERFORM
+    queryBlockSetOperator?
+    selectList?
+    fromClause?
+    whereClause?
+    groupByClause?
+    windowClause?
+    SEMI
 ;
 
 postgresqlRaiseStatement:
