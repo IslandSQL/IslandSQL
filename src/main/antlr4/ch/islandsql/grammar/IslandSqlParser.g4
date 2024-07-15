@@ -2964,7 +2964,11 @@ plsqlStatement:
 ;
 
 assignmentStatement:
-    target=expression COLON_EQUALS value=postgresqlSqlExpression SEMI
+    target=expression
+    (
+          COLON_EQUALS      // OracleDB, PostgreSQL
+        | EQUALS            // PostgreSQL
+    ) value=postgresqlSqlExpression SEMI
 ;
 
 basicLoopStatement:
