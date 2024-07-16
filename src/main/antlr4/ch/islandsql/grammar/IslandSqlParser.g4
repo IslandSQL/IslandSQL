@@ -39,12 +39,17 @@ postgresqlSqlCode:
 // difference to OracleDB PL/SQL block: only one label allowed and final semicolon is optional
 // other differences are handled in the PL/SQL specific rules
 postgresqlPlpgsqlCode:
+    compilerOptions+=postgresqlCompilerOption*
     label?
     (K_DECLARE declareSection?)?
     K_BEGIN
     stmts+=plsqlStatement+
     (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
     K_END name=sqlName? SEMI? EOF
+;
+
+postgresqlCompilerOption:
+    NUM parameter=sqlName value=sqlName
 ;
 
 /*----------------------------------------------------------------------------*/
