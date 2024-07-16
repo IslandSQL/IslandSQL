@@ -1474,7 +1474,7 @@ returningClause:
     (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
     (
         (K_BULK K_COLLECT)? // within PL/SQL
-        K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+        K_INTO K_STRICT? targetItems+=dataItem (COMMA targetItems+=dataItem)* // strict only in PL/pgSQL
     )?  // required in OracleDB but not allowed in PostgreSQL
 ;
 
@@ -2131,9 +2131,9 @@ setOperator:
     | K_EXCEPT    (K_ALL|K_DISTINCT)?    # minusSetOperator
 ;
 
-// only in PL/SQL
+// only in PL/SQL, PL/pgSQL
 intoClause:
-    K_INTO variables+=expression (COMMA variables+=expression)*
+    K_INTO K_STRICT? variables+=expression (COMMA variables+=expression)* // strict only in PL/pgSQL
 ;
 
 // only in PL/SQL
@@ -2141,6 +2141,7 @@ bulkCollectIntoClause:
     K_BULK K_COLLECT K_INTO variables+=expression (COMMA variables+=expression)*
 ;
 
+// handles only variants in PostgreSQL SQL
 postgresqlIntoClause:
     K_INTO (K_TEMPORARY|K_TEMP|K_UNLOGGED)? K_TABLE tableName=qualifiedName
 ;
