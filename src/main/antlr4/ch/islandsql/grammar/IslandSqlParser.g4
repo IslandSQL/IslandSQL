@@ -2954,7 +2954,6 @@ plsqlStatement:
         | openForStatement
         | pipeRowStatement
         | plsqlBlock
-        | procedureCall
         | raiseStatement
         | returnStatement
         | selectionDirective
@@ -2968,6 +2967,7 @@ plsqlStatement:
         | postgresqlGetDiagnosticsStatement
         | postgresqlPerformStatement
         | postgresqlRaiseStatement
+        | procedureCall // ambiguity with returnStatement, return is not a reserved keyword PostgreSQL
     )
 ;
 
