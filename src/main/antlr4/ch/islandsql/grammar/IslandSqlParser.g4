@@ -3214,7 +3214,12 @@ plsqlBlock:
 
 // others is handled as normal exception name
 exceptionHandler:
-    K_WHEN exceptions+=qualifiedName (K_OR exceptions+=qualifiedName)* K_THEN stmts+=plsqlStatement+
+    K_WHEN exceptions+=exceptionItem (K_OR exceptions+=exceptionItem)* K_THEN stmts+=plsqlStatement+
+;
+
+exceptionItem:
+      qualifiedName
+    | K_SQLSTATE code=expression    // PostgreSQL
 ;
 
 // "end" is not allowed as procedure call to avoid conflicts with end keyword of a PL/SQL block.
