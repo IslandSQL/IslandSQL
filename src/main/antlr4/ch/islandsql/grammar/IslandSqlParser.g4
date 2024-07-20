@@ -5732,6 +5732,7 @@ keywordAsId:
     | K_DESTINATION
     | K_DETAIL
     | K_DETERMINISTIC
+    | K_DIAGNOSTICS
     | K_DIMENSION
     | K_DIRECTORY
     | K_DISABLE
@@ -5818,6 +5819,7 @@ keywordAsId:
     | K_FUZZY_MATCH
     | K_GENERATED
     | K_GENERIC_PLAN
+    | K_GET
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
