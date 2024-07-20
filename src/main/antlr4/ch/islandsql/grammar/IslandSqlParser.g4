@@ -3361,8 +3361,9 @@ fetchDirection:
 ;
 
 postgresqlForEachStatement:
-    K_FOREACH targets+=qualifiedName (COMMA targets+=qualifiedName) K_IN K_ARRAY expr=postgresqlSqlExpression
-        K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+    K_FOREACH target=qualifiedName (K_SLICE slice=expression)?
+        K_IN K_ARRAY expr=postgresqlSqlExpression
+        K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
 
 postgresqlGetDiagnosticsStatement:
