@@ -2965,6 +2965,7 @@ plsqlStatement:
         | postgresqlExecuteStatement
         | postgresqlFetchStatement
         | postgresqlForEachStatement
+        | postgresqlGetDiagnosticsStatement
         | postgresqlPerformStatement
         | postgresqlRaiseStatement
     )
@@ -3354,6 +3355,15 @@ fetchDirection:
 postgresqlForEachStatement:
     K_FOREACH targets+=qualifiedName (COMMA targets+=qualifiedName) K_IN K_ARRAY expr=postgresqlSqlExpression
         K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName SEMI
+;
+
+postgresqlGetDiagnosticsStatement:
+    K_GET K_CURRENT? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
+        (COMMA assignments+=postgresqlGetDiagnosticsAssignment)* SEMI
+;
+
+postgresqlGetDiagnosticsAssignment:
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=sqlName
 ;
 
 postgresqlPerformStatement:
