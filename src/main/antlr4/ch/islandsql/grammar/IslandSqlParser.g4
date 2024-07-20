@@ -6237,6 +6237,7 @@ keywordAsId:
     | K_SINGLE
     | K_SIZE
     | K_SKIP
+    | K_SLICE
     | K_SMALLINT
     | K_SMALLSERIAL
     | K_SNAPSHOT

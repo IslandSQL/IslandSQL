@@ -723,6 +723,7 @@ K_SIMPLE: 'simple';
 K_SINGLE: 'single';
 K_SIZE: 'size';
 K_SKIP: 'skip';
+K_SLICE: 'slice';
 K_SMALLINT: 'smallint';
 K_SMALLSERIAL: 'smallserial';
 K_SNAPSHOT: 'snapshot';
