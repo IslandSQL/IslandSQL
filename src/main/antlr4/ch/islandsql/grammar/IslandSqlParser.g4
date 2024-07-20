@@ -3243,7 +3243,14 @@ raiseStatement:
 ;
 
 returnStatement:
-    K_RETURN value=postgresqlSqlExpression SEMI
+    K_RETURN
+    (
+          K_QUERY K_EXECUTE command=expression usingClause?  // PostgreSQL
+        | K_QUERY subquery                                   // PostgreSQL
+        | K_NEXT expr=postgresqlSqlExpression                // PostgreSQL
+        | expr=postgresqlSqlExpression
+    )?
+    SEMI
 ;
 
 selectionDirective:
