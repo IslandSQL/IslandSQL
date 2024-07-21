@@ -3372,7 +3372,7 @@ postgresqlForEachStatement:
 ;
 
 postgresqlGetDiagnosticsStatement:
-    K_GET K_CURRENT? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
+    K_GET (K_CURRENT|K_STACKED)? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
         (COMMA assignments+=postgresqlGetDiagnosticsAssignment)* SEMI
 ;
 
