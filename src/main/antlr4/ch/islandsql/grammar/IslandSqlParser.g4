@@ -2965,6 +2965,7 @@ plsqlStatement:
         | postgresqlFetchStatement
         | postgresqlForEachStatement
         | postgresqlGetDiagnosticsStatement
+        | postgresqlMoveStatement
         | postgresqlPerformStatement
         | postgresqlRaiseStatement
         | procedureCall // ambiguity with returnStatement, return is not a reserved keyword PostgreSQL
@@ -3382,6 +3383,10 @@ postgresqlGetDiagnosticsStatement:
 
 postgresqlGetDiagnosticsAssignment:
     variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=sqlName
+;
+
+postgresqlMoveStatement:
+    K_MOVE (direction=fetchDirection (K_FROM | K_IN))? cursor=qualifiedName SEMI
 ;
 
 postgresqlPerformStatement:
