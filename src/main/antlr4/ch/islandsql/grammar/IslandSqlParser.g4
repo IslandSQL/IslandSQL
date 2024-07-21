@@ -6256,6 +6256,7 @@ keywordAsId:
     | K_SQLSTATE
     | K_SQL_MACRO
     | K_STABLE
+    | K_STACKED
     | K_STAGING
     | K_STANDALONE
     | K_START

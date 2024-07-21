@@ -736,6 +736,7 @@ K_SQL: 'sql';
 K_SQLSTATE: 'sqlstate';
 K_SQL_MACRO: 'sql_macro';
 K_STABLE: 'stable';
+K_STACKED: 'stacked';
 K_STAGING: 'staging';
 K_STANDALONE: 'standalone';
 K_START: 'start';
