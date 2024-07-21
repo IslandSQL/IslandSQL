@@ -3200,7 +3200,11 @@ openStatement:
 ;
 
 openForStatement:
-    K_OPEN COLON? cursor=qualifiedName K_FOR (selectStmt=select | expr=expression) usingClause? SEMI
+    K_OPEN COLON? cursor=qualifiedName
+        (K_NO? K_SCROLL)?   // PostgreSQL
+        K_FOR
+        K_EXECUTE?          // PostgreSQL
+        (selectStmt=select | expr=expression) usingClause? SEMI
 ;
 
 pipeRowStatement:
