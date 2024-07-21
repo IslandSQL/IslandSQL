@@ -3268,7 +3268,7 @@ selectionDirective:
 
 postgresqlCursorDefinition:
     name=sqlName (K_NO? K_SCROLL)? K_CURSOR
-        (LPAR arguments+=postgresqlCursorArgument (COMMA arguments+=postgresqlCursorArgument)? RPAR)?
+        (LPAR arguments+=postgresqlCursorArgument (COMMA arguments+=postgresqlCursorArgument)* RPAR)?
         K_FOR query=subquery SEMI
 ;
 
