@@ -6013,6 +6013,7 @@ keywordAsId:
     | K_MODULE
     | K_MONEY
     | K_MONTH
+    | K_MOVE
     | K_MULTISET
     | K_MUTABLE
     | K_NAME

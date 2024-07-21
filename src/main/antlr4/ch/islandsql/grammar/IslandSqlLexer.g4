@@ -489,6 +489,7 @@ K_MODIFY: 'modify';
 K_MODULE: 'module';
 K_MONEY: 'money';
 K_MONTH: 'month';
+K_MOVE: 'move';
 K_MULTISET: 'multiset';
 K_MUTABLE: 'mutable';
 K_NAME: 'name';
