@@ -3367,8 +3367,8 @@ fetchDirection:
     | K_LAST
     | K_ABSOLUTE count=postgresqlSqlExpression
     | K_RELATIVE count=postgresqlSqlExpression
-    | K_FORWARD
-    | K_BACKWARD
+    | K_FORWARD count=postgresqlSqlExpression?      // undocumented count for move in 16.3
+    | K_BACKWARD count=postgresqlSqlExpression?     // undocumented count for move in 16.3
 ;
 
 postgresqlForEachStatement:
