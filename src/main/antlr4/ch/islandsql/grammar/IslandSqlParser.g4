@@ -3404,10 +3404,10 @@ postgresqlPerformStatement:
 postgresqlRaiseStatement:
       K_RAISE raiseLevel?
       (
-          format=string (COMMA formatExprs+=postgresqlSqlExpression)* (K_USING options+=raiseOption+)?
-        | conditionName=qualifiedName (K_USING options+=raiseOption+)?
-        | K_SQLSTATE sqlState=string (K_USING options+=raiseOption+)?
-        | K_USING options+=raiseOption+
+          format=string (COMMA formatExprs+=postgresqlSqlExpression)* (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | conditionName=qualifiedName (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | K_SQLSTATE sqlState=string (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | K_USING options+=raiseOption (COMMA options+=raiseOption)*
       )? SEMI
 ;
 
