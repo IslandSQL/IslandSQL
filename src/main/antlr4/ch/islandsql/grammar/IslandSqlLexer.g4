@@ -93,6 +93,7 @@ K_ARRAY: 'array';
 K_AS: 'as';
 K_ASC: 'asc';
 K_ASCII: 'ascii';
+K_ASSERT: 'assert';
 K_ASSOCIATE: 'associate';
 K_AT: 'at';
 K_ATOMIC: 'atomic';

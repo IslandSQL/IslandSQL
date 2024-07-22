@@ -5626,6 +5626,7 @@ keywordAsId:
     | K_AS
     | K_ASC
     | K_ASCII
+    | K_ASSERT
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
