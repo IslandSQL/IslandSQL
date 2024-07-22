@@ -3432,6 +3432,7 @@ raiseOptionType:
     | K_ERRCODE
     | K_COLUMN
     | K_CONSTRAINT
+    | K_DATATYPE
     | K_TABLE
     | K_SCHEMA
 ;
