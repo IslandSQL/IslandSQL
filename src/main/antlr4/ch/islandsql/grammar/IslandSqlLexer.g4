@@ -209,6 +209,7 @@ K_DAMERAU_LEVENSHTEIN: 'damerau_levenshtein';
 K_DANGLING: 'dangling';
 K_DATA: 'data';
 K_DATABASE: 'database';
+K_DATATYPE: 'datatype';
 K_DATE: 'date';
 K_DAY: 'day';
 K_DBTIMEZONE: 'dbtimezone';

@@ -5741,6 +5741,7 @@ keywordAsId:
     | K_DANGLING
     | K_DATA
     | K_DATABASE
+    | K_DATATYPE
     | K_DATE
     | K_DAY
     | K_DBTIMEZONE
