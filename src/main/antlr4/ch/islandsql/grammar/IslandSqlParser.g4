@@ -3420,8 +3420,9 @@ raiseLevel:
     | K_EXCEPTION
 ;
 
+// := is not documented in 16.3
 raiseOption:
-    option=raiseOptionType EQUALS value=postgresqlSqlExpression
+    option=raiseOptionType (COLON_EQUALS | EQUALS) value=postgresqlSqlExpression
 ;
 
 raiseOptionType:
