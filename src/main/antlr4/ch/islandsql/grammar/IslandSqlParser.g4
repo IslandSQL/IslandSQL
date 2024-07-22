@@ -2961,6 +2961,7 @@ plsqlStatement:
         | sqlStatement
         | whileLoopStatement
         | pragma SEMI
+        | postgresqlAssertStatement
         | postgresqlExecuteStatement
         | postgresqlFetchStatement
         | postgresqlForEachStatement
@@ -3347,6 +3348,10 @@ udfPragma:
 // better support them in a generic way than to cause a parse error
 namedPragma:
 	K_PRAGMA name=sqlName (LPAR params+=expression (COMMA params+=expression) RPAR)?
+;
+
+postgresqlAssertStatement:
+    K_ASSERT cond=postgresqlSqlExpression (COMMA message=postgresqlSqlExpression)? SEMI
 ;
 
 postgresqlExecuteStatement:
