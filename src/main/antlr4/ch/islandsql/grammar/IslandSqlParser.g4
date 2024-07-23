@@ -3426,6 +3426,8 @@ postgresqlPerformStatement:
     whereClause?
     groupByClause?
     windowClause?
+    orderByClause?
+    rowLimitingClause?
     SEMI
 ;
 
