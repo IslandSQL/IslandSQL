@@ -552,6 +552,7 @@ K_ON: 'on';
 K_ONE: 'one';
 K_ONLY: 'only';
 K_OPEN: 'open';
+K_OPERATOR: 'operator';
 K_OPTION: 'option';
 K_OR: 'or';
 K_ORDER: 'order';

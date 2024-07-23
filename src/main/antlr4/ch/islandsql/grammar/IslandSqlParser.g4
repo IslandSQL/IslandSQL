@@ -6108,6 +6108,7 @@ keywordAsId:
     | K_ONE
     | K_ONLY
     | K_OPEN
+    | K_OPERATOR
     | K_OPTION
     | K_OR
     | K_ORDER
