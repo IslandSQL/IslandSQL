@@ -3221,7 +3221,7 @@ plsqlBlock:
 ;
 
 // others is handled as normal exception name
-// empty exception handler is allowed in PL/pgSQL
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 exceptionHandler:
     K_WHEN exceptions+=exceptionItem (K_OR exceptions+=exceptionItem)* K_THEN stmts+=plsqlStatement*
 ;
