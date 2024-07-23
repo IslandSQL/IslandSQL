@@ -2753,7 +2753,7 @@ postgresqlCollation:
 ;
 
 postgresqlAliasDeclaration:
-    alias=sqlName K_ALIAS K_FOR POSITIONAL_PARAMETER SEMI
+    newName=sqlName K_ALIAS K_FOR oldName=expression SEMI
 ;
 
 functionDeclaration:
