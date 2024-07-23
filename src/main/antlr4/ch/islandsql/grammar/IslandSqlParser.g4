@@ -1840,8 +1840,11 @@ subquery:
 queryBlock:
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
-    selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
-    (intoClause | bulkCollectIntoClause | postgresqlIntoClause)? // in PL/SQL only
+    (
+          selectList
+        | intoClause selectList // undocumented PL/pgSQL variant in 16.3
+        | selectList (intoClause | bulkCollectIntoClause | postgresqlIntoClause) // PL/SQL, PL/pgSQL, PostgreSQL SQL
+    )? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
     fromClause? // starting with OracleDB 23.2 the from clause is optional
     whereClause?
     hierarchicalQueryClause?
