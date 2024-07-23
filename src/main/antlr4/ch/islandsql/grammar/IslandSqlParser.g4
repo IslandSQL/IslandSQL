@@ -1672,12 +1672,14 @@ postgresqlOnConflictActionDoNothing:
 
 postgresqlOnConflictActionDoUpdate:
     K_DO K_UPDATE K_SET
-    (
-          columns+=sqlName EQUALS exprs+=expression
-        | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-            EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
-    )
+    items+=postgresqlOnConflictActionDoUpdateItem (COMMA items+=postgresqlOnConflictActionDoUpdateItem)*
     (K_WHERE cond=expression)?
+;
+
+postgresqlOnConflictActionDoUpdateItem:
+      column+=sqlName EQUALS exprs+=expression
+    | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
