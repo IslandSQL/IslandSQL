@@ -2989,8 +2989,9 @@ assignmentStatement:
     ) value=postgresqlSqlExpression SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 basicLoopStatement:
-    K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 caseStatement:
@@ -3030,13 +3031,14 @@ continueStatement:
 
 // wrong documentation in 23.3 regarding parentheses for cursor parameters
 // PostgreSQL allows either record target or a list of scalar targets
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 cursorForLoopStatement:
     K_FOR targets+=qualifiedName (COMMA targets+=qualifiedName)* K_IN (
           cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
         | select                                    // PosgreSQL
         | K_EXECUTE query=expression usingClause?   // PostgreSQL
-    ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    ) K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 executeImmediateStatement:
@@ -3079,8 +3081,9 @@ fetchStatement:
     ) SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 forLoopStatement:
-    K_FOR iterator K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_FOR iterator K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 iterator:
@@ -3527,8 +3530,9 @@ postgreSqlStatementTrailingTokens:
     ~SEMI*?
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 whileLoopStatement:
-    K_WHILE cond=expression K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_WHILE cond=expression K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 /*----------------------------------------------------------------------------*/
