@@ -2992,22 +2992,26 @@ caseStatement:
     | searchedCaseStatement
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
 simpleCaseStatement:
     K_CASE selector=postgresqlSqlExpression whens+=simpleCaseStatementWhenClause+
-    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
+    (K_ELSE elseStmts+=plsqlStatement*)? K_END K_CASE name=sqlName? SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 simpleCaseStatementWhenClause:
-    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN stmts+=plsqlStatement+
+    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN stmts+=plsqlStatement*
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
 searchedCaseStatement:
     K_CASE whens+=searchedCaseStatementWhenClause+
-    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
+    (K_ELSE elseStmts+=plsqlStatement*)? K_END K_CASE name=sqlName? SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 searchedCaseStatementWhenClause:
-    K_WHEN cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement+
+    K_WHEN cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement*
 ;
 
 closeStatment:
