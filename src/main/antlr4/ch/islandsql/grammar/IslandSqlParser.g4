@@ -3973,7 +3973,7 @@ expression:
     | left=expression K_NOT? operator=K_SUBMULTISET
         K_OF? right=expression                                  # submultisetCondition
     | left=expression K_NOT?
-        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4|K_ILIKE)                                   // PostgreSQL: ilike (case-insensitive)
         right=expression
         (K_ESCAPE escChar=expression)?                          # likeCondition
     | left=expression K_NOT?
