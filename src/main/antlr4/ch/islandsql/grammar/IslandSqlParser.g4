@@ -3890,6 +3890,8 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | expr=expression
         LSQB lower=expression COLON upper=expression RSQB       # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=expression LSQB lower=expression COLON RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=expression LSQB COLON upper=expression RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
     | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression operator=K_AT
