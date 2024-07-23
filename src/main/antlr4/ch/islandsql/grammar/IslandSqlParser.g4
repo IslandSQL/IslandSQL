@@ -3061,7 +3061,7 @@ bindArgument:
     (
           K_IN K_OUT?
         | K_OUT
-    )? arg=expression
+    )? arg=postgresqlSqlExpression
 ;
 
 dynamicReturnClause:
@@ -3371,8 +3371,11 @@ postgresqlAssertStatement:
 
 postgresqlExecuteStatement:
     K_EXECUTE dynamicSqlStmt=postgresqlSqlExpression
-        (K_INTO K_STRICT? targets+=qualifiedName (COMMA targets+=qualifiedName)*)?
-        (K_USING usings+=postgresqlSqlExpression (COMMA usings+=postgresqlSqlExpression)*)? SEMI
+        (
+              intoClause usingClause?
+            | usingClause intoClause? // undocumented in 16.3
+        )?
+        SEMI
 ;
 
 postgresqlFetchStatement:
