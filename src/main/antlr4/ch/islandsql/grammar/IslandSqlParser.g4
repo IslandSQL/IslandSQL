@@ -1827,14 +1827,15 @@ select:
 // undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
 // PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
 // PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
+// PostgreSQL allows the intoClause at the end (undocumented PL/pgSQL variant in 16.3)
 subquery:
-      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # queryBlockSubquery
-    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # queryBlockSubquery
-    | left=subquery setOperator right=subquery                                          # setSubquery
-    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # parenSubquery
-    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # parenSubquery
-    | valuesClause orderByClause? rowLimitingClause?                                    # valuesSubquery
-    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlockSubquery // PostgreSQL
+      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause? intoClause?         # queryBlockSubquery
+    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause* intoClause?         # queryBlockSubquery
+    | left=subquery setOperator right=subquery                                                      # setSubquery
+    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? intoClause? # parenSubquery
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* intoClause? # parenSubquery
+    | valuesClause orderByClause? rowLimitingClause? intoClause?                                    # valuesSubquery
+    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                                  # tableQueryBlockSubquery // PostgreSQL
 ;
 
 queryBlock:
