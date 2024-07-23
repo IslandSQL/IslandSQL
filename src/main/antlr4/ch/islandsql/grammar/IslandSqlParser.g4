@@ -2736,16 +2736,18 @@ itemDeclaration:
 ;
 
 // not documented in 23.4: optionality of "not"
+// = allowed in PL/pgSQL as alternative to :=, DEFAULT
 constantDeclaration:
     constant=sqlName K_CONSTANT type=plsqlDataType postgresqlCollation?
-        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=postgresqlSqlExpression SEMI
+        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT | EQUALS) expr=postgresqlSqlExpression SEMI
 ;
 
 // not documented in 23.4: optionality of "not"
 // not documented in 23.4: use of null without assignment
+// = allowed in PL/pgSQL as alternative to :=, DEFAULT
 variableDeclaration:
     variable=sqlName type=plsqlDataType postgresqlCollation?
-        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=postgresqlSqlExpression | K_NULL)? SEMI
+        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT | EQUALS) expr=postgresqlSqlExpression | K_NULL)? SEMI
 ;
 
 postgresqlCollation:
