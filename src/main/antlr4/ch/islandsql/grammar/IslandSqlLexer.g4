@@ -1002,7 +1002,7 @@ N_STRING:
 ;
 
 E_STRING:
-    'e' STRING
+    'e' (['] (~[']|'\\\'')* ['])
 ;
 
 B_STRING:
