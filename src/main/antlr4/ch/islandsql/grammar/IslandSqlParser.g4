@@ -1679,7 +1679,7 @@ postgresqlOnConflictActionDoUpdate:
 postgresqlOnConflictActionDoUpdateItem:
       column+=sqlName EQUALS exprs+=expression
     | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-        EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+        EQUALS K_ROW? LPAR ((exprs+=expression (COMMA exprs+=expression)*) | subquery) RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
