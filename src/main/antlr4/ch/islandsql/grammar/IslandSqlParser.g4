@@ -3182,16 +3182,18 @@ gotoStatement:
     K_GOTO toLabel=sqlName SEMI
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
 ifStatement:
     K_IF conditionToStmts+=conditionToStatements
     (K_ELSIF conditionToStmts+=conditionToStatements)*
-    (K_ELSE elseStmts=plsqlStatement+)?
+    (K_ELSE elseStmts=plsqlStatement*)?
     K_END K_IF SEMI
 ;
 
 // artificial clause
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 conditionToStatements:
-    cond=expression K_THEN stmts+=plsqlStatement+
+    cond=expression K_THEN stmts+=plsqlStatement*
 ;
 
 nullStatement:
