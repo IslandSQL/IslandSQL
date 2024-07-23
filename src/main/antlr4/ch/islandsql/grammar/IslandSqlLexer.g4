@@ -359,6 +359,7 @@ K_IDENTIFIER: 'identifier';
 K_IDENTITY: 'identity';
 K_IF: 'if';
 K_IGNORE: 'ignore';
+K_ILIKE: 'ilike';
 K_IMMEDIATE: 'immediate';
 K_IMMUTABLE: 'immutable';
 K_IMPORT: 'import';

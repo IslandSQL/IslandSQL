@@ -5930,6 +5930,7 @@ keywordAsId:
     | K_IDENTITY
     | K_IF
     | K_IGNORE
+    | K_ILIKE
     | K_IMMEDIATE
     | K_IMMUTABLE
     | K_IMPORT
