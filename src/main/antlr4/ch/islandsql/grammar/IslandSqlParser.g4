@@ -3668,12 +3668,13 @@ transactionMode:
 // Data types
 /*----------------------------------------------------------------------------*/
 
+// array size is not documented in PosgresSQL 16.3
 dataType:
       oracleBuiltInDatatype
     | ansiSupportedDatatype
     | postgresqlDatatype
     | userDefinedType
-    | posgresqlArrayDatatype=dataType (LSQB RSQB)
+    | posgresqlArrayDatatype=dataType (LSQB size=NUMBER? RSQB)
 ;
 
 oracleBuiltInDatatype:
