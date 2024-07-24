@@ -19,6 +19,7 @@ package ch.islandsql.grammar.util;
 import ch.islandsql.grammar.IslandSqlParser;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -115,11 +116,16 @@ public class ConverterUtil {
             // example: e'hello' '\n' 'world' -> hello
             //                                   world
             IslandSqlParser.EscapedStringContext p = (IslandSqlParser.EscapedStringContext) str;
-            return (p.E_STRING().getText().substring(2, p.E_STRING().getText().length() - 1) +
-                    p.STRING()
-                            .stream()
-                            .map(s -> s.getText().substring(1, s.getText().length() - 1))
-                            .collect(Collectors.joining())).replace("''", "'")
+            Pattern pattern = Pattern.compile("['](?:\\\\?.)*?[']");
+            Matcher matcher = pattern.matcher(p.E_STRING().getText());
+            List<String> matches = new ArrayList<>();
+            while (matcher.find()) {
+                matches.add(matcher.group());
+            }
+            return matches
+                    .stream()
+                    .map(s -> s.substring(1, s.length() - 1))
+                    .collect(Collectors.joining()).replace("''", "'")
                     .replace("\\t", "\t")
                     .replace("\\b", "\b")
                     .replace("\\n", "\n")

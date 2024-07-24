@@ -33,6 +33,8 @@ fragment SQLPLUS_END: EOF|SINGLE_NL;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
 fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visual grouping
 fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
+fragment STRING_WITH_ESCAPE_CHARS: (['] ('\\'? .)*? ['])+;
+fragment COMMENT_OR_WS: ML_HINT|ML_COMMENT|SL_HINT|SL_COMMENT|WS;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
@@ -1004,8 +1006,7 @@ N_STRING:
 ;
 
 E_STRING:
-      'e' ['] '\\\'' [']
-    | 'e' (['] (~['] | ~[\\] '\\\'')* ['])
+    'e' STRING_WITH_ESCAPE_CHARS (COMMENT_OR_WS* STRING_WITH_ESCAPE_CHARS)*
 ;
 
 B_STRING:
