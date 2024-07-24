@@ -3039,7 +3039,10 @@ cursorForLoopStatement:
     K_FOR targets+=qualifiedName (COMMA targets+=qualifiedName)* K_IN (
           cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
-        | select                                    // PosgreSQL
+        | select                                    // PostgreSQL
+        | insert                                    // PostgreSQL with returning_clause
+        | update                                    // PostgreSQL with returning_clause
+        | delete                                    // PostgreSQL with returning_clause
         | K_EXECUTE query=expression usingClause?   // PostgreSQL
     ) K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
