@@ -1848,6 +1848,7 @@ queryBlock:
         | selectList (intoClause | bulkCollectIntoClause | postgresqlIntoClause) // PL/SQL, PL/pgSQL, PostgreSQL SQL
     )? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
     fromClause? // starting with OracleDB 23.2 the from clause is optional
+    intoClause? // undocumented PL/pgSQL variant in 16.3
     whereClause?
     hierarchicalQueryClause?
     groupByClause?
