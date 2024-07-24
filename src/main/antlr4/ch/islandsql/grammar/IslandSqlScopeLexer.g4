@@ -77,7 +77,7 @@ WS: [ \t\r\n]+ -> channel(HIDDEN);
 STRING:
     (
           'e' (['] ('\\'? .)*? ['])+ (COMMENT_OR_WS* ['] ('\\'? .)*? ['])*  // PostgreSQL string constant with C-style escapes
-        | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
+        | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
         | '$$' .*? '$$' {!isInquiryDirective()}?                // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
