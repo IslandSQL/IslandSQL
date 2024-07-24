@@ -5838,6 +5838,7 @@ keywordAsId:
     | K_EFSEARCH
     | K_ELEMENT
     | K_ELSE
+    | K_ELSEIF
     | K_ELSIF
     | K_EMPTY
     | K_ENABLE

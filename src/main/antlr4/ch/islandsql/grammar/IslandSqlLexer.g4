@@ -263,6 +263,7 @@ K_EDIT_TOLERANCE: 'edit_tolerance';
 K_EFSEARCH: 'efsearch';
 K_ELEMENT: 'element';
 K_ELSE: 'else';
+K_ELSEIF: 'elseif';
 K_ELSIF: 'elsif';
 K_EMPTY: 'empty';
 K_ENABLE: 'enable';
