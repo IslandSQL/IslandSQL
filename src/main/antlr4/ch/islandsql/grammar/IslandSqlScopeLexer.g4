@@ -266,6 +266,7 @@ CREATE_TABLE:
     (
           'global' COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
         | ('private'|'local') COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
+        | ('temp' 'orary'?) COMMENT_OR_WS+
         | 'unlogged' COMMENT_OR_WS+
         | 'sharded' COMMENT_OR_WS+
         | 'duplicated' COMMENT_OR_WS+

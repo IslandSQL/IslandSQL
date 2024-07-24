@@ -578,7 +578,7 @@ createTable:
         | K_DUPLICATED
         | K_IMMUTABLE? K_BLOCKCHAIN
         | K_IMMUTABLE
-        | (K_GLOBAL | K_LOCAL) (K_TEMPORARY | K_TEMP)   // PostgreSQL
+        | (K_GLOBAL | K_LOCAL)? (K_TEMPORARY | K_TEMP)   // PostgreSQL
         | K_UNLOGGED    // PostgreSQL
     )?
     K_TABLE (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? tableName=sqlName
