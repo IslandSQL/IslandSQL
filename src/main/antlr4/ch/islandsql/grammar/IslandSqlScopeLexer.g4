@@ -76,8 +76,8 @@ WS: [ \t\r\n]+ -> channel(HIDDEN);
 
 STRING:
     (
-          'e' (['] ~[']* ['])                                   // PostgreSQL string constant with C-style escapes
-        | 'b' (['] ~[']* ['])                                   // PostgreSQL bit-string constant
+          'e' (['] ('\\'? .)*? ['])+ (COMMENT_OR_WS* ['] ('\\'? .)*? ['])*  // PostgreSQL string constant with C-style escapes
+        | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
         | '$$' .*? '$$' {!isInquiryDirective()}?                // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
@@ -266,6 +266,7 @@ CREATE_TABLE:
     (
           'global' COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
         | ('private'|'local') COMMENT_OR_WS+ ('temp' 'orary'?) COMMENT_OR_WS+
+        | ('temp' 'orary'?) COMMENT_OR_WS+
         | 'unlogged' COMMENT_OR_WS+
         | 'sharded' COMMENT_OR_WS+
         | 'duplicated' COMMENT_OR_WS+

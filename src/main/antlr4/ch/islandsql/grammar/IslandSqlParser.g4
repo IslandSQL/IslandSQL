@@ -22,10 +22,37 @@ options {
 }
 
 /*----------------------------------------------------------------------------*/
-// Start rule
+// Start rules
 /*----------------------------------------------------------------------------*/
 
-file: statement* EOF;
+// used in constructor of IslandSqlDocument
+file:
+    statement* EOF
+;
+
+// used in constructor of IslandSqlDocument for GENERIC and POSTGRESQL dialect with enabled subtrees option
+postgresqlSqlCode:
+    atomicStatement* EOF
+;
+
+// used in constructor of IslandSqlDocument for GENERIC and POSTGRESQL dialect with enabled subtrees option
+// difference to OracleDB PL/SQL block: only one label allowed and final semicolon is optional
+// other differences are handled in the PL/SQL specific rules
+// stmts are optional in PL/pgSQL, undocumented in 16.3
+// PL/pgSQL allows multiple declare sections, undocumented in 16.3
+postgresqlPlpgsqlCode:
+    compilerOptions+=postgresqlCompilerOption*
+    label?
+    (K_DECLARE declareSection?)*
+    K_BEGIN
+    stmts+=plsqlStatement*
+    (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
+    K_END name=sqlName? SEMI? EOF
+;
+
+postgresqlCompilerOption:
+    NUM parameter=sqlName value=sqlName
+;
 
 /*----------------------------------------------------------------------------*/
 // Statement
@@ -140,6 +167,7 @@ argmode:
     | K_VARIADIC
 ;
 
+// postgresqlSqlCode/postgresqlPlpgsqlCode is optionally populated when creating an IslandSqlDocument instance
 postgresqlFunctionOption:
       K_LANGUAGE languageName=expression // expected sqlName, string is allowed but deprecated
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
@@ -157,10 +185,10 @@ postgresqlFunctionOption:
     | K_ROWS resultRows=expression
     | K_SUPPORT (supportSchema=sqlName PERIOD)? supportFunction=sqlName
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression
+    | K_AS definition=expression // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | sqlBody
-    | otherOption=sqlName // e.g. _cost_low, _cost_medium, _cost_high, _cost_default
+    | otherOption=sqlName // e.g. used by PostGIS: _cost_low, _cost_medium, _cost_high, _cost_default
 ;
 
 transformItem:
@@ -332,9 +360,9 @@ physicalProperties:
     (
           deferredSegmentCreation
         | segmentAttributesClause
-        | K_ORGANIZATION .+?
-        | K_EXTERNAL .+?
-        | K_CLUSTER .+?
+        | K_ORGANIZATION ~SEMI+?
+        | K_EXTERNAL ~SEMI+?
+        | K_CLUSTER ~SEMI+?
     )
 ;
 
@@ -353,7 +381,7 @@ segmentAttributesClause:
         | K_LOGGING
         | K_NOLOGGING
         | K_FILESYSTEM_LIKE_LOGGING
-    ) .+?
+    ) ~SEMI+?
 ;
 
 materializedViewProps:
@@ -370,12 +398,12 @@ columnProperties:
         | K_LOB
         | K_XMLTYPE
         | K_JSON
-    ) .+?
+    ) ~SEMI+?
 ;
 
 // simplified as list of tokens
 tablePartitioningClauses:
-    (K_PARTITION | K_PARTITIONSET) K_BY .+?
+    (K_PARTITION | K_PARTITIONSET) K_BY ~SEMI+?
 ;
 
 parallelClause:
@@ -389,7 +417,7 @@ buildClause:
 
 // simplified as list of tokens
 physicalAttributesClause:
-    .+?
+    ~SEMI+?
 ;
 
 createMvRefresh:
@@ -507,12 +535,13 @@ postgresqlProcedureSource:
         postgresqlProcedureOption+
 ;
 
+// postgresqlSqlCode/postgresqlPlpgsqlCode is optionally populated when creating an IslandSqlDocument instance
 postgresqlProcedureOption:
-      K_LANGUAGE languageName=sqlName
+      K_LANGUAGE languageName=expression
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression
+    | K_AS definition=expression // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | atomicBlock // subset of sql_body used in PostgreSQL function
 ;
@@ -549,7 +578,7 @@ createTable:
         | K_DUPLICATED
         | K_IMMUTABLE? K_BLOCKCHAIN
         | K_IMMUTABLE
-        | (K_GLOBAL | K_LOCAL) (K_TEMPORARY | K_TEMP)   // PostgreSQL
+        | (K_GLOBAL | K_LOCAL)? (K_TEMPORARY | K_TEMP)   // PostgreSQL
         | K_UNLOGGED    // PostgreSQL
     )?
     K_TABLE (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? tableName=sqlName
@@ -669,14 +698,14 @@ inlineConstraint:
         | K_UNIQUE constraintState?
         | K_PRIMARY K_KEY constraintState?
         | referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | K_CHECK LPAR cond=expression RPAR constraintState? precheckState?
         | postgresqlColumnConstraint constraintState?
     )
 ;
 
 // constraints not handled by inlineConstraint
 postgresqlColumnConstraint:
-      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
     | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
@@ -740,7 +769,7 @@ usingIndexClause:
 // artificial clause to handle token stream in "using index (create index i on t(c))"
 // ensure that closing parentheses are consumed.
 usingIndexClauseCode:
-    .+? RPAR*
+    ~SEMI+? RPAR*
 ;
 
 exceptionsClause:
@@ -784,21 +813,21 @@ outOfLineConstraint:
           K_UNIQUE LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
         | K_PRIMARY K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR constraintState?
         | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR referencesClause constraintState?
-        | K_CHECK LPAR cond=condition RPAR constraintState? precheckState?
+        | K_CHECK LPAR cond=expression RPAR constraintState? precheckState?
         | postgresqlTableConstraint constraintState?
     )
 ;
 
 // constraints not handled by outOflineConstraint
 postgresqlTableConstraint:
-      K_CHECK LPAR cond=condition RPAR (K_NO K_INHERIT)?
+      K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
         LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
     | K_PRIMARY K_KEY
         LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
     | K_EXCLUDE (K_USING method=sqlName)?
         LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
-        postgresqlIndexParameters* (K_WHERE LPAR predicate=condition RPAR)?
+        postgresqlIndexParameters* (K_WHERE LPAR predicate=expression RPAR)?
     | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
         K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
         (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
@@ -870,7 +899,7 @@ postgresqlLikeOption:
 // artificial clause to handle everything up to table_properties
 // simplified, list of tokens is considered good enough
 beforeTableProperties:
-    .+?
+    ~SEMI+?
 ;
 
 // simplified, interested primarily in subquery,
@@ -910,7 +939,7 @@ plsqlTriggerSource:
 simpleDmlTrigger:
     (K_BEFORE | K_AFTER) dmlEventClause referencingClause? (K_FOR K_EACH K_ROW)?
     triggerEditionClause? triggerOrderingClause? (K_ENABLE | K_DISABLE)?
-    (K_WHEN LPAR cond=condition RPAR)? triggerBody
+    (K_WHEN LPAR cond=expression RPAR)? triggerBody
 ;
 
 dmlEventClause:
@@ -963,7 +992,7 @@ insteadOfDmlTrigger:
 
 compoundDmlTrigger:
     K_FOR dmlEventClause referencingClause? triggerEditionClause? triggerOrderingClause?
-    (K_ENABLE | K_DISABLE)? (K_WHEN LPAR cond=condition RPAR)? compoundTriggerBlock
+    (K_ENABLE | K_DISABLE)? (K_WHEN LPAR cond=expression RPAR)? compoundTriggerBlock
 ;
 
 compoundTriggerBlock:
@@ -1050,7 +1079,7 @@ postgresqlTriggerOption:
     | K_INITIALLY (K_IMMEDIATE | K_DEFERRED)
     | K_REFERENCING referencing+=postgresqlReferencing+
     | K_FOR K_EACH? (K_ROW | K_STATEMENT)
-    | K_WHEN cond=condition
+    | K_WHEN cond=expression
 ;
 
 postgresqlReferencing:
@@ -1452,7 +1481,7 @@ returningClause:
     (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
     (
         (K_BULK K_COLLECT)? // within PL/SQL
-        K_INTO targetItems+=dataItem (COMMA targetItems+=dataItem)*
+        K_INTO K_STRICT? targetItems+=dataItem (COMMA targetItems+=dataItem)* // strict only in PL/pgSQL
     )?  // required in OracleDB but not allowed in PostgreSQL
 ;
 
@@ -1482,6 +1511,7 @@ doStatement:
 ;
 
 // undocumented in PostgreSQL 16.3: language option after code
+// subtree is optionally populated when creating an IslandSqlDocument instance
 postgresqlDo:
     K_DO (
           code=string
@@ -1606,7 +1636,7 @@ conditionalInsertClause:
 ;
 
 conditionalInsertWhenClause:
-    K_WHEN cond=condition K_THEN intoClauses+=multiTableInsertClause+
+    K_WHEN cond=expression K_THEN intoClauses+=multiTableInsertClause+
 ;
 
 postgresqlOverridingClause:
@@ -1622,7 +1652,7 @@ postgresqlOnConflictClause:
 ;
 
 postgresqlOnConflictTarget:
-      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=condition)?
+      LPAR items+=postgresqlOnConflictTargetItem (COMMA items+=postgresqlOnConflictTargetItem)* RPAR  (K_WHERE indexPredicate=expression)?
     | K_ON K_CONSTRAINT constraintName=sqlName
 ;
 
@@ -1643,12 +1673,14 @@ postgresqlOnConflictActionDoNothing:
 
 postgresqlOnConflictActionDoUpdate:
     K_DO K_UPDATE K_SET
-    (
-          columns+=sqlName EQUALS exprs+=expression
-        | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-            EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
-    )
-    (K_WHERE cond=condition)?
+    items+=postgresqlOnConflictActionDoUpdateItem (COMMA items+=postgresqlOnConflictActionDoUpdateItem)*
+    (K_WHERE cond=expression)?
+;
+
+postgresqlOnConflictActionDoUpdateItem:
+      column+=sqlName EQUALS exprs+=expression
+    | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+        EQUALS K_ROW? LPAR ((exprs+=expression (COMMA exprs+=expression)*) | subquery) RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1710,8 +1742,8 @@ merge:
     mergeIntoClause
     mergeUsingClause
     K_ON (
-          LPAR cond=condition RPAR  // OracleDB
-        | cond=condition            // PostgreSQL
+          LPAR cond=expression RPAR  // OracleDB
+        | cond=expression            // PostgreSQL
     )
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
@@ -1753,8 +1785,8 @@ mergeInsertClause:
 
 // PostgreSQL
 mergeWhenClause:
-      K_WHEN K_MATCHED (K_AND cond=condition)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
-    | K_WHEN K_NOT K_MATCHED (K_AND cond=condition)? K_THEN (mergeInsert | K_DO K_NOTHING)
+      K_WHEN K_MATCHED (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
 ;
 
 // PostgreSQL
@@ -1796,22 +1828,27 @@ select:
 // undocumented: for_update_clause can be used before order_by_clause (but not with row_limiting_clause)
 // PostgreSQL allows to use the values_clause as subquery in the with_clause (e.g. with set_operator)
 // PostgreSQL allows multiple forUpdateClauses scope is a table not a column as in OracleDB
+// PostgreSQL allows the intoClause at the end (undocumented PL/pgSQL variant in 16.3)
 subquery:
-      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause?         # queryBlockSubquery
-    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause*         # queryBlockSubquery
-    | left=subquery setOperator right=subquery                                          # setSubquery
-    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? # parenSubquery
-    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* # parenSubquery
-    | valuesClause orderByClause? rowLimitingClause?                                    # valuesSubquery
-    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                      # tableQueryBlockSubquery // PostgreSQL
+      withClause? queryBlock forUpdateClause+ orderByClause? rowLimitingClause? intoClause?         # queryBlockSubquery
+    | withClause? queryBlock orderByClause? rowLimitingClause? forUpdateClause* intoClause?         # queryBlockSubquery
+    | left=subquery setOperator right=subquery                                                      # setSubquery
+    | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? intoClause? # parenSubquery
+    | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* intoClause? # parenSubquery
+    | valuesClause orderByClause? rowLimitingClause? intoClause?                                    # valuesSubquery
+    | K_TABLE K_ONLY? tableName=qualifiedName AST?                                                  # tableQueryBlockSubquery // PostgreSQL
 ;
 
 queryBlock:
     {unhideFirstHint();} K_SELECT hint?
     queryBlockSetOperator?
-    selectList? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
-    (intoClause | bulkCollectIntoClause | postgresqlIntoClause)? // in PL/SQL only
+    (
+          selectList
+        | intoClause selectList // undocumented PL/pgSQL variant in 16.3
+        | selectList (intoClause | bulkCollectIntoClause | postgresqlIntoClause) // PL/SQL, PL/pgSQL, PostgreSQL SQL
+    )? // PostgreSQL: select_list is optional, e.g. in subquery of exists condition
     fromClause? // starting with OracleDB 23.2 the from clause is optional
+    intoClause? // undocumented PL/pgSQL variant in 16.3
     whereClause?
     hierarchicalQueryClause?
     groupByClause?
@@ -1913,7 +1950,7 @@ filterClauses:
 
 // combinded filter_clause and hier_ids
 filterClause:
-    ids+=hierId (COMMA ids+=hierId)* K_TO predicate=condition
+    ids+=hierId (COMMA ids+=hierId)* K_TO predicate=expression
 ;
 
 hierId:
@@ -1958,18 +1995,18 @@ selectItem:
 ;
 
 whereClause:
-    K_WHERE cond=condition
+    K_WHERE cond=expression
 ;
 
 hierarchicalQueryClause:
-      K_CONNECT K_BY K_NOCYCLE? connectByCond=condition (K_START K_WITH startWithCond=condition)?
-    | K_START K_WITH startWithCond=condition K_CONNECT K_BY K_NOCYCLE? connectByCond=condition
+      K_CONNECT K_BY K_NOCYCLE? connectByCond=expression (K_START K_WITH startWithCond=expression)?
+    | K_START K_WITH startWithCond=expression K_CONNECT K_BY K_NOCYCLE? connectByCond=expression
 ;
 
 // PostgreSQL: all, distinct
 groupByClause:
-      K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=condition)?
-    | K_HAVING cond=condition (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
+      K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=expression)?
+    | K_HAVING cond=expression (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
 ;
 
 // rollupCubeClause treated as expression
@@ -2024,7 +2061,7 @@ modelRuleClause:
 
 // undocumented: parenthesis around condition are documented, but not necessary
 modelIterateClause:
-    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL cond=condition)?
+    K_ITERATE LPAR iterate=expression RPAR (K_UNTIL cond=expression)?
 ;
 
 modelRule:
@@ -2040,7 +2077,7 @@ cellAssignmentList:
 ;
 
 callAssignmentListItem:
-      condition
+      expression
     | singleColumnForLoop
 ;
 
@@ -2108,9 +2145,9 @@ setOperator:
     | K_EXCEPT    (K_ALL|K_DISTINCT)?    # minusSetOperator
 ;
 
-// only in PL/SQL
+// only in PL/SQL, PL/pgSQL
 intoClause:
-    K_INTO variables+=expression (COMMA variables+=expression)*
+    K_INTO K_STRICT? variables+=expression (COMMA variables+=expression)* // strict only in PL/pgSQL
 ;
 
 // only in PL/SQL
@@ -2118,6 +2155,7 @@ bulkCollectIntoClause:
     K_BULK K_COLLECT K_INTO variables+=expression (COMMA variables+=expression)*
 ;
 
+// handles only variants in PostgreSQL SQL
 postgresqlIntoClause:
     K_INTO (K_TEMPORARY|K_TEMP|K_UNLOGGED)? K_TABLE tableName=qualifiedName
 ;
@@ -2245,7 +2283,7 @@ externalTableDataProps:
 // https://docs.oracle.com/en/database/oracle/oracle-database/23/sutil/oracle-external-tables-concepts.html#GUID-07D30CE6-128D-426F-8B76-B13E1C53BD5A
 // providing a list of tokens is considered the final solution.
 nativeOpaqueFormatSpec:
-    .+?
+    ~SEMI+?
 ;
 
 subqueryRestrictionClause:
@@ -2403,7 +2441,7 @@ rowPatternDefinitionList:
 ;
 
 rowPatternDefinition:
-    variableName=sqlName K_AS cond=condition
+    variableName=sqlName K_AS cond=expression
 ;
 
 joinVariant:
@@ -2417,7 +2455,7 @@ joinVariant:
 innerCrossJoinClause:
       K_INNER? K_JOIN fromItem
       (
-            K_ON cond=condition
+            K_ON cond=expression
           | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
       )
     | K_CROSS K_JOIN fromItem
@@ -2429,7 +2467,7 @@ outerJoinClause:
     left=queryPartitionClause? K_NATURAL? outerJoinType K_JOIN
     fromItem right=queryPartitionClause?
     (
-          K_ON cond=condition
+          K_ON cond=expression
         | K_USING LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR (K_AS joinUsingAlias=sqlName)? // PostgreSQL: join_using_alias
     )?
 ;
@@ -2606,6 +2644,7 @@ itemlistItem:
     | procedureDeclaration
     | procedureDefinition
     | selectionDirective
+    | postgresqlCursorDefinition
 ;
 
 typeDefinition:
@@ -2695,17 +2734,30 @@ cursorDefinition:
 itemDeclaration:
       constantDeclaration
     | variableDeclaration
+    | postgresqlAliasDeclaration
 ;
 
 // not documented in 23.4: optionality of "not"
+// = allowed in PL/pgSQL as alternative to :=, DEFAULT
 constantDeclaration:
-    constant=sqlName K_CONSTANT type=plsqlDataType (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression SEMI
+    constant=sqlName K_CONSTANT type=plsqlDataType postgresqlCollation?
+        (K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT | EQUALS) expr=postgresqlSqlExpression SEMI
 ;
 
 // not documented in 23.4: optionality of "not"
 // not documented in 23.4: use of null without assignment
+// = allowed in PL/pgSQL as alternative to :=, DEFAULT
 variableDeclaration:
-    variable=sqlName type=plsqlDataType ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT) expr=expression | K_NULL)? SEMI
+    variable=sqlName type=plsqlDataType postgresqlCollation?
+        ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT | EQUALS) expr=postgresqlSqlExpression | K_NULL)? SEMI
+;
+
+postgresqlCollation:
+    K_COLLATE collate=sqlName
+;
+
+postgresqlAliasDeclaration:
+    newName=sqlName K_ALIAS K_FOR oldName=expression SEMI
 ;
 
 functionDeclaration:
@@ -2885,9 +2937,10 @@ procedureDefinition:
     procedureHeading options+=procedureOption* (K_IS | K_AS) (declareSection? body | callSpec SEMI)
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 body:
     K_BEGIN
-    stmts+=plsqlStatement+
+    stmts+=plsqlStatement*
     (K_EXCEPTION exceptionHandlers+=exceptionHandler+)?
     K_END name=sqlName? SEMI
 ;
@@ -2913,7 +2966,6 @@ plsqlStatement:
         | openForStatement
         | pipeRowStatement
         | plsqlBlock
-        | procedureCall
         | raiseStatement
         | returnStatement
         | selectionDirective
@@ -2921,15 +2973,29 @@ plsqlStatement:
         | sqlStatement
         | whileLoopStatement
         | pragma SEMI
+        | postgresqlAssertStatement
+        | postgresqlExecuteStatement
+        | postgresqlFetchStatement
+        | postgresqlForEachStatement
+        | postgresqlGetDiagnosticsStatement
+        | postgresqlMoveStatement
+        | postgresqlPerformStatement
+        | postgresqlRaiseStatement
+        | procedureCall // ambiguity with returnStatement, return is not a reserved keyword PostgreSQL
     )
 ;
 
 assignmentStatement:
-    target=expression COLON_EQUALS value=expression SEMI
+    target=expression
+    (
+          COLON_EQUALS      // OracleDB, PostgreSQL
+        | EQUALS            // PostgreSQL
+    ) value=postgresqlSqlExpression SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 basicLoopStatement:
-    K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 caseStatement:
@@ -2937,22 +3003,26 @@ caseStatement:
     | searchedCaseStatement
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
 simpleCaseStatement:
-    K_CASE selector=expression whens+=simpleCaseStatementWhenClause+
-    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
+    K_CASE selector=postgresqlSqlExpression whens+=simpleCaseStatementWhenClause+
+    (K_ELSE elseStmts+=plsqlStatement*)? K_END K_CASE name=sqlName? SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 simpleCaseStatementWhenClause:
-    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN stmts+=plsqlStatement+
+    K_WHEN values+=whenClauseValue (COMMA values+=whenClauseValue)* K_THEN stmts+=plsqlStatement*
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
 searchedCaseStatement:
     K_CASE whens+=searchedCaseStatementWhenClause+
-    (K_ELSE elseStmts+=plsqlStatement+)? K_END K_CASE name=sqlName? SEMI
+    (K_ELSE elseStmts+=plsqlStatement*)? K_END K_CASE name=sqlName? SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 searchedCaseStatementWhenClause:
-    K_WHEN cond=condition K_THEN stmts+=plsqlStatement+
+    K_WHEN cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement*
 ;
 
 closeStatment:
@@ -2960,15 +3030,22 @@ closeStatment:
 ;
 
 continueStatement:
-    K_CONTINUE toLabel=sqlName? (K_WHEN cond=condition)? SEMI
+    K_CONTINUE toLabel=sqlName? (K_WHEN cond=postgresqlSqlExpression)? SEMI
 ;
 
 // wrong documentation in 23.3 regarding parentheses for cursor parameters
+// PostgreSQL allows either record target or a list of scalar targets
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 cursorForLoopStatement:
-    K_FOR record=sqlName K_IN (
+    K_FOR targets+=qualifiedName (COMMA targets+=qualifiedName)* K_IN (
           cursorName=qualifiedName LPAR params+=functionParameter (COMMA params+=functionParameter)* RPAR
         | LPAR select RPAR
-    ) K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+        | select                                    // PostgreSQL
+        | insert                                    // PostgreSQL with returning_clause
+        | update                                    // PostgreSQL with returning_clause
+        | delete                                    // PostgreSQL with returning_clause
+        | K_EXECUTE query=expression usingClause?   // PostgreSQL
+    ) K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 executeImmediateStatement:
@@ -2993,7 +3070,7 @@ bindArgument:
     (
           K_IN K_OUT?
         | K_OUT
-    )? arg=expression
+    )? arg=postgresqlSqlExpression
 ;
 
 dynamicReturnClause:
@@ -3001,7 +3078,7 @@ dynamicReturnClause:
 ;
 
 exitStatement:
-    K_EXIT toLabel=sqlName? (K_WHEN expr=expression)? SEMI
+    K_EXIT toLabel=sqlName? (K_WHEN expr=postgresqlSqlExpression)? SEMI
 ;
 
 fetchStatement:
@@ -3011,8 +3088,9 @@ fetchStatement:
     ) SEMI
 ;
 
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 forLoopStatement:
-    K_FOR iterator K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_FOR iterator K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 iterator:
@@ -3050,7 +3128,7 @@ predClauseSeq:
 
 // no space allowed between periods, however we allow it to avoid conflict with substitugion variable ending on period
 steppedControl:
-    lowerBound=expression PERIOD PERIOD upperBound=expression (K_BY step=expression)?
+    lowerBound=postgresqlSqlExpression PERIOD PERIOD upperBound=postgresqlSqlExpression (K_BY step=postgresqlSqlExpression)?
 ;
 
 singleExpressionControl:
@@ -3124,16 +3202,19 @@ gotoStatement:
     K_GOTO toLabel=sqlName SEMI
 ;
 
+// elseStmts are optional in PL/pgSQL, undocumented in 16.3
+// elseif can be used insted of elsif in PL/pgSQL, undocumented in 16.3
 ifStatement:
     K_IF conditionToStmts+=conditionToStatements
-    (K_ELSIF conditionToStmts+=conditionToStatements)*
-    (K_ELSE elseStmts=plsqlStatement+)?
+    ((K_ELSIF | K_ELSEIF) conditionToStmts+=conditionToStatements)*
+    (K_ELSE elseStmts=plsqlStatement*)?
     K_END K_IF SEMI
 ;
 
 // artificial clause
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 conditionToStatements:
-    cond=condition K_THEN stmts+=plsqlStatement+
+    cond=expression K_THEN stmts+=plsqlStatement*
 ;
 
 nullStatement:
@@ -3146,7 +3227,11 @@ openStatement:
 ;
 
 openForStatement:
-    K_OPEN COLON? cursor=qualifiedName K_FOR (selectStmt=select | expr=expression) usingClause? SEMI
+    K_OPEN COLON? cursor=qualifiedName
+        (K_NO? K_SCROLL)?   // PostgreSQL
+        K_FOR
+        K_EXECUTE?          // PostgreSQL
+        (selectStmt=select | expr=expression) usingClause? SEMI
 ;
 
 pipeRowStatement:
@@ -3154,13 +3239,20 @@ pipeRowStatement:
 ;
 
 // wrong documentation of in 23.3: declere_section is not mandatory
+// PL/pgSQL allows multiple declare sections, undocumented in 16.3
 plsqlBlock:
-    (K_DECLARE declareSection?)? body
+    (K_DECLARE declareSection?)* body
 ;
 
 // others is handled as normal exception name
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 exceptionHandler:
-    K_WHEN exceptions+=qualifiedName (K_OR exceptions+=qualifiedName)* K_THEN stmts+=plsqlStatement+
+    K_WHEN exceptions+=exceptionItem (K_OR exceptions+=exceptionItem)* K_THEN stmts+=plsqlStatement*
+;
+
+exceptionItem:
+      qualifiedName
+    | K_SQLSTATE code=expression    // PostgreSQL
 ;
 
 // "end" is not allowed as procedure call to avoid conflicts with end keyword of a PL/SQL block.
@@ -3190,7 +3282,14 @@ raiseStatement:
 ;
 
 returnStatement:
-    K_RETURN value=condition SEMI
+    K_RETURN
+    (
+          K_QUERY K_EXECUTE command=expression usingClause?  // PostgreSQL
+        | K_QUERY subquery                                   // PostgreSQL
+        | K_NEXT expr=postgresqlSqlExpression                // PostgreSQL
+        | expr=postgresqlSqlExpression
+    )?
+    SEMI
 ;
 
 selectionDirective:
@@ -3198,6 +3297,17 @@ selectionDirective:
     (DOLLAR_ELSIF conditionToStmts+=selectionDirectiveConditionToStatements)*
     (DOLLAR_ELSE elseTexts=selectionDirectiveText*)?
     DOLLAR_END
+;
+
+postgresqlCursorDefinition:
+    name=sqlName (K_NO? K_SCROLL)? K_CURSOR
+        (LPAR arguments+=postgresqlCursorArgument (COMMA arguments+=postgresqlCursorArgument)* RPAR)?
+        (K_FOR|K_IS) // using "is" instead of "for" is not documented in 16.3
+        query=subquery SEMI
+;
+
+postgresqlCursorArgument:
+    name=sqlName plsqlDataType
 ;
 
 // unterminated pragma (not ending on semicolon)
@@ -3267,9 +3377,106 @@ namedPragma:
 	K_PRAGMA name=sqlName (LPAR params+=expression (COMMA params+=expression) RPAR)?
 ;
 
+postgresqlAssertStatement:
+    K_ASSERT cond=postgresqlSqlExpression (COMMA message=postgresqlSqlExpression)? SEMI
+;
+
+postgresqlExecuteStatement:
+    K_EXECUTE dynamicSqlStmt=postgresqlSqlExpression
+        (
+              intoClause usingClause?
+            | usingClause intoClause? // undocumented in 16.3
+        )?
+        SEMI
+;
+
+postgresqlFetchStatement:
+    K_FETCH (direction=fetchDirection (K_FROM | K_IN))? cursor=qualifiedName
+        K_INTO targets+=qualifiedName (COMMA targets+=qualifiedName)* SEMI
+;
+
+fetchDirection:
+      K_NEXT
+    | K_PRIOR
+    | K_FIRST
+    | K_LAST
+    | K_ABSOLUTE count=postgresqlSqlExpression
+    | K_RELATIVE count=postgresqlSqlExpression
+    | K_FORWARD count=postgresqlSqlExpression?      // undocumented count for move in 16.3
+    | K_BACKWARD count=postgresqlSqlExpression?     // undocumented count for move in 16.3
+;
+
+postgresqlForEachStatement:
+    K_FOREACH target=qualifiedName (K_SLICE slice=expression)?
+        K_IN K_ARRAY expr=postgresqlSqlExpression
+        K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+;
+
+postgresqlGetDiagnosticsStatement:
+    K_GET (K_CURRENT|K_STACKED)? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
+        (COMMA assignments+=postgresqlGetDiagnosticsAssignment)* SEMI
+;
+
+postgresqlGetDiagnosticsAssignment:
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=sqlName
+;
+
+postgresqlMoveStatement:
+    K_MOVE (direction=fetchDirection (K_FROM | K_IN))? cursor=qualifiedName SEMI
+;
+
+postgresqlPerformStatement:
+    K_PERFORM
+    queryBlockSetOperator?
+    selectList?
+    fromClause?
+    whereClause?
+    groupByClause?
+    windowClause?
+    orderByClause?
+    rowLimitingClause?
+    SEMI
+;
+
+postgresqlRaiseStatement:
+      K_RAISE raiseLevel?
+      (
+          format=string (COMMA formatExprs+=postgresqlSqlExpression)* (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | conditionName=qualifiedName (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | K_SQLSTATE sqlState=string (K_USING options+=raiseOption (COMMA options+=raiseOption)*)?
+        | K_USING options+=raiseOption (COMMA options+=raiseOption)*
+      )? SEMI
+;
+
+raiseLevel:
+      K_DEBUG
+    | K_LOG
+    | K_INFO
+    | K_NOTICE
+    | K_WARNING
+    | K_EXCEPTION
+;
+
+// := is not documented in 16.3
+raiseOption:
+    option=raiseOptionType (COLON_EQUALS | EQUALS) value=postgresqlSqlExpression
+;
+
+raiseOptionType:
+      K_MESSAGE
+    | K_DETAIL
+    | K_HINT
+    | K_ERRCODE
+    | K_COLUMN
+    | K_CONSTRAINT
+    | K_DATATYPE
+    | K_TABLE
+    | K_SCHEMA
+;
+
 // artificial clause
 selectionDirectiveConditionToStatements:
-    cond=condition DOLLAR_THEN texts+=selectionDirectiveText*
+    cond=expression DOLLAR_THEN texts+=selectionDirectiveText*
 ;
 
 selectionDirectiveText:
@@ -3296,11 +3503,47 @@ sqlStatement:
         | savepoint
         | setTransaction
         | update
+        | postgresqlSqlStatement
     ) SEMI
 ;
 
+// SQL statements that are allowed in an PL/pgSQL block
+// not allowed in PL/pgSQL or not handled in this rule: ABORT, BEGIN, DECLARE, END, EXECUTE, EXPLAIN, FETCH,
+// LISTEN, LOAD, MOVE, NOTIFY, PREPARE TRANSACTION, RELEASE SAVEPOINT, SHOW, START TRANSACTION, UNLISTEN, VACUUM, VALUES
+postgresqlSqlStatement:
+      createTable
+    | call
+    | lockTable
+    | postgresqlDo
+    | K_ALTER postgreSqlStatementTrailingTokens
+    | K_ANALYZE postgreSqlStatementTrailingTokens
+    | K_CHECKPOINT
+    | K_CLUSTER postgreSqlStatementTrailingTokens
+    | K_COMMENT postgreSqlStatementTrailingTokens
+    | K_COPY postgreSqlStatementTrailingTokens
+    | K_CREATE postgreSqlStatementTrailingTokens
+    | K_DEALLOCATE postgreSqlStatementTrailingTokens
+    | K_DISCARD postgreSqlStatementTrailingTokens
+    | K_DROP postgreSqlStatementTrailingTokens
+    | K_GRANT postgreSqlStatementTrailingTokens
+    | K_IMPORT postgreSqlStatementTrailingTokens
+    | K_PREPARE postgreSqlStatementTrailingTokens
+    | K_REASSIGN postgreSqlStatementTrailingTokens
+    | K_REFRESH postgreSqlStatementTrailingTokens
+    | K_REINDEX postgreSqlStatementTrailingTokens
+    | K_RESET postgreSqlStatementTrailingTokens
+    | K_SECURITY postgreSqlStatementTrailingTokens
+    | K_SET postgreSqlStatementTrailingTokens
+    | K_TRUNCATE postgreSqlStatementTrailingTokens
+;
+
+postgreSqlStatementTrailingTokens:
+    ~SEMI*?
+;
+
+// stmts are optional in PL/pgSQL, undocumented in 16.3
 whileLoopStatement:
-    K_WHILE cond=condition K_LOOP stmts+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
+    K_WHILE cond=expression K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3449,12 +3692,13 @@ transactionMode:
 // Data types
 /*----------------------------------------------------------------------------*/
 
+// array size is not documented in PosgresSQL 16.3
 dataType:
       oracleBuiltInDatatype
     | ansiSupportedDatatype
     | postgresqlDatatype
     | userDefinedType
-    | posgresqlArrayDatatype=dataType (LSQB RSQB)
+    | posgresqlArrayDatatype=dataType (LSQB size=NUMBER? RSQB)
 ;
 
 oracleBuiltInDatatype:
@@ -3657,6 +3901,8 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | expr=expression
         LSQB lower=expression COLON upper=expression RSQB       # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=expression LSQB lower=expression COLON RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=expression LSQB COLON upper=expression RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
     | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression operator=K_AT
@@ -3734,7 +3980,7 @@ expression:
     | left=expression K_NOT? operator=K_SUBMULTISET
         K_OF? right=expression                                  # submultisetCondition
     | left=expression K_NOT?
-        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4)
+        operator=(K_LIKE|K_LIKEC|K_LIKE2|K_LIKE4|K_ILIKE)                                   // PostgreSQL: ilike (case-insensitive)
         right=expression
         (K_ESCAPE escChar=expression)?                          # likeCondition
     | left=expression K_NOT?
@@ -3753,6 +3999,14 @@ expression:
         K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
     | left=expression
         K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
+;
+
+// PostgreSQL: single column, 0-1 result rows
+// not part of expression to avoid left-recursive use of this rule
+// used in PL/SQL elements instead of expression for PL/pgSQL compatiblity
+postgresqlSqlExpression:
+    expr=expression (K_AS? cAlias=sqlName)?
+    fromClause? whereClause? groupByClause? windowClause? orderByClause? rowLimitingClause?
 ;
 
 intervalExpression:
@@ -3838,7 +4092,7 @@ searchedCaseExpression:
     whens+=searchedCaseExpressionWhenClause+
 ;
 searchedCaseExpressionWhenClause:
-    K_WHEN cond=condition K_THEN expr=expression
+    K_WHEN cond=expression K_THEN expr=expression
 ;
 
 elseClause:
@@ -4128,7 +4382,7 @@ graphTable:
     K_GRAPH_TABLE LPAR
     (schema=sqlName PERIOD)?
     graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
-    (K_WHERE cond=condition)?
+    (K_WHERE cond=expression)?
     K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
     RPAR
 ;
@@ -4177,7 +4431,7 @@ elementPattern:
 
 // simplified, includes parenthesized_path_pattern_where_clause
 parenthesizedPathPatternExpression:
-    LPAR expr=pathTerm (K_WHERE cond=condition)? RPAR
+    LPAR expr=pathTerm (K_WHERE cond=expression)? RPAR
 ;
 
 vertexPattern:
@@ -4187,7 +4441,7 @@ vertexPattern:
 // simplified, includes: element_variable_declaration, element_variable, isLabelExpression/isLabelDeclaration,
 // element_pattern_where_clause, is_label_declaration
 elementPatternFiller:
-    var=sqlName? (K_IS labelName=labelExpression)? (K_WHERE cond=condition)?
+    var=sqlName? (K_IS labelName=labelExpression)? (K_WHERE cond=expression)?
 ;
 
 // simplified, includes: label, label_disjunction
@@ -4636,7 +4890,7 @@ caseOp:
 ;
 
 caseOpWhenClause:
-    K_WHEN cond=condition K_THEN LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
+    K_WHEN cond=expression K_THEN LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 caseOpElseClause:
@@ -5024,7 +5278,7 @@ functionExpression:
 functionParameter:
     // PostgreSQL := is older syntax supported for backward compatiblity only
     // OracleDB: no space between '=>' allowed
-    (name=sqlName (EQUALS_GT | COLON_EQUALS))? functionParameterPrefix? expr=condition functionParameterSuffix?
+    (name=sqlName (EQUALS_GT | COLON_EQUALS))? functionParameterPrefix? expr=postgresqlSqlExpression functionParameterSuffix?
 ;
 
 functionParameterPrefix:
@@ -5222,56 +5476,61 @@ unaryOperator:
 // operator meaning is based on context, label can be misleading
 // custom PostGIS operators according see https://postgis.net/docs/manual-3.4/reference.html#Operators
 binaryOperator:
-      AMP                           # bitwiseAndOperator
-    | AMP_AMP                       # overlapsOperator
-    | AMP_AMP_AMP                   # nDimIntersectOperator         // PostGIS
-    | AMP_GT                        # notExtendsLeftOperator
-    | AMP_LT                        # notExtendsRightOperator
-    | AMP_LT_VERBAR                 # notExtendsAboveOperator
-    | AMP_SOL_AMP                   # threeDimOverlapsOperator      // PostGIS, undocumented
-    | COMMAT                        # absoluteValueOperator
-    | COMMAT_COMMAT                 # matchOperator
-    | COMMAT_COMMAT_COMMAT          # matchOperator                 // deprecated
-    | COMMAT_GT                     # containsOperator
-    | COMMAT_GT_GT                  # threeDimContainsOperator      // PostGIS, undocumented
-    | COMMAT_QUEST                  # returnsAnyItemOperator
-    | EXCL_TILDE                    # notMatchRegexOperator
-    | EXCL_TILDE_AST                # notMatchRegexCaseInsensitiveOperator
-    | GT_GT                         # bitwiseShiftRightOperator
-    | GT_GT_EQUALS                  # strictlyContainsOrEqualOperator
-    | GT_HAT                        # aboveOperator
-    | HAT_COMMAT                    # startsWithOperator
-    | LT_COMMAT                     # containedByOperator
-    | LT_EQUALS_GT                  # cosineDistanceOperator
-    | LT_LT                         # bitwiseShiftLeftOperator
-    | LT_LT_EQUALS                  # strictlyContainedByOrEqualOperator
-    | LT_LT_MINUS_GT_GT             # nDimDistanceOperator          // PostGIS
-    | LT_LT_NUM_GT_GT               # nDimBoxDistanceOperator       // PostGIS
-    | LT_LT_VERBAR                  # strictlyBelowOperator
-    | LT_HAT                        # belowOperator
-    | LT_MINUS_GT                   # distanceOperator              // OracleDB 23.4: Euclidian distance operator
-    | LT_NUM_GT                     # boxDistanceOperator           // PostGIS, OracleDB 23.4: negative dot product operator
-    | MINUS_GT                      # extractElementOperator
-    | MINUS_GT_GT                   # extractObjectOperator
-    | MINUS_VERBAR_MINUS            # adjacentOperator
-    | NUM                           # bitwiseXorOperator
-    | NUM_GT                        # extractSubObjectOperator
-    | NUM_GT_GT                     # extractSubObjectTextOperator
-    | QUEST                         # existsAnyOperator
-    | QUEST_AMP                     # existsAllOperator
-    | QUEST_NUM                     # intersectOperator
-    | QUEST_MINUS                   # horizontallyAlignedOperator
-    | QUEST_MINUS_VERBAR            # linesPerpendicularOperator
-    | QUEST_MINUS_VERBAR_VERBAR     # linesParallelOperator
-    | QUEST_VERBAR                  # existsAnyOperator
-    | TILDE                         # boxContainsOperator           // PostGIS
-    | TILDE_AST                     # matchRegexCaseInsensitiveOperator
-    | TILDE_EQUAL_EQUAL             # threeDimSame                  // PostGIS, undocumented
-    | TILDE_TILDE_EQUAL             # nDimSame                      // PostGIS, undocumented
-    | VERBAR                        # bitwiseOrOperator
-    | VERBAR_AMP_GT                 # notExtendsBelowOperator
-    | VERBAR_EQUALS_VERBAR          # closestDistanceOperator
-    | VERBAR_GT_GT                  # strictlyAboveOperator
+      AMP                                       # bitwiseAndOperator
+    | AMP_AMP                                   # overlapsOperator
+    | AMP_AMP_AMP                               # nDimIntersectOperator         // PostGIS
+    | AMP_GT                                    # notExtendsLeftOperator
+    | AMP_LT                                    # notExtendsRightOperator
+    | AMP_LT_VERBAR                             # notExtendsAboveOperator
+    | AMP_SOL_AMP                               # threeDimOverlapsOperator      // PostGIS, undocumented
+    | COMMAT                                    # absoluteValueOperator
+    | COMMAT_COMMAT                             # matchOperator
+    | COMMAT_COMMAT_COMMAT                      # matchOperator                 // deprecated
+    | COMMAT_GT                                 # containsOperator
+    | COMMAT_GT_GT                              # threeDimContainsOperator      // PostGIS, undocumented
+    | COMMAT_QUEST                              # returnsAnyItemOperator
+    | EXCL_TILDE                                # notMatchRegexOperator
+    | EXCL_TILDE_AST                            # notMatchRegexCaseInsensitiveOperator
+    | GT_GT                                     # bitwiseShiftRightOperator
+    | GT_GT_EQUALS                              # strictlyContainsOrEqualOperator
+    | GT_HAT                                    # aboveOperator
+    | HAT_COMMAT                                # startsWithOperator
+    | LT_COMMAT                                 # containedByOperator
+    | LT_EQUALS_GT                              # cosineDistanceOperator
+    | LT_LT                                     # bitwiseShiftLeftOperator
+    | LT_LT_EQUALS                              # strictlyContainedByOrEqualOperator
+    | LT_LT_MINUS_GT_GT                         # nDimDistanceOperator          // PostGIS
+    | LT_LT_NUM_GT_GT                           # nDimBoxDistanceOperator       // PostGIS
+    | LT_LT_VERBAR                              # strictlyBelowOperator
+    | LT_HAT                                    # belowOperator
+    | LT_MINUS_GT                               # distanceOperator              // OracleDB 23.4: Euclidian distance operator
+    | LT_NUM_GT                                 # boxDistanceOperator           // PostGIS, OracleDB 23.4: negative dot product operator
+    | MINUS_GT                                  # extractElementOperator
+    | MINUS_GT_GT                               # extractObjectOperator
+    | MINUS_VERBAR_MINUS                        # adjacentOperator
+    | NUM                                       # bitwiseXorOperator
+    | NUM_GT                                    # extractSubObjectOperator
+    | NUM_GT_GT                                 # extractSubObjectTextOperator
+    | QUEST                                     # existsAnyOperator
+    | QUEST_AMP                                 # existsAllOperator
+    | QUEST_NUM                                 # intersectOperator
+    | QUEST_MINUS                               # horizontallyAlignedOperator
+    | QUEST_MINUS_VERBAR                        # linesPerpendicularOperator
+    | QUEST_MINUS_VERBAR_VERBAR                 # linesParallelOperator
+    | QUEST_VERBAR                              # existsAnyOperator
+    | TILDE                                     # boxContainsOperator           // PostGIS
+    | TILDE_AST                                 # matchRegexCaseInsensitiveOperator
+    | TILDE_EQUAL_EQUAL                         # threeDimSame                  // PostGIS, undocumented
+    | TILDE_TILDE_EQUAL                         # nDimSame                      // PostGIS, undocumented
+    | VERBAR                                    # bitwiseOrOperator
+    | VERBAR_AMP_GT                             # notExtendsBelowOperator
+    | VERBAR_EQUALS_VERBAR                      # closestDistanceOperator
+    | VERBAR_GT_GT                              # strictlyAboveOperator
+    | K_OPERATOR LPAR postgresqlOperator RPAR   # functionOperator              // PostgreSQL
+;
+
+postgresqlOperator:
+    ~RPAR+
 ;
 
 postgresqlArrayConstructor:
@@ -5287,12 +5546,6 @@ postgresqlArrayElement:
 /*----------------------------------------------------------------------------*/
 // Condition
 /*----------------------------------------------------------------------------*/
-
-// starting with 23.2 a condition is treated as a synonym to an expression
-// therefore condition is implementend in expression
-condition:
-      cond=expression
-;
 
 // based on condition, considering only those conditions with a leading expression predicate
 // that can be ommitted in a dangling_predicate of a case expression and case statement
@@ -5389,6 +5642,7 @@ keywordAsId:
       K_A
     | K_ABS
     | K_ABSENT
+    | K_ABSOLUTE
     | K_ACCESS
     | K_ACCESSIBLE
     | K_ACCURACY
@@ -5398,6 +5652,7 @@ keywordAsId:
     | K_AFTER
     | K_AGENT
     | K_AGGREGATE
+    | K_ALIAS
     | K_ALL
     | K_ALLOW
     | K_ALTER
@@ -5417,6 +5672,7 @@ keywordAsId:
     | K_AS
     | K_ASC
     | K_ASCII
+    | K_ASSERT
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
@@ -5426,6 +5682,7 @@ keywordAsId:
     | K_AUTOMATIC
     | K_AUTONOMOUS_TRANSACTION
     | K_AVERAGE_RANK
+    | K_BACKWARD
     | K_BADFILE
     | K_BATCH
     | K_BEFORE
@@ -5476,6 +5733,7 @@ keywordAsId:
     | K_CHARSETID
     | K_CHAR_CS
     | K_CHECK
+    | K_CHECKPOINT
     | K_CIDR
     | K_CIRCLE
     | K_CLOB
@@ -5531,11 +5789,14 @@ keywordAsId:
     | K_DANGLING
     | K_DATA
     | K_DATABASE
+    | K_DATATYPE
     | K_DATE
     | K_DAY
     | K_DBTIMEZONE
     | K_DB_ROLE_CHANGE
     | K_DDL
+    | K_DEALLOCATE
+    | K_DEBUG
     | K_DEC
     | K_DECIMAL
     | K_DECLARE
@@ -5553,7 +5814,9 @@ keywordAsId:
     | K_DEPTH
     | K_DESC
     | K_DESTINATION
+    | K_DETAIL
     | K_DETERMINISTIC
+    | K_DIAGNOSTICS
     | K_DIMENSION
     | K_DIRECTORY
     | K_DISABLE
@@ -5577,6 +5840,7 @@ keywordAsId:
     | K_EFSEARCH
     | K_ELEMENT
     | K_ELSE
+    | K_ELSEIF
     | K_ELSIF
     | K_EMPTY
     | K_ENABLE
@@ -5586,6 +5850,7 @@ keywordAsId:
     | K_ENTITYESCAPING
     | K_ENUM
     | K_ENV
+    | K_ERRCODE
     | K_ERROR
     | K_ERRORS
     | K_ESCAPE
@@ -5628,6 +5893,7 @@ keywordAsId:
     | K_FOR
     | K_FORALL
     | K_FORCE
+    | K_FOREACH
     | K_FOREIGN
     | K_FORMAT
     | K_FORWARD
@@ -5638,6 +5904,7 @@ keywordAsId:
     | K_FUZZY_MATCH
     | K_GENERATED
     | K_GENERIC_PLAN
+    | K_GET
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
@@ -5663,6 +5930,7 @@ keywordAsId:
     | K_HIER_PARENT
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
+    | K_HINT
     | K_HOUR
     | K_ID
     | K_IDENTIFIED
@@ -5670,8 +5938,10 @@ keywordAsId:
     | K_IDENTITY
     | K_IF
     | K_IGNORE
+    | K_ILIKE
     | K_IMMEDIATE
     | K_IMMUTABLE
+    | K_IMPORT
     | K_IN
     | K_INCLUDE
     | K_INCLUDING
@@ -5683,6 +5953,7 @@ keywordAsId:
     | K_INDICES
     | K_INET
     | K_INFINITE
+    | K_INFO
     | K_INHERIT
     | K_INITIALLY
     | K_INITRANS
@@ -5785,6 +6056,7 @@ keywordAsId:
     | K_MEMBER
     | K_MEMOPTIMIZED
     | K_MERGE
+    | K_MESSAGE
     | K_METADATA
     | K_MINUS
     | K_MINUTE
@@ -5799,6 +6071,7 @@ keywordAsId:
     | K_MODULE
     | K_MONEY
     | K_MONTH
+    | K_MOVE
     | K_MULTISET
     | K_MUTABLE
     | K_NAME
@@ -5838,6 +6111,7 @@ keywordAsId:
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
+    | K_NOTICE
     | K_NOTNULL
     | K_NOUPDATE
     | K_NOVALIDATE
@@ -5858,6 +6132,7 @@ keywordAsId:
     | K_ONE
     | K_ONLY
     | K_OPEN
+    | K_OPERATOR
     | K_OPTION
     | K_OR
     | K_ORDER
@@ -5890,6 +6165,7 @@ keywordAsId:
     | K_PCTUSED
     | K_PER
     | K_PERCENT
+    | K_PERFORM
     | K_PERIOD
     | K_PERMUTE
     | K_PERSISTABLE
@@ -5915,6 +6191,7 @@ keywordAsId:
     | K_PREDICTION
     | K_PREDICTION_COST
     | K_PREDICTION_DETAILS
+    | K_PREPARE
     | K_PREPARED
     | K_PREPEND
     | K_PRESENT
@@ -5934,6 +6211,7 @@ keywordAsId:
     | K_RAW
     | K_READ
     | K_REAL
+    | K_REASSIGN
     | K_RECORD
     | K_RECURSIVE
     | K_RECURSIVELY
@@ -5943,9 +6221,11 @@ keywordAsId:
     | K_REFERENCES
     | K_REFERENCING
     | K_REFRESH
+    | K_REINDEX
     | K_REJECT
     | K_RELATE_TO_SHORTER
     | K_RELATIONAL
+    | K_RELATIVE
     | K_RELIES_ON
     | K_RELY
     | K_REMOVE
@@ -5954,6 +6234,7 @@ keywordAsId:
     | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
+    | K_RESET
     | K_RESPECT
     | K_RESTRICT
     | K_RESTRICTED
@@ -5988,6 +6269,7 @@ keywordAsId:
     | K_SCHEMACHECK
     | K_SCN
     | K_SCOPE
+    | K_SCROLL
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
@@ -6025,6 +6307,7 @@ keywordAsId:
     | K_SINGLE
     | K_SIZE
     | K_SKIP
+    | K_SLICE
     | K_SMALLINT
     | K_SMALLSERIAL
     | K_SNAPSHOT
@@ -6034,8 +6317,10 @@ keywordAsId:
     | K_SPACE
     | K_SPLIT
     | K_SQL
+    | K_SQLSTATE
     | K_SQL_MACRO
     | K_STABLE
+    | K_STACKED
     | K_STAGING
     | K_STANDALONE
     | K_START
@@ -6149,6 +6434,7 @@ keywordAsId:
     | K_VOLATILE
     | K_WAIT
     | K_WAL
+    | K_WARNING
     | K_WELLFORMED
     | K_WHEN
     | K_WHERE
@@ -6253,17 +6539,19 @@ qualifiedName:
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
 string:
-      STRING                                # simpleString
-    | N_STRING                              # nationalString
-    | N_STRING STRING+                      # concatenatedNationalString            // PostgreSQL, MySQL
-    | E_STRING                              # escapedString                         // PostgreSQL
-    | U_AMP_STRING (K_UESCAPE STRING)?      # unicodeString                         // PostgreSQL
-    | B_STRING                              # bitString                             // PostgreSQL
-    | STRING STRING+                        # concatenatedString                    // PostgreSQL, MySQL
-    | Q_STRING                              # quoteDelimiterString
-    | NQ_STRING                             # nationalQuoteDelimiterString
-    | DOLLAR_STRING                         # dollarString                          // PostgreSQL
-    | DOLLAR_ID_STRING                      # dollarIdentifierString                // PostgreSQL
+      STRING                            # simpleString
+    | N_STRING                          # nationalString
+    | N_STRING STRING+                  # concatenatedNationalString    // PostgreSQL, MySQL
+    | E_STRING STRING*                  # escapedString                 // PostgreSQL
+    | U_AMP_STRING concats+=STRING*
+        (K_UESCAPE escapeChar=STRING)?  # unicodeString                 // PostgreSQL
+    | B_STRING STRING*                  # bitString                     // PostgreSQL bit string in binary format
+    | X_STRING STRING*                  # bitString                     // PostgreSQL bit string in hex format
+    | STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
+    | Q_STRING                          # quoteDelimiterString
+    | NQ_STRING                         # nationalQuoteDelimiterString
+    | DOLLAR_STRING                     # dollarString                  // PostgreSQL (no concatenation!)
+    | DOLLAR_ID_STRING                  # dollarIdentifierString        // PostgreSQL (no concatenation!)
 ;
 
 /*----------------------------------------------------------------------------*/
