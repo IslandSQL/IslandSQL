@@ -3202,9 +3202,10 @@ gotoStatement:
 ;
 
 // elseStmts are optional in PL/pgSQL, undocumented in 16.3
+// elseif can be used insted of elsif in PL/pgSQL, undocumented in 16.3
 ifStatement:
     K_IF conditionToStmts+=conditionToStatements
-    (K_ELSIF conditionToStmts+=conditionToStatements)*
+    ((K_ELSIF | K_ELSEIF) conditionToStmts+=conditionToStatements)*
     (K_ELSE elseStmts=plsqlStatement*)?
     K_END K_IF SEMI
 ;
