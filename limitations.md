@@ -224,7 +224,7 @@ However, here's an example that causes a parse error:
 alter session set plsql_ccflags = 'custom1:41, custom2:42';
 begin
    dbms_output.put_line($$custom1);
-   dbms_output.put_line($$custom2);
+   dbms_output.put_line($$custom2 || '(2)');
 end;
 ```
 
