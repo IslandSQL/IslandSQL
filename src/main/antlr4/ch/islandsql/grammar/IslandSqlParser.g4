@@ -5574,6 +5574,10 @@ binaryOperator:
 ;
 
 postgresqlOperator:
+    schema=sqlName PERIOD postgresqlOperatorName
+;
+
+postgresqlOperatorName:
     ~RPAR+
 ;
 
