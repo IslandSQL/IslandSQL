@@ -2215,17 +2215,21 @@ queryTableExpression:
         )? sampleClause?
     | inlineExternalTable sampleClause?
     | tableCollectionExpression
+    | tableExpression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
-    | postgresqlTableExpression
     | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
 ;
 
 // table/column aliases are part of from_item
-// plain table function is handled in query_table_expression
-postgresqlTableExpression:
-       K_LATERAL (schema=sqlName PERIOD)? expr=functionExpression (K_WITH K_ORDINALITY)?
-     | (schema=sqlName PERIOD)? expr=functionExpression K_WITH K_ORDINALITY
-     | K_LATERAL? K_ROWS K_FROM LPAR exprs+=rowsFromFunction (COMMA exprs+=rowsFromFunction)* RPAR (K_WITH K_ORDINALITY)?
+tableExpression:
+       K_LATERAL (schema=sqlName PERIOD)? expr=tableExpressionFunction (K_WITH K_ORDINALITY)? // PostgreSQL
+     | (schema=sqlName PERIOD)? expr=tableExpressionFunction (K_WITH K_ORDINALITY)? // OracleDB (without ordinality), PostgreSQL
+     | K_LATERAL? K_ROWS K_FROM LPAR exprs+=rowsFromFunction (COMMA exprs+=rowsFromFunction)* RPAR (K_WITH K_ORDINALITY)? // PostgreSQL
+;
+
+tableExpressionFunction:
+      functionExpression
+    | specialFunctionExpression
 ;
 
 rowsFromFunction:
