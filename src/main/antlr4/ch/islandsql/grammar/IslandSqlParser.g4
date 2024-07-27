@@ -1464,11 +1464,14 @@ delete:
     errorLoggingClause?
 ;
 
-// simplified, table_collection_expression treated as expression
 dmlTableExpressionClause:
       (schema=sqlName PERIOD)? table=sqlName AST? (partitionExtensionClause | COMMAT dblink=qualifiedName)? // PostgreSQL: *
     | LPAR query=subquery RPAR
-    | expr=expression
+    | tableCollectionExpression
+;
+
+tableCollectionExpression:
+    K_TABLE LPAR (subquery | expr=expression) RPAR (LPAR PLUS RPAR)?
 ;
 
 // introduced in OracleDB 23.2, re-use grammar in select statement
