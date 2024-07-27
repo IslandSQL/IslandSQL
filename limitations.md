@@ -237,4 +237,4 @@ To solve the problem, the following mechanisms are provided:
 - Set SQL dialect explicitly when constructing an IslandSqlDocument.
 - Detect SQL dialect automatically.
 
-So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted string constants that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L107) to avoid parse errors.
+So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted string constants that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L342) to avoid parse errors.
