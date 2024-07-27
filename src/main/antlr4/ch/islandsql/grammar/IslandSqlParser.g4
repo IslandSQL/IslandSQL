@@ -3425,12 +3425,18 @@ postgresqlForEachStatement:
 ;
 
 postgresqlGetDiagnosticsStatement:
-    K_GET (K_CURRENT|K_STACKED)? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
+    K_GET K_CURRENT? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
         (COMMA assignments+=postgresqlGetDiagnosticsAssignment)* SEMI
 ;
 
 postgresqlGetDiagnosticsAssignment:
-    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=sqlName
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=postgresqlDiagnosticItem
+;
+
+postgresqlDiagnosticItem:
+      K_ROW_COUNT
+    | K_PG_CONTEXT
+    | K_PG_ROUTINE_OID
 ;
 
 postgresqlMoveStatement:
