@@ -3900,10 +3900,7 @@ expression:
     | expr=expression operator=COLON_COLON type=dataType        # postgresqlHistoricalCast      // precedence 2
     | expr=expression
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
-    | expr=expression
-        LSQB lower=expression COLON upper=expression RSQB       # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
-    | expr=expression LSQB lower=expression COLON RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
-    | expr=expression LSQB COLON upper=expression RSQB          # postgresqlSubscript           // precedence 3, PostgreSQL subscripts are handeld as model_expression
+    | expr=expression postgresqlSubscript                       # postgresqlSubscriptParent     // precedence 3, PostgreSQL subscripts are handeld as model_expression
     | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
     | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
     | left=expression operator=K_AT
@@ -4000,6 +3997,12 @@ expression:
         K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
     | left=expression
         K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
+;
+
+postgresqlSubscript:
+      LSQB lower=expression COLON upper=expression RSQB
+    | LSQB lower=expression COLON RSQB
+    | LSQB COLON lower=expression RSQB
 ;
 
 // PostgreSQL: single column, 0-1 result rows
