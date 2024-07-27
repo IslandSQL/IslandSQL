@@ -2214,7 +2214,7 @@ queryTableExpression:
             | AST // PostgreSQL
         )? sampleClause?
     | inlineExternalTable sampleClause?
-    | expr=expression (LPAR PLUS RPAR)? // handle qualified function expressions, table_collection_expression
+    | tableCollectionExpression
     | K_LATERAL? LPAR subquery subqueryRestrictionClause? RPAR
     | postgresqlTableExpression
     | values=valuesClause // handled here to simplifiy grammar, even if pivot_clause etc. are not applicable
