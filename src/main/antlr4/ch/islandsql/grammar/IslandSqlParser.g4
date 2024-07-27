@@ -2990,6 +2990,7 @@ plsqlStatement:
         | postgresqlFetchStatement
         | postgresqlForEachStatement
         | postgresqlGetDiagnosticsStatement
+        | postgresqlGetStackedDiagnosticsStatement
         | postgresqlMoveStatement
         | postgresqlPerformStatement
         | postgresqlRaiseStatement
@@ -3437,6 +3438,28 @@ postgresqlDiagnosticItem:
       K_ROW_COUNT
     | K_PG_CONTEXT
     | K_PG_ROUTINE_OID
+;
+
+postgresqlGetStackedDiagnosticsStatement:
+   K_GET K_STACKED K_DIAGNOSTICS assignments+=postgresqlGetStackedDiagnosticsAssignment
+        (COMMA assignments+=postgresqlGetStackedDiagnosticsAssignment)* SEMI
+;
+
+postgresqlGetStackedDiagnosticsAssignment:
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=postgresqlStackedDiagnosticItem
+;
+
+postgresqlStackedDiagnosticItem:
+      K_RETURNED_SQLSTATE
+    | K_COLUMN_NAME
+    | K_CONSTRAINT_NAME
+    | K_PG_DATATYPE_NAME
+    | K_MESSAGE_TEXT
+    | K_TABLE_NAME
+    | K_SCHEMA_NAME
+    | K_PG_EXCEPTION_DETAIL
+    | K_PG_EXCEPTION_HINT
+    | K_PG_EXCEPTION_CONTEXT
 ;
 
 postgresqlMoveStatement:
