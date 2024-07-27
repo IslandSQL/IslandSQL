@@ -11,15 +11,15 @@ The parser requires a Java Virtual Machine supporting version 8 or newer and is 
 
 The following table shows the DBMS and their grammar versions in scope:
 
-| DBMS       | Grammar  | Version | HTML Reference (live)                                                                                        | PDF Reference (snapshot)                           |
-|------------|----------|---------|--------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
-| OracleDB   | SQL*Plus | 23ai    | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/)           | [PDF](https://islandsql.github.io/IslandSQL/sqlplus-users-guide-and-reference.pdf)  |
-|            | SQLcl    | 24.1    | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/24.1/sqcug/index.html) | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
-|            | SQL      | 23ai    | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
-|            | PL/SQL   | 23ai    | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](https://islandsql.github.io/IslandSQL/database-pl-sql-language-reference.pdf) |
-| PostgreSQL | psql     | 16.3    | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/16/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | SQL      | 16.3    | [The SQL Language](https://www.postgresql.org/docs/16/sql.html)                                              | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | PL/pgSQL | 16.3    | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/16/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+| DBMS       | Grammar  | Version               | HTML Reference (live)                                                                                        | PDF Reference (snapshot)                                                            |
+|------------|----------|-----------------------|--------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
+| OracleDB   | SQL*Plus | 23ai F47057-07 (23.4) | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqpug/)           | [PDF](https://islandsql.github.io/IslandSQL/sqlplus-users-guide-and-reference.pdf)  |
+|            | SQLcl    | 24.2 G10284-02        | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/24.2/sqcug/index.html) | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
+|            | SQL      | 23ai F47038-15 (23.4) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
+|            | PL/SQL   | 23ai F46753-06 (23.4) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](https://islandsql.github.io/IslandSQL/database-pl-sql-language-reference.pdf) |
+| PostgreSQL | psql     | 16.3                  | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/16/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | SQL      | 16.3                  | [SQL Commands](https://www.postgresql.org/docs/16/sql-commands.html)                                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | PL/pgSQL | 16.3                  | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/16/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 
 The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format represents the version that was used to define the grammar.
 
