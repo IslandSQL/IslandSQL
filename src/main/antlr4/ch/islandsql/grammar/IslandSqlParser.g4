@@ -2990,6 +2990,7 @@ plsqlStatement:
         | postgresqlFetchStatement
         | postgresqlForEachStatement
         | postgresqlGetDiagnosticsStatement
+        | postgresqlGetStackedDiagnosticsStatement
         | postgresqlMoveStatement
         | postgresqlPerformStatement
         | postgresqlRaiseStatement
@@ -3425,12 +3426,40 @@ postgresqlForEachStatement:
 ;
 
 postgresqlGetDiagnosticsStatement:
-    K_GET (K_CURRENT|K_STACKED)? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
+    K_GET K_CURRENT? K_DIAGNOSTICS assignments+=postgresqlGetDiagnosticsAssignment
         (COMMA assignments+=postgresqlGetDiagnosticsAssignment)* SEMI
 ;
 
 postgresqlGetDiagnosticsAssignment:
-    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=sqlName
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=postgresqlDiagnosticItem
+;
+
+postgresqlDiagnosticItem:
+      K_ROW_COUNT
+    | K_PG_CONTEXT
+    | K_PG_ROUTINE_OID
+;
+
+postgresqlGetStackedDiagnosticsStatement:
+   K_GET K_STACKED K_DIAGNOSTICS assignments+=postgresqlGetStackedDiagnosticsAssignment
+        (COMMA assignments+=postgresqlGetStackedDiagnosticsAssignment)* SEMI
+;
+
+postgresqlGetStackedDiagnosticsAssignment:
+    variable=qualifiedName (COLON_EQUALS | EQUALS) diagnosticItem=postgresqlStackedDiagnosticItem
+;
+
+postgresqlStackedDiagnosticItem:
+      K_RETURNED_SQLSTATE
+    | K_COLUMN_NAME
+    | K_CONSTRAINT_NAME
+    | K_PG_DATATYPE_NAME
+    | K_MESSAGE_TEXT
+    | K_TABLE_NAME
+    | K_SCHEMA_NAME
+    | K_PG_EXCEPTION_DETAIL
+    | K_PG_EXCEPTION_HINT
+    | K_PG_EXCEPTION_CONTEXT
 ;
 
 postgresqlMoveStatement:
@@ -5760,6 +5789,7 @@ keywordAsId:
     | K_COLLECT
     | K_COLUMN
     | K_COLUMNS
+    | K_COLUMN_NAME
     | K_COMMENT
     | K_COMMENTS
     | K_COMMIT
@@ -5776,6 +5806,7 @@ keywordAsId:
     | K_CONSTANT
     | K_CONSTRAINT
     | K_CONSTRAINTS
+    | K_CONSTRAINT_NAME
     | K_CONSTRUCTOR
     | K_CONTAINER
     | K_CONTAINERS_DEFAULT
@@ -6072,6 +6103,7 @@ keywordAsId:
     | K_MEMOPTIMIZED
     | K_MERGE
     | K_MESSAGE
+    | K_MESSAGE_TEXT
     | K_METADATA
     | K_MINUS
     | K_MINUTE
@@ -6184,7 +6216,13 @@ keywordAsId:
     | K_PERIOD
     | K_PERMUTE
     | K_PERSISTABLE
+    | K_PG_CONTEXT
+    | K_PG_DATATYPE_NAME
+    | K_PG_EXCEPTION_CONTEXT
+    | K_PG_EXCEPTION_DETAIL
+    | K_PG_EXCEPTION_HINT
     | K_PG_LSN
+    | K_PG_ROUTINE_OID
     | K_PG_SNAPSHOT
     | K_PIPE
     | K_PIPELINED
@@ -6257,6 +6295,7 @@ keywordAsId:
     | K_RESULT
     | K_RESULT_CACHE
     | K_RETURN
+    | K_RETURNED_SQLSTATE
     | K_RETURNING
     | K_RETURNS
     | K_REVERSE
@@ -6270,6 +6309,7 @@ keywordAsId:
     | K_ROWID
     | K_ROWS
     | K_ROWTYPE
+    | K_ROW_COUNT
     | K_ROW_NUMBER
     | K_RULES
     | K_RUNNING
@@ -6282,6 +6322,7 @@ keywordAsId:
     | K_SCALARS
     | K_SCHEMA
     | K_SCHEMACHECK
+    | K_SCHEMA_NAME
     | K_SCN
     | K_SCOPE
     | K_SCROLL
@@ -6367,6 +6408,7 @@ keywordAsId:
     | K_TABLES
     | K_TABLESAMPLE
     | K_TABLESPACE
+    | K_TABLE_NAME
     | K_TARGET
     | K_TDO
     | K_TEMP
