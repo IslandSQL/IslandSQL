@@ -1611,7 +1611,11 @@ singleTableInsert:
 
 insertIntoClause:
     K_INTO dmlTableExpressionClause K_AS? tAlias=sqlName? // as keyword is allowed in PostgreSQL
-    (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    (LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR)?
+;
+
+columnReference:
+    qualifiedName postgresqlSubscript*
 ;
 
 insertValuesClause:
