@@ -121,8 +121,9 @@ public class TokenStreamUtil {
 
     /**
      * Produces a SQL script containing only the islands of interest.
-     * The original line numbers are preserved. However, the line lengths
-     * will differ when the original line contains tokens that are not of interest.
+     * Keeps whitespace as is. Replaces all other characters in tokens
+     * that are not of interest with space.
+     * The resulting number of characters are preserved.
      *
      * @param tokenStream The tokensStream produced by islandSqlLexer to process.
      * @return Returns a SQL script containing only the islands of interest.
@@ -130,14 +131,18 @@ public class TokenStreamUtil {
     public static String printScope(CommonTokenStream tokenStream) {
         final StringBuilder sb = new StringBuilder();
         for (Token token : tokenStream.getTokens()) {
-            if (token.getType() > 0 && (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 8)) {
-                sb.append(token.getText());
-            } else {
-                // emit new lines in hidden tokens (e.g. multiline strings) to preserve original line numbers
-                String text = token.getText();
-                for (int i = 0; i < text.length(); i++) {
-                    if (text.charAt(i) == '\n') {
-                        sb.append('\n');
+            if (token.getType() > 0) {
+                if (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 8) {
+                    sb.append(token.getText());
+                } else {
+                    String text = token.getText();
+                    for (int i = 0; i < text.length(); i++) {
+                        if (text.charAt(i) == '\n' || text.charAt(i) == '\r'
+                                || text.charAt(i) == '\t' || text.charAt(i) == ' ') {
+                            sb.append(text.charAt(i));
+                        } else {
+                            sb.append(' ');
+                        }
                     }
                 }
             }
