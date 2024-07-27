@@ -1592,6 +1592,7 @@ insert:
     )
 ;
 
+// insert_values_clause is redunant to subquery (ambiguity to be removed?)
 singleTableInsert:
     insertIntoClause
     postgresqlOverridingClause?
