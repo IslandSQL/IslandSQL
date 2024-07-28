@@ -138,16 +138,18 @@ public class DotRuleListener implements ParseTreeListener {
         sb.append('"');
         sb.append("]");
         sb.append(NL);
-        for (ParseTree parseTree: ctx.children) {
-            sb.append("  ");
-            sb.append('"');
-            sb.append(ctx.hashCode());
-            sb.append('"');
-            sb.append(" -> ");
-            sb.append('"');
-            sb.append(parseTree.hashCode());
-            sb.append('"');
-            sb.append(NL);
+        if (ctx.children != null) {
+            for (ParseTree parseTree : ctx.children) {
+                sb.append("  ");
+                sb.append('"');
+                sb.append(ctx.hashCode());
+                sb.append('"');
+                sb.append(" -> ");
+                sb.append('"');
+                sb.append(parseTree.hashCode());
+                sb.append('"');
+                sb.append(NL);
+            }
         }
     }
 
