@@ -42,7 +42,7 @@ import java.util.List;
  */
 @SuppressWarnings("FieldCanBeLocal")
 public class DotRuleListener implements ParseTreeListener {
-    private final String NL = System.getProperty("line.separator");
+    private final String NL = System.lineSeparator();
     private final StringBuilder sb = new StringBuilder();
     private final List<String> parserRuleNames;
     private final String BG_COLOR="transparent";
