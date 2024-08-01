@@ -35,6 +35,8 @@ fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visu
 fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
 fragment STRING_WITH_ESCAPE_CHARS: (['] ('\\'? .)*? ['])+;
 fragment COMMENT_OR_WS: ML_HINT|ML_COMMENT|SL_HINT|SL_COMMENT|WS;
+fragment LAST_OPERATOR_CHAR: '*'|'/'|'<'|'>'|'='|'~'|'!'|'@'|'#'|'%'|'^'|'&'|'|'|'`'|'?';
+fragment OPERATOR_CHAR: '+'|'-'|LAST_OPERATOR_CHAR;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
@@ -919,25 +921,15 @@ K_ZONE: 'zone';
 
 AMP: '&';
 AMP_AMP: '&&';
-AMP_AMP_AMP: '&&&';
-AMP_LT: '&<';
-AMP_LT_VERBAR: '&<|';
-AMP_GT: '&>';
-AMP_SOL_AMP: '&/&';
 AST: '*';
 AST_AST: '**';
+AST_QUEST: '*?';
 BSOL: '\\';
 COLON: ':';
 COLON_EQUALS: ':=';    // no WS allowed between chars in field_definition of OracleDB
 COLON_COLON: '::';     // no WS allowed between COLONs in PostgreSQL
 COMMA: ',';
 COMMAT: '@';
-COMMAT_COMMAT: '@@';
-COMMAT_COMMAT_COMMAT: '@@@';
-COMMAT_GT: '@>';
-COMMAT_GT_GT: '@>>';
-COMMAT_MINUS_COMMAT: '@-@';
-COMMAT_QUEST: '@?';
 DOLLAR: '$';
 DOLLAR_END: '$end';
 DOLLAR_ELSE: '$else';
@@ -948,64 +940,50 @@ DOLLAR_THEN: '$then';
 EQUALS: '=';
 EQUALS_GT: '=>';
 EXCL: '!';
-EXCL_EXCL: '!!';
+EXCL_EQUALS: '!=';
 EXCL_TILDE: '!~';
-EXCL_TILDE_AST: '!~*';
-GRAVE: '`';
 GT: '>';
+GT_EQUALS: '>=';
 GT_GT: '>>';
-GT_GT_EQUALS: '>>=';
-GT_HAT: '>^';
 HAT: '^';
-HAT_COMMAT: '^@';
+HAT_EQUALS: '^=';
 LCUB: '{';
 LOWBAR: '_';
 LPAR: '(';
 LSQB: '[';
 LT: '<';
-LT_COMMAT: '<@';
-LT_EQUALS_GT: '<=>';
+LT_EQUALS: '<=';
+LT_GT: '<>';
 LT_LT: '<<';
-LT_LT_EQUALS: '<<=';
-LT_LT_MINUS_GT_GT: '<<->>';
-LT_LT_NUM_GT_GT: '<<#>>';
-LT_LT_VERBAR: '<<|';
-LT_HAT: '<^';
 LT_MINUS_GT: '<->';
-LT_NUM_GT: '<#>';
 MINUS: '-';
 MINUS_GT: '->';
-MINUS_GT_GT: '->>';
-MINUS_VERBAR_MINUS: '-|-';
 NUM: '#';
-NUM_GT: '#>';
-NUM_GT_GT: '#>>';
 PERCNT: '%';
 PERIOD: '.';
 PLUS: '+';
+PLUS_QUEST: '+?';
 QUEST: '?';
-QUEST_AMP: '?&';
-QUEST_MINUS: '?-';
-QUEST_MINUS_VERBAR: '?-|';
-QUEST_MINUS_VERBAR_VERBAR: '?-||';
-QUEST_NUM: '?#';
-QUEST_VERBAR: '?|';
+QUEST_QUEST: '??';
 RCUB: '}';
 RPAR: ')';
 RSQB: ']';
 SEMI: ';';
 SOL: '/';
 TILDE: '~';
-TILDE_AST: '~*';
-TILDE_EQUAL_EQUAL: '~==';
-TILDE_TILDE_EQUAL: '~~=';
+TILDE_EQUALS: '~=';
 VERBAR: '|';
-VERBAR_AMP_GT: '|&>';
-VERBAR_EQUALS_VERBAR: '|=|';
-VERBAR_GT_GT: '|>>';
-VERBAR_SOL: '|/';
 VERBAR_VERBAR: '||';
-VERBAR_VERBAR_SOL: '||/';
+
+/*----------------------------------------------------------------------------*/
+// Generic operators used by various PostgreSQL extensions
+/*----------------------------------------------------------------------------*/
+
+POSTGRESQL_OPERATOR:
+      OPERATOR_CHAR
+    | OPERATOR_CHAR+ LAST_OPERATOR_CHAR
+    | OPERATOR_CHAR+ ('+'|'-') {isValidOperator()}?
+;
 
 /*----------------------------------------------------------------------------*/
 // Data types
