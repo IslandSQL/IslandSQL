@@ -2433,8 +2433,11 @@ rowPatternPermute:
 ;
 
 rowPatternQuantifier:
-      AST QUEST?                                        # zeroOrMoreRowPatternQuantifier
+      AST_QUEST                                         # zeroOrMoreRowPatternQuantifier
+    | AST QUEST?                                        # zeroOrMoreRowPatternQuantifier
+    | PLUS_QUEST                                        # oneOrMoreRowPatternQuantifier
     | PLUS QUEST?                                       # oneOrMoreRowPatternQuantifier
+    | QUEST_QUEST                                       # zeroOreOneRowPatternQuantifier
     | QUEST QUEST?                                      # zeroOreOneRowPatternQuantifier
     | LCUB from=NUMBER? COMMA to=NUMBER? RCUB QUEST?    # rangeRowPatternQuantifier
     | LCUB count=NUMBER RCUB                            # exactRowPatternQuantifier
@@ -5498,79 +5501,37 @@ windowingClause:
 unaryOperator:
       PLUS                  # positiveSignOperator
     | MINUS                 # negativeSignOperator
-    | COMMAT                # absoluteOperator          // PostgreSQL
-    | VERBAR_SOL            # squareRootOperator        // PostgreSQL
-    | VERBAR_VERBAR_SOL     # cubeRootOperator          // PostgreSQL
-    | TILDE                 # bitwiseNotOperator        // PostgreSQL
-    | COMMAT_MINUS_COMMAT   # totalLenthOperator        // PostgreSQL
-    | COMMAT_COMMAT         # centerPointOperator       // PostgreSQL
-    | NUM                   # numberOfPointsOperator    // PostgreSQL
-    | QUEST_MINUS           # horizontalLineOperator    // PostgreSQL
-    | QUEST_VERBAR          # verticalLineOperator      // PostgreSQL
-    | EXCL_EXCL             # negateTsQueryOperator     // PostgreSQL
     | K_PRIOR               # priorOpertor              // hierarchical query operator
     | K_CONNECT_BY_ROOT     # connectByRootOperator     // hierarchical query operator
     | K_RUNNING             # runningOperator           // row_pattern_nav_logical
     | K_FINAL               # finalOperator             // row_pattern_nav_logical
     | K_NEW                 # newOperator               // type constructor
     | K_CURRENT K_OF        # currentOfOperator         // operator as update extension in PL/SQL where clause
+    | POSTGRESQL_OPERATOR   # postgresqlUnaryOperator
+    | COMMAT                # postgresqlUnaryOperator
+    | NUM                   # postgresqlUnaryOperator
+    | TILDE                 # postgresqlUnaryOperator
+
 ;
 
 // binary operators not handled in expression, only single token operators
 // operator meaning is based on context, label can be misleading
 // custom PostGIS operators according see https://postgis.net/docs/manual-3.4/reference.html#Operators
 binaryOperator:
-      AMP                                       # bitwiseAndOperator
-    | AMP_AMP                                   # overlapsOperator
-    | AMP_AMP_AMP                               # nDimIntersectOperator         // PostGIS
-    | AMP_GT                                    # notExtendsLeftOperator
-    | AMP_LT                                    # notExtendsRightOperator
-    | AMP_LT_VERBAR                             # notExtendsAboveOperator
-    | AMP_SOL_AMP                               # threeDimOverlapsOperator      // PostGIS, undocumented
-    | COMMAT                                    # absoluteValueOperator
-    | COMMAT_COMMAT                             # matchOperator
-    | COMMAT_COMMAT_COMMAT                      # matchOperator                 // deprecated
-    | COMMAT_GT                                 # containsOperator
-    | COMMAT_GT_GT                              # threeDimContainsOperator      // PostGIS, undocumented
-    | COMMAT_QUEST                              # returnsAnyItemOperator
-    | EXCL_TILDE                                # notMatchRegexOperator
-    | EXCL_TILDE_AST                            # notMatchRegexCaseInsensitiveOperator
-    | GT_GT                                     # bitwiseShiftRightOperator
-    | GT_GT_EQUALS                              # strictlyContainsOrEqualOperator
-    | GT_HAT                                    # aboveOperator
-    | HAT_COMMAT                                # startsWithOperator
-    | LT_COMMAT                                 # containedByOperator
-    | LT_EQUALS_GT                              # cosineDistanceOperator
-    | LT_LT                                     # bitwiseShiftLeftOperator
-    | LT_LT_EQUALS                              # strictlyContainedByOrEqualOperator
-    | LT_LT_MINUS_GT_GT                         # nDimDistanceOperator          // PostGIS
-    | LT_LT_NUM_GT_GT                           # nDimBoxDistanceOperator       // PostGIS
-    | LT_LT_VERBAR                              # strictlyBelowOperator
-    | LT_HAT                                    # belowOperator
-    | LT_MINUS_GT                               # distanceOperator              // OracleDB 23.4: Euclidian distance operator
-    | LT_NUM_GT                                 # boxDistanceOperator           // PostGIS, OracleDB 23.4: negative dot product operator
-    | MINUS_GT                                  # extractElementOperator
-    | MINUS_GT_GT                               # extractObjectOperator
-    | MINUS_VERBAR_MINUS                        # adjacentOperator
-    | NUM                                       # bitwiseXorOperator
-    | NUM_GT                                    # extractSubObjectOperator
-    | NUM_GT_GT                                 # extractSubObjectTextOperator
-    | QUEST                                     # existsAnyOperator
-    | QUEST_AMP                                 # existsAllOperator
-    | QUEST_NUM                                 # intersectOperator
-    | QUEST_MINUS                               # horizontallyAlignedOperator
-    | QUEST_MINUS_VERBAR                        # linesPerpendicularOperator
-    | QUEST_MINUS_VERBAR_VERBAR                 # linesParallelOperator
-    | QUEST_VERBAR                              # existsAnyOperator
-    | TILDE                                     # boxContainsOperator           // PostGIS
-    | TILDE_AST                                 # matchRegexCaseInsensitiveOperator
-    | TILDE_EQUAL_EQUAL                         # threeDimSame                  // PostGIS, undocumented
-    | TILDE_TILDE_EQUAL                         # nDimSame                      // PostGIS, undocumented
-    | VERBAR                                    # bitwiseOrOperator
-    | VERBAR_AMP_GT                             # notExtendsBelowOperator
-    | VERBAR_EQUALS_VERBAR                      # closestDistanceOperator
-    | VERBAR_GT_GT                              # strictlyAboveOperator
-    | K_OPERATOR LPAR postgresqlOperator RPAR   # functionOperator              // PostgreSQL
+      POSTGRESQL_OPERATOR                       # postgresqlBinaryOperator
+    | AMP                                       # postgresqlBinaryOperator
+    | AMP_AMP                                   # postgresqlBinaryOperator
+    | COMMAT                                    # postgresqlBinaryOperator
+    | EXCL_TILDE                                # postgresqlBinaryOperator
+    | GT_GT                                     # postgresqlBinaryOperator
+    | LT_LT                                     # postgresqlBinaryOperator
+    | LT_MINUS_GT                               # postgresqlBinaryOperator
+    | MINUS_GT                                  # postgresqlBinaryOperator
+    | NUM                                       # postgresqlBinaryOperator
+    | QUEST                                     # postgresqlBinaryOperator
+    | TILDE                                     # postgresqlBinaryOperator
+    | VERBAR                                    # postgresqlBinaryOperator
+    | K_OPERATOR LPAR postgresqlOperator RPAR   # functionOperator
 ;
 
 postgresqlOperator:
@@ -5656,13 +5617,19 @@ jsonExistsOnEmptyClause:
 
 simpleComparisionOperator:
       EQUALS            # eq
+    | EXCL_EQUALS       # ne
     | EXCL EQUALS       # ne
+    | LT_GT             # ne
     | LT GT             # ne
+    | TILDE_EQUALS      # ne
     | TILDE EQUALS      # ne
+    | HAT_EQUALS        # ne
     | HAT EQUALS        # ne
     | GT                # gt
     | LT                # lt
+    | GT_EQUALS         # ge
     | GT EQUALS         # ge
+    | LT_EQUALS         # le
     | LT EQUALS         # le
 ;
 
