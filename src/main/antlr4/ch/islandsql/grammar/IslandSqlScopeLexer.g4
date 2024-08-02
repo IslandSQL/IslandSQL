@@ -399,7 +399,7 @@ UNIT_EOF: EOF -> popMode;
 UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' MORE_TO_SQL_END -> popMode;
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
-UNIT_PG: 'as' COMMENT_OR_WS+ STRING SQL_TEXT*? SQL_END -> popMode;
+UNIT_PG: 'as' COMMENT_OR_WS+ ':'? STRING SQL_TEXT*? SQL_END -> popMode;
 UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' COMMENT_OR_WS+ .+? COMMENT_OR_WS+ SQL_END -> popMode;
 UNIT: SQL_END -> popMode;
 
