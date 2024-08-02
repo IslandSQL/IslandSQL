@@ -132,7 +132,10 @@ public class TokenStreamUtil {
         final StringBuilder sb = new StringBuilder();
         for (Token token : tokenStream.getTokens()) {
             if (token.getType() > 0) {
-                if (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 8) {
+                // Avoiding compile dependency to generated lexer in this method.
+                // Therefore using number literals for token types. Relevant are:
+                // WS=1, ML_HINT=2, ML_COMMENT=3, SL_HINT=4, SL_COMMENT=5, REMARK_COMMAND=6, PROMPT_COMMAND=7
+                if (token.getChannel() == Lexer.DEFAULT_TOKEN_CHANNEL || token.getType() <= 7) {
                     sb.append(token.getText());
                 } else {
                     String text = token.getText();
