@@ -212,11 +212,6 @@ Here are some examples:
 | `select a #b from t;`  | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a `#`   |
 | `select 1#2;`          | Bitwise XOR expression | Bitwise XOR expression | Identifier cannot start with a digit |
 
-## PostgreSQL Custom Operators
-Integrating custom operators in a generic way will most likely lead to conflicts with existing expressions and conditions. Therefore, the IslandSQL grammar does not support custom operators.
-
-However, the custom operators provided by the [PostGIS](https://www.postgis.net/) extension are included in the grammar.
-
 ## Inquiry Directives
 
 By default, the parser uses a [GENERIC SQL dialect](src/main/java/ch/islandsql/grammar/IslandSqlDialect.java#L25). This means that the parser expects a file to contain statements using OracleDB and/or PostgreSQL syntax. This works well in most cases.
