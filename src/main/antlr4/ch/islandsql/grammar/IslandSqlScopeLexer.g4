@@ -400,11 +400,11 @@ UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_O
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
 UNIT_PG: 'as' COMMENT_OR_WS+ ':'? STRING SQL_TEXT*? SQL_END -> popMode;
-UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' COMMENT_OR_WS+ .+? COMMENT_OR_WS+ SQL_END -> popMode;
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
 UNIT_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
+UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
 
 UNIT_ML_COMMENT: ML_COMMENT -> more;
 UNIT_SL_COMMENT: SL_COMMENT -> more;
