@@ -65,6 +65,7 @@ statement:
     | emptyStatement
     | plsqlBlockStatement
     | tclStatement
+    | postgresqlDeclareStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3722,6 +3723,20 @@ setTransaction:
         | K_USE K_ROLLBACK K_SEGMENT rollbackSegment=sqlName (K_NAME name=expression)? // OracleDB
         | K_NAME name=expression // OracleDB
     )
+;
+
+/*----------------------------------------------------------------------------*/
+// PostgreSQL Declare
+/*----------------------------------------------------------------------------*/
+
+// cannot be used in PL/pgSQL
+postgresqlDeclareStatement:
+    postgresqlDeclare sqlEnd
+;
+
+postgresqlDeclare:
+    K_DECLARE cursorName=sqlName K_BINARY? (K_ASENSITIVE | K_INSENSITIVE)? (K_NO? K_SCROLL)?
+    K_CURSOR ((K_WITH | K_WITHOUT) K_HOLD)? K_FOR subquery
 ;
 
 // PostgreSQL modes, subset supported by OracleDB
