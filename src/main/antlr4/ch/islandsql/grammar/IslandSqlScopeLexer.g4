@@ -27,12 +27,12 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
-fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
+fragment SQL_TEXT: COMMENT_OR_WS|STRING|NAME|~[;\\];
 fragment HSPACE: [ \t]+;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS? NAME WS? '>>';
-fragment PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT)* '\\g' ~[\n]+;
+fragment PSQL_EXEC: (WS|ML_COMMENT)* '\\g' ~[\n]* SINGLE_NL?;
 fragment OR_REPLACE: ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?;
 fragment NON_EDITIONABLE: (('editionable' | 'noneditionable') COMMENT_OR_WS+)?;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
