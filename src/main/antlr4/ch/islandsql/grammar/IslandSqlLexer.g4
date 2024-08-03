@@ -65,6 +65,7 @@ PROMPT_COMMAND:
 /*----------------------------------------------------------------------------*/
 
 K_A: 'a';
+K_ABORT: 'abort';
 K_ABS: 'abs';
 K_ABSENT: 'absent';
 K_ABSOLUTE: 'absolute';
@@ -454,6 +455,8 @@ K_LIKEC: 'likec';
 K_LIMIT: 'limit';
 K_LINE: 'line';
 K_LISTAGG: 'listagg';
+K_LISTEN: 'listen';
+K_LOAD: 'load';
 K_LOB: 'lob';
 K_LOBS: 'lobs';
 K_LOCAL: 'local';
@@ -544,6 +547,7 @@ K_NOSCHEMACHECK: 'noschemacheck';
 K_NOT: 'not';
 K_NOTHING: 'nothing';
 K_NOTICE: 'notice';
+K_NOTIFY: 'notify';
 K_NOTNULL: 'notnull';
 K_NOUPDATE: 'noupdate';
 K_NOVALIDATE: 'novalidate';
@@ -836,6 +840,7 @@ K_UNION: 'union';
 K_UNIQUE: 'unique';
 K_UNKNOWN: 'unknown';
 K_UNLIMITED: 'unlimited';
+K_UNLISTEN: 'unlisten';
 K_UNLOGGED: 'unlogged';
 K_UNMATCHED: 'unmatched';
 K_UNNEST: 'unnest';
@@ -853,6 +858,7 @@ K_USE: 'use';
 K_USER: 'user';
 K_USING: 'using';
 K_UUID: 'uuid';
+K_VACUUM: 'vacuum';
 K_VALIDATE: 'validate';
 K_VALIDATE_CONVERSION: 'validate_conversion';
 K_VALUE: 'value';
@@ -1067,7 +1073,7 @@ POSITIONAL_PARAMETER: '$'[0-9]+;
 // psql exec query command
 /*----------------------------------------------------------------------------*/
 
-PSQL_EXEC: (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]* SINGLE_NL?;
+PSQL_EXEC: (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]* (EOF|SINGLE_NL);
 
 /*----------------------------------------------------------------------------*/
 // Any other token
