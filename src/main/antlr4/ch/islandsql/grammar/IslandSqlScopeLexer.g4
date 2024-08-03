@@ -27,7 +27,7 @@ options {
 
 fragment SINGLE_NL: '\r'? '\n';
 fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (SINGLE_NL|EOF))|WS;
-fragment SQL_TEXT: COMMENT_OR_WS|STRING|~';';
+fragment SQL_TEXT: COMMENT_OR_WS|STRING|NAME|~[;\\];
 fragment HSPACE: [ \t]+;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
