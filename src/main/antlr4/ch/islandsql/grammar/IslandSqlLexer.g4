@@ -577,6 +577,7 @@ K_OUTER: 'outer';
 K_OVER: 'over';
 K_OVERFLOW: 'overflow';
 K_OVERLAP: 'overlap';
+K_OVERLAPS: 'overlaps';
 K_OVERLAY: 'overlay';
 K_OVERRIDING: 'overriding';
 K_PACKAGE: 'package';

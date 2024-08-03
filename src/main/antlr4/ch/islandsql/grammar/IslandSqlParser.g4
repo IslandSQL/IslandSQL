@@ -6181,6 +6181,7 @@ keywordAsId:
     | K_OVER
     | K_OVERFLOW
     | K_OVERLAP
+    | K_OVERLAPS
     | K_OVERLAY
     | K_OVERRIDING
     | K_PACKAGE
