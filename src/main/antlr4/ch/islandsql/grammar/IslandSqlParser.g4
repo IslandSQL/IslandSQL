@@ -4055,6 +4055,7 @@ expression:
         K_IS K_NOT? K_SOURCE K_OF right=expression              # sourcePredicate
     | left=expression
         K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
+    | left=expression K_OVERLAPS right=expression               # overlapsExpression
 ;
 
 postgresqlSubscript:
