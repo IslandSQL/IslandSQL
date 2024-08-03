@@ -171,6 +171,12 @@ CREATE_DATABASE:
         'database' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
+// hide keywords: with
+CREATE_INDEX:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ (('unique'|'bitmap'|'multivalue') COMMENT_OR_WS+)?
+        'index' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
 // hide keyword: with
 CREATE_MATERIALIZED_VIEW_LOG:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'materialized'
