@@ -5671,6 +5671,7 @@ isOfTypeConditionItem:
 
 keywordAsId:
       K_A
+    | K_ABORT
     | K_ABS
     | K_ABSENT
     | K_ABSOLUTE
@@ -6059,6 +6060,8 @@ keywordAsId:
     | K_LIMIT
     | K_LINE
     | K_LISTAGG
+    | K_LISTEN
+    | K_LOAD
     | K_LOB
     | K_LOBS
     | K_LOCAL
@@ -6149,6 +6152,7 @@ keywordAsId:
     | K_NOT
     | K_NOTHING
     | K_NOTICE
+    | K_NOTIFY
     | K_NOTNULL
     | K_NOUPDATE
     | K_NOVALIDATE
@@ -6441,6 +6445,7 @@ keywordAsId:
     | K_UNIQUE
     | K_UNKNOWN
     | K_UNLIMITED
+    | K_UNLISTEN
     | K_UNLOGGED
     | K_UNMATCHED
     | K_UNNEST
@@ -6458,6 +6463,7 @@ keywordAsId:
     | K_USER
     | K_USING
     | K_UUID
+    | K_VACUUM
     | K_VALIDATE
     | K_VALIDATE_CONVERSION
     | K_VALUE
