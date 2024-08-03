@@ -1063,7 +1063,7 @@ POSITIONAL_PARAMETER: '$'[0-9]+;
 // psql exec query command
 /*----------------------------------------------------------------------------*/
 
-PSQL_EXEC: SINGLE_NL (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]+;
+PSQL_EXEC: (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]* SINGLE_NL?;
 
 /*----------------------------------------------------------------------------*/
 // Any other token
