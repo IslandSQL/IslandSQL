@@ -2609,13 +2609,13 @@ updateSetClause:
 ;
 
 updateSetClauseItem:
-      LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+      LPAR columns+=expression (COMMA columns+=expression)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # columnListUpdateSetClauseItem
-    | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+    | LPAR columns+=expression (COMMA columns+=expression)* RPAR
         EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # postgresqlRowUpdateSetClauseItem
-    | LPAR columns+=qualifiedName RPAR
+    | LPAR columns+=expression RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # columnUpdateSetClauseItem
-    | columns+=qualifiedName EQUALS (expr=expression | LPAR query=subquery RPAR)    # columnUpdateSetClauseItem
+    | columns+=expression EQUALS (expr=expression | LPAR query=subquery RPAR)       # columnUpdateSetClauseItem
 ;
 
 /*----------------------------------------------------------------------------*/
