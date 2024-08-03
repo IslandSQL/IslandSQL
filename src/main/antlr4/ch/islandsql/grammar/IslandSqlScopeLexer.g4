@@ -40,7 +40,7 @@ fragment MORE_TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
 fragment TO_SQL_END: (COMMENT_OR_WS+ SQL_TEXT*?)? SQL_END;
 fragment SQL_END:
       EOF
-    | ';' HSPACE? SINGLE_NL?
+    | '\\'? ';' HSPACE? SINGLE_NL?
     | SLASH_END
     | PSQL_EXEC
 ;
