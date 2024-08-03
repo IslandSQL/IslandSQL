@@ -5687,6 +5687,7 @@ keywordAsId:
     | K_AS
     | K_ASC
     | K_ASCII
+    | K_ASENSITIVE
     | K_ASSERT
     | K_ASSOCIATE
     | K_AT
@@ -5948,6 +5949,7 @@ keywordAsId:
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HINT
+    | K_HOLD
     | K_HOUR
     | K_ID
     | K_IDENTIFIED
@@ -5978,6 +5980,7 @@ keywordAsId:
     | K_INNER
     | K_INOUT
     | K_INPUT
+    | K_INSENSITIVE
     | K_INSERT
     | K_INSTANTIABLE
     | K_INSTEAD
