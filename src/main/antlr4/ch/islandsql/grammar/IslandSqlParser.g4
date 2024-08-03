@@ -555,12 +555,54 @@ atomicBlock:
 
 atomicStatement:
       statement
-    | otherAtomicStatement
+    | unterminatedAtomicStatement SEMI
+    | terminatedAtomicStatement
 ;
 
-// SQL statement not fully parsed by this grammar
-otherAtomicStatement:
-    ~SEMI+ SEMI
+// SQL statement not fully parsed by this grammar, SEMI provided in sqlStatement
+unterminatedAtomicStatement:
+      K_ALTER postgreSqlStatementTrailingTokens
+    | K_ANALYZE postgreSqlStatementTrailingTokens
+    | K_CHECKPOINT
+    | K_CLUSTER postgreSqlStatementTrailingTokens
+    | K_COMMENT postgreSqlStatementTrailingTokens
+    | K_COPY postgreSqlStatementTrailingTokens
+    | K_CREATE postgreSqlStatementTrailingTokens
+    | K_DEALLOCATE postgreSqlStatementTrailingTokens
+    | K_DISCARD postgreSqlStatementTrailingTokens
+    | K_DROP postgreSqlStatementTrailingTokens
+    | K_GRANT postgreSqlStatementTrailingTokens
+    | K_IMPORT postgreSqlStatementTrailingTokens
+    | K_PREPARE postgreSqlStatementTrailingTokens
+    | K_REASSIGN postgreSqlStatementTrailingTokens
+    | K_REFRESH postgreSqlStatementTrailingTokens
+    | K_REINDEX postgreSqlStatementTrailingTokens
+    | K_RESET postgreSqlStatementTrailingTokens
+    | K_REVOKE postgreSqlStatementTrailingTokens
+    | K_SECURITY postgreSqlStatementTrailingTokens
+    | K_SET postgreSqlStatementTrailingTokens
+    | K_TRUNCATE postgreSqlStatementTrailingTokens
+;
+
+// SQL statement not fully parsed by this parser, used in atomicBlock only
+// end statement excluded due to conflict with end keyword in blocks
+terminatedAtomicStatement:
+      closeStatment
+    | postgresqlFetchStatement
+    | postgresqlMoveStatement
+    | K_ABORT postgreSqlStatementTrailingTokens SEMI
+    | K_LISTEN postgreSqlStatementTrailingTokens SEMI
+    | K_LOAD postgreSqlStatementTrailingTokens SEMI
+    | K_NOTIFY postgreSqlStatementTrailingTokens SEMI
+    | K_SECURITY postgreSqlStatementTrailingTokens SEMI
+    | K_SHOW postgreSqlStatementTrailingTokens SEMI
+    | K_START postgreSqlStatementTrailingTokens SEMI
+    | K_UNLISTEN postgreSqlStatementTrailingTokens SEMI
+    | K_VACUUM  postgreSqlStatementTrailingTokens SEMI
+;
+
+postgreSqlStatementTrailingTokens:
+    ~SEMI*?
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3560,30 +3602,9 @@ postgresqlSqlStatement:
     | call
     | lockTable
     | postgresqlDo
-    | K_ALTER postgreSqlStatementTrailingTokens
-    | K_ANALYZE postgreSqlStatementTrailingTokens
-    | K_CHECKPOINT
-    | K_CLUSTER postgreSqlStatementTrailingTokens
-    | K_COMMENT postgreSqlStatementTrailingTokens
-    | K_COPY postgreSqlStatementTrailingTokens
-    | K_CREATE postgreSqlStatementTrailingTokens
-    | K_DEALLOCATE postgreSqlStatementTrailingTokens
-    | K_DISCARD postgreSqlStatementTrailingTokens
-    | K_DROP postgreSqlStatementTrailingTokens
-    | K_GRANT postgreSqlStatementTrailingTokens
-    | K_IMPORT postgreSqlStatementTrailingTokens
-    | K_PREPARE postgreSqlStatementTrailingTokens
-    | K_REASSIGN postgreSqlStatementTrailingTokens
-    | K_REFRESH postgreSqlStatementTrailingTokens
-    | K_REINDEX postgreSqlStatementTrailingTokens
-    | K_RESET postgreSqlStatementTrailingTokens
-    | K_SECURITY postgreSqlStatementTrailingTokens
-    | K_SET postgreSqlStatementTrailingTokens
-    | K_TRUNCATE postgreSqlStatementTrailingTokens
-;
-
-postgreSqlStatementTrailingTokens:
-    ~SEMI*?
+    | createFunctionStatement
+    | createProcedureStatement
+    | unterminatedAtomicStatement
 ;
 
 // stmts are optional in PL/pgSQL, undocumented in 16.3
