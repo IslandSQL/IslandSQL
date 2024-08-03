@@ -328,6 +328,16 @@ CREATE_VIEW:
     'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
+DECLARE:
+    'declare' {isBeginOfStatement("declare") && getDialect() != IslandSqlDialect.ORACLEDB}? COMMENT_OR_WS+ NAME COMMENT_OR_WS+
+    ('binary' COMMENT_OR_WS+)?
+    (('asensitive' | 'insensitive') COMMENT_OR_WS+)?
+    (('no' COMMENT_OR_WS+)? 'scroll' COMMENT_OR_WS+)?
+    'cursor' COMMENT_OR_WS+
+    (('with' | 'without') COMMENT_OR_WS+ 'hold' COMMENT_OR_WS+)?
+    'for' MORE_TO_SQL_END
+;
+
 DELETE:
     'delete' {isBeginOfStatement("delete")}? MORE_TO_SQL_END
 ;

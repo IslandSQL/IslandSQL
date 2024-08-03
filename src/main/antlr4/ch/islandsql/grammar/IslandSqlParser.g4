@@ -65,6 +65,7 @@ statement:
     | emptyStatement
     | plsqlBlockStatement
     | tclStatement
+    | postgresqlDeclareStatement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -3724,6 +3725,20 @@ setTransaction:
     )
 ;
 
+/*----------------------------------------------------------------------------*/
+// PostgreSQL Declare
+/*----------------------------------------------------------------------------*/
+
+// cannot be used in PL/pgSQL
+postgresqlDeclareStatement:
+    postgresqlDeclare sqlEnd
+;
+
+postgresqlDeclare:
+    K_DECLARE cursorName=sqlName K_BINARY? (K_ASENSITIVE | K_INSENSITIVE)? (K_NO? K_SCROLL)?
+    K_CURSOR ((K_WITH | K_WITHOUT) K_HOLD)? K_FOR subquery
+;
+
 // PostgreSQL modes, subset supported by OracleDB
 transactionMode:
       K_ISOLATION K_LEVEL (K_SERIALIZABLE | K_REPEATABLE K_READ | K_READ K_COMMITTED | K_READ K_UNCOMMITTED)
@@ -5687,6 +5702,7 @@ keywordAsId:
     | K_AS
     | K_ASC
     | K_ASCII
+    | K_ASENSITIVE
     | K_ASSERT
     | K_ASSOCIATE
     | K_AT
@@ -5948,6 +5964,7 @@ keywordAsId:
     | K_HIER_PARENT_LEVEL
     | K_HIER_PARENT_UNIQUE_NAME
     | K_HINT
+    | K_HOLD
     | K_HOUR
     | K_ID
     | K_IDENTIFIED
@@ -5978,6 +5995,7 @@ keywordAsId:
     | K_INNER
     | K_INOUT
     | K_INPUT
+    | K_INSENSITIVE
     | K_INSERT
     | K_INSTANTIABLE
     | K_INSTEAD
