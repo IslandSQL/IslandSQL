@@ -160,6 +160,12 @@ CREATE_AUDIT_POLICY:
 ;
 
 // hide keywords: with
+CREATE_CAST:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'cast' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: with
 CREATE_DATABASE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
         'database' MORE_TO_SQL_END -> channel(HIDDEN)
