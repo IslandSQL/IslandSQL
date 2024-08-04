@@ -422,6 +422,7 @@ UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_O
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
 UNIT_PG: 'as' COMMENT_OR_WS+ ':'? STRING SQL_TEXT*? SQL_END -> popMode;
+UNIT_PG_SQL_FUNC: 'language' COMMENT_OR_WS+ 'sql' SQL_TEXT+? 'return' MORE_TO_SQL_END -> popMode;
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
