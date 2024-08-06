@@ -186,7 +186,7 @@ postgresqlFunctionOption:
     | K_ROWS resultRows=expression
     | K_SUPPORT (supportSchema=sqlName PERIOD)? supportFunction=sqlName
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression // subtree added for this option if definition is a string
+    | K_AS definition=postgresqlCode // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | sqlBody
     | otherOption=sqlName // e.g. used by PostGIS: _cost_low, _cost_medium, _cost_high, _cost_default
@@ -542,7 +542,7 @@ postgresqlProcedureOption:
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression // subtree added for this option if definition is a string
+    | K_AS definition=postgresqlCode // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | atomicBlock // subset of sql_body used in PostgreSQL function
 ;
@@ -1558,12 +1558,22 @@ doStatement:
 
 // undocumented in PostgreSQL 16.3: language option after code
 // subtree is optionally populated when creating an IslandSqlDocument instance
+// subtree added for this option if code is a string
 postgresqlDo:
     K_DO (
-          code=string
-        | K_LANGUAGE languageName=expression code=string
-        | code=string K_LANGUAGE languageName=expression
+          code=postgresqlCode
+        | K_LANGUAGE languageName=expression code=postgresqlCode
+        | code=postgresqlCode K_LANGUAGE languageName=expression
     )
+;
+
+postgresqlCode:
+    elements+=postgresqlCodeElement+
+;
+
+postgresqlCodeElement:
+      string                # stringCodeElement
+    | psqlStringVariable    # variableCodeElement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -6631,15 +6641,15 @@ qualifiedName:
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
 string:
-      STRING                            # simpleString
-    | N_STRING                          # nationalString
+      STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
+    | STRING                            # simpleString
     | N_STRING STRING+                  # concatenatedNationalString    // PostgreSQL, MySQL
+    | N_STRING                          # nationalString
     | E_STRING STRING*                  # escapedString                 // PostgreSQL
     | U_AMP_STRING concats+=STRING*
         (K_UESCAPE escapeChar=STRING)?  # unicodeString                 // PostgreSQL
     | B_STRING STRING*                  # bitString                     // PostgreSQL bit string in binary format
     | X_STRING STRING*                  # bitString                     // PostgreSQL bit string in hex format
-    | STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
     | Q_STRING                          # quoteDelimiterString
     | NQ_STRING                         # nationalQuoteDelimiterString
     | DOLLAR_STRING                     # dollarString                  // PostgreSQL (no concatenation!)

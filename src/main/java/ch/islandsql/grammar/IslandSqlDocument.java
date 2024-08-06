@@ -111,11 +111,14 @@ public class IslandSqlDocument {
                     IslandSqlParser.ExpressionContext languageName = null;
                     if (stmt instanceof IslandSqlParser.PostgresqlDoContext) {
                         // do - SQL and PL/pgSQL: PostgreSQL does not support SQL language as string but the IslandSQL grammar accepts it nonetheless
-                        IslandSqlParser.PostgresqlDoContext p = (IslandSqlParser.PostgresqlDoContext) stmt;
-                        codeAsString = p.code;
-                        languageName = p.languageName;
-                        if (parseSubtree(builder, lexer, parser, codeAsString, languageName, p)) {
-                            p.code = null;
+                        IslandSqlParser.PostgresqlDoContext doStmt = (IslandSqlParser.PostgresqlDoContext) stmt;
+                        IslandSqlParser.PostgresqlCodeContext code = doStmt.postgresqlCode();
+                        if (code != null && code.elements.size() == 1 && code.elements.get(0) instanceof IslandSqlParser.StringCodeElementContext) {
+                            codeAsString = ((IslandSqlParser.StringCodeElementContext) code.elements.get(0)).string();
+                            languageName = doStmt.languageName;
+                            if (parseSubtree(builder, lexer, parser, codeAsString, languageName, doStmt)) {
+                                doStmt.code = null;
+                            }
                         }
                     } else if (stmt instanceof IslandSqlParser.PostgresqlFunctionSourceContext) {
                         // function - SQL and PL/pgSQL
