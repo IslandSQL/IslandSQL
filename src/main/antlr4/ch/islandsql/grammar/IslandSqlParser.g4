@@ -330,7 +330,7 @@ createMaterializedView:
     (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
     (K_OF (objectTypeSchema=sqlName PERIOD)? objectTypeName=sqlName)?
     (LPAR columns+=mviewColumn (COMMA columns+=mviewColumn)* RPAR)?
-    (K_USING method=string)? postgresqlViewOptions?  // PostgreSQL only
+    (K_USING method=sqlName)? postgresqlViewOptions?  // PostgreSQL only
     defaultCollationClause?
     (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
     physicalProperties? materializedViewProps
