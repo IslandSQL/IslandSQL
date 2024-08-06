@@ -195,10 +195,10 @@ CREATE_OPERATOR:
         'operator' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
-// hide keywords: select, insert, update, delete (hides first command only)
+// hide keywords: select, insert, update, delete
 CREATE_RULE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-        'rule' MORE_TO_SQL_END -> channel(HIDDEN)
+        'rule' COMMENT_OR_WS -> pushMode(HIDDEN_PARENTHESES_MODE), channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
@@ -584,3 +584,25 @@ CC_WS: WS -> more;
 CC_ID: ID -> more;
 CC_QUOTED_ID: QUOTED_ID -> more;
 CC_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// Hidden Parentheses Mode (HP)
+/*----------------------------------------------------------------------------*/
+
+mode HIDDEN_PARENTHESES_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+HP_EOF: EOF -> popMode, channel(HIDDEN);
+
+HP_CLOSE_PAREN: ')' -> more, popMode;
+HP_STMT: SQL_END {_modeStack.size() == 1}? -> popMode, channel(HIDDEN);
+
+HP_OPEN_PAREN: '(' -> more, pushMode(HIDDEN_PARENTHESES_MODE);
+
+HP_ML_COMMENT: ML_COMMENT -> more;
+HP_SL_COMMENT: SL_COMMENT -> more;
+HP_WS: WS -> more;
+HP_STRING: STRING -> more;
+HP_ID: ID -> more;
+HP_QUOTED_ID: QUOTED_ID -> more;
+HP_ANY_OTHER: . -> more;
