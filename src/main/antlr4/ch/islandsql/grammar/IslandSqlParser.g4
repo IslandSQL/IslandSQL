@@ -549,13 +549,13 @@ postgresqlProcedureOption:
 
 atomicBlock:
     K_BEGIN K_ATOMIC
-        stmts+=atomicStatement+
+        stmts+=atomicStatement*
     K_END
 ;
 
 atomicStatement:
       statement
-    | unterminatedAtomicStatement SEMI
+    | unterminatedAtomicStatement (EOF|SEMI)
     | terminatedAtomicStatement
 ;
 
