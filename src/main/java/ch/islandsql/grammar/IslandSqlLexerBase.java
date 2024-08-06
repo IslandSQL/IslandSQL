@@ -31,6 +31,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
     private Token lastToken; // last emitted token relevant to determine start of statement
     private String quoteDelimiter1;
     private String dollarIdentifier1;
+    private int lastDollarIdentifierIndex = -1;
 
     /**
      * Constructor.
@@ -143,6 +144,7 @@ public abstract class IslandSqlLexerBase extends Lexer {
 
     /**
      * Saves the ID at the previous position as "dollarIdentifier1".
+     * Considers only the most-outer ID to handle nested dollar-quoted constants.
      * Must be implemented as function returning a boolean value to ensure
      * it is executed.
      *
@@ -150,9 +152,11 @@ public abstract class IslandSqlLexerBase extends Lexer {
      */
     @SuppressWarnings("SameReturnValue")
     public boolean saveDollarIdentifier1() {
-        String id = getDollarIdentifier();
-        if (!id.isEmpty()) {
-            dollarIdentifier1 = id;
+        if (dollarIdentifier1 == null && _input.index() > lastDollarIdentifierIndex) {
+            String id = getDollarIdentifier();
+            if (!id.isEmpty()) {
+                dollarIdentifier1 = id;
+            }
         }
         return true;
     }
@@ -160,12 +164,18 @@ public abstract class IslandSqlLexerBase extends Lexer {
     /**
      * Determines if the ID at the previous position
      * is equal to the ID saved in "dollarIdentifier1".
+     * Reset of "dollarIdentifier1" to handle the
+     * next dollar-quoted string constant.
      *
      * @return Returns true if character matches quoteDelimiter1.
      */
     public boolean checkDollarIdentifier2() {
         String dollarIdentifier2 = getDollarIdentifier();
-        return dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1);
+        if (dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1)) {
+            dollarIdentifier1 = null;
+            lastDollarIdentifierIndex = _input.index();
+        }
+        return dollarIdentifier1 == null;
     }
 
     /**
