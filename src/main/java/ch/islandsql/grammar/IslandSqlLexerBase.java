@@ -174,8 +174,9 @@ public abstract class IslandSqlLexerBase extends Lexer {
         if (dollarIdentifier2.equalsIgnoreCase(dollarIdentifier1)) {
             dollarIdentifier1 = null;
             lastDollarIdentifierIndex = _input.index();
+            return true;
         }
-        return dollarIdentifier1 == null;
+        return false;
     }
 
     /**
