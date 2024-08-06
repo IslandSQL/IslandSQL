@@ -305,6 +305,7 @@ K_EXTENDED: 'extended';
 K_EXTERNAL: 'external';
 K_EXTRA: 'extra';
 K_EXTRACT: 'extract';
+K_EXTSCHEMA: 'extschema';
 K_FACT: 'fact';
 K_FALSE: 'false';
 K_FAST: 'fast';

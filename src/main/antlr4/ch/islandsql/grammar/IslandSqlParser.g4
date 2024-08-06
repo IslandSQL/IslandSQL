@@ -5931,6 +5931,7 @@ keywordAsId:
     | K_EXTERNAL
     | K_EXTRA
     | K_EXTRACT
+    | K_EXTSCHEMA
     | K_FACT
     | K_FALSE
     | K_FAST
