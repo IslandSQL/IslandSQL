@@ -6641,6 +6641,7 @@ psqlVariable:
       psqlSimpleVariable
     | psqlStringVariable
     | psqlExtschemaVariable
+    | psqlVariableTest
 ;
 
 // PostgreSQL
@@ -6656,6 +6657,10 @@ psqlStringVariable:
 // PostgreSQL
 psqlExtschemaVariable:
     COMMAT K_EXTSCHEMA (COLON name=unquotedId)? COMMAT
+;
+
+psqlVariableTest:
+    LCUB QUEST variable=qualifiedName RCUB
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
