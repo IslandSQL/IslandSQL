@@ -1730,9 +1730,7 @@ postgresqlOnConflictTarget:
 ;
 
 postgresqlOnConflictTargetItem:
-    (indexColumnName=sqlName|LPAR indexExpression=expression RPAR)
-    (K_COLLATE collate=sqlName)?
-    (opclass=sqlName)?
+    expr=expression (opclass=sqlName)?
 ;
 
 postgresqlOnConflictAction:
