@@ -542,6 +542,7 @@ K_NOPARALLEL: 'noparallel';
 K_NOPRECHECK: 'noprecheck';
 K_NORELY: 'norely';
 K_NORMALIZE: 'normalize';
+K_NORMALIZED: 'normalized';
 K_NOSCHEMACHECK: 'noschemacheck';
 K_NOT: 'not';
 K_NOTHING: 'nothing';

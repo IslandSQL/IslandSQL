@@ -6221,6 +6221,7 @@ keywordAsId:
     | K_NOPRECHECK
     | K_NORELY
     | K_NORMALIZE
+    | K_NORMALIZED
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
