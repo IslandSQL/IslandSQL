@@ -421,8 +421,8 @@ UNIT_EOF: EOF -> popMode;
 UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' MORE_TO_SQL_END -> popMode;
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
-UNIT_PG: 'as' COMMENT_OR_WS+ ':'? STRING SQL_TEXT*? SQL_END -> popMode;
-UNIT_PG_SQL_FUNC: 'language' COMMENT_OR_WS+ 'sql' SQL_TEXT+? 'return' MORE_TO_SQL_END -> popMode;
+UNIT_PG_CODE: 'as' COMMENT_OR_WS+ STRING -> more, mode(FUNCTION_MODE);
+UNIT_PG_SQL_FUNC: 'returns' -> more, mode(FUNCTION_MODE);
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
@@ -436,6 +436,23 @@ UNIT_STRING: STRING -> more;
 UNIT_ID: ID -> more;
 UNIT_QUOTED_ID: QUOTED_ID -> more;
 UNIT_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// PostgreSQL Function Mode (FUNC)
+/*----------------------------------------------------------------------------*/
+
+mode FUNCTION_MODE;
+
+FUNC: SQL_END -> popMode;
+FUNC_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
+
+FUNC_ML_COMMENT: ML_COMMENT -> more;
+FUNC_SL_COMMENT: SL_COMMENT -> more;
+FUNC_WS: WS -> more;
+FUNC_STRING: STRING -> more;
+FUNC_ID: ID -> more;
+FUNC_QUOTED_ID: QUOTED_ID -> more;
+FUNC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
 // Declare Section Mode (DS)
