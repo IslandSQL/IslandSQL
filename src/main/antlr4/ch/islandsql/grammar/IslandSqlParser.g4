@@ -2567,8 +2567,8 @@ inlineAnalyticView:
 // ensure that at least one alternative is not optional
 // make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
-      K_OFFSET offset=expression (K_ROW | K_ROWS)?
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? fetchClause rowLimitingPartitionClause? rowSpecification? rowSpecification? accuracyClause?
+      K_OFFSET offset=expression (K_ROW | K_ROWS)? (fetchClause rowLimitingPartitionClause? rowSpecification? accuracyClause?)?
+    | fetchClause rowLimitingPartitionClause? rowSpecification? accuracyClause? (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
     | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
     | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
 ;
