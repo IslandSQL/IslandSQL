@@ -3491,7 +3491,7 @@ fetchDirection:
 ;
 
 postgresqlForEachStatement:
-    K_FOREACH target=qualifiedName (K_SLICE slice=expression)?
+    K_FOREACH targets+=sqlName (COMMA targets+=sqlName)* (K_SLICE slice=expression)?
         K_IN K_ARRAY expr=postgresqlSqlExpression
         K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
@@ -6641,6 +6641,7 @@ psqlVariable:
       psqlSimpleVariable
     | psqlStringVariable
     | psqlExtschemaVariable
+    | psqlVariableTest
 ;
 
 // PostgreSQL
@@ -6656,6 +6657,10 @@ psqlStringVariable:
 // PostgreSQL
 psqlExtschemaVariable:
     COMMAT K_EXTSCHEMA (COLON name=unquotedId)? COMMAT
+;
+
+psqlVariableTest:
+    LCUB QUEST variable=qualifiedName RCUB
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
