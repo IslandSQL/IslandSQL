@@ -303,7 +303,7 @@ CREATE_TRIGGER:
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) SQL_TEXT+? SQL_END
+    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) TO_SQL_END
 ;
 
 CREATE_TYPE_BODY:
