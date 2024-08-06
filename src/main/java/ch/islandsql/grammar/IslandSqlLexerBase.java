@@ -100,20 +100,6 @@ public abstract class IslandSqlLexerBase extends Lexer {
     }
 
     /**
-     * To be called for an operator candidate ending on "+" or "-".
-     * Determines if the operator is valid according to description in
-     * <a href="https://www.postgresql.org/docs/current/sql-createoperator.html">CREATE OPERATOR</a>.
-     *
-     * @return Returns true if the current token is a valid PostgreSQL operator.
-     */
-    public boolean isValidOperator() {
-        String text = getText();
-        return (text.contains("~") || text.contains("!") || text.contains("@") || text.contains("#")
-                || text.contains("%") || text.contains("^") || text.contains("&") || text.contains("|")
-                || text.contains("`") || text.contains("?"));
-    }
-
-    /**
      * Saves the character at the previous position as "quoteDelimiter1".
      * Must be implemented as function returning a boolean value to ensure
      * it is executed.
