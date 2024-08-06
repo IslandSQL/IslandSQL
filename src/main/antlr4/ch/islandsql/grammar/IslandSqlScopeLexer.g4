@@ -53,7 +53,7 @@ fragment ANY_EXCEPT_LOG:
           'l' 'o' ~'g'
         | 'l' ~'o'
         | ~'l'
-    )
+    ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
 fragment ANY_EXCEPT_BODY:
     (
@@ -259,7 +259,7 @@ CREATE_JSON_RELATIONAL_DUALITY_VIEW:
 CREATE_MATERIALIZED_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     'materialized' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+
-    ANY_EXCEPT_LOG -> pushMode(WITH_CLAUSE_MODE)
+    (QUOTED_ID|ANY_EXCEPT_LOG) -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 // handles also package body
