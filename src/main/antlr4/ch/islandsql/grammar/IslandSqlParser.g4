@@ -1394,7 +1394,7 @@ createView:
 ;
 
 postgresqlViewOptions:
-    K_WITH options+=postgresqlOption (COMMA options+=postgresqlOption)*
+    K_WITH LPAR options+=postgresqlOption (COMMA options+=postgresqlOption)* RPAR
 ;
 
 // used also for materialized view and therefore name is a qualifiedName
