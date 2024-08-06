@@ -186,7 +186,7 @@ postgresqlFunctionOption:
     | K_ROWS resultRows=expression
     | K_SUPPORT (supportSchema=sqlName PERIOD)? supportFunction=sqlName
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression // subtree added for this option if definition is a string
+    | K_AS definition=postgresqlCode // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | sqlBody
     | otherOption=sqlName // e.g. used by PostGIS: _cost_low, _cost_medium, _cost_high, _cost_default
@@ -330,7 +330,7 @@ createMaterializedView:
     (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
     (K_OF (objectTypeSchema=sqlName PERIOD)? objectTypeName=sqlName)?
     (LPAR columns+=mviewColumn (COMMA columns+=mviewColumn)* RPAR)?
-    (K_USING method=string)? postgresqlViewOptions?  // PostgreSQL only
+    (K_USING method=sqlName)? postgresqlViewOptions?  // PostgreSQL only
     defaultCollationClause?
     (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
     physicalProperties? materializedViewProps
@@ -542,7 +542,7 @@ postgresqlProcedureOption:
     | K_TRANSFORM transformItems+=transformItem (COMMA transformItems+=transformItem)*
     | K_EXTERNAL? K_SECURITY (K_INVOKER | K_DEFINER)
     | K_SET parameterName=sqlName ((K_TO | EQUALS) values+=expression (COMMA values+=expression)* | K_FROM K_CURRENT)
-    | K_AS definition=expression // subtree added for this option if definition is a string
+    | K_AS definition=postgresqlCode // subtree added for this option if definition is a string
     | K_AS objFile=expression COMMA linkSymbol=expression
     | atomicBlock // subset of sql_body used in PostgreSQL function
 ;
@@ -588,6 +588,7 @@ unterminatedAtomicStatement:
 // end statement excluded due to conflict with end keyword in blocks
 terminatedAtomicStatement:
       closeStatment
+    | returnStatement // undocumented in 16.3
     | postgresqlFetchStatement
     | postgresqlMoveStatement
     | K_ABORT postgreSqlStatementTrailingTokens SEMI
@@ -950,7 +951,7 @@ beforeTableProperties:
 tableProperties:
     annotationsClause?
     (
-           K_AS subquery
+           K_AS subquery (K_WITH K_NO? K_DATA)? // PostgreSQL allows "with (no) data"
         | K_FOR K_EXCHANGE K_WITH K_TABLE (schema=sqlName PERIOD)? tableName=sqlName
     )?
     (K_FOR K_STAGING)?
@@ -1284,7 +1285,7 @@ postgresqlType:
 ;
 
 postgresqlAttribute:
-    name=sqlName dataType (K_COLLATE collation=qualifiedName)?
+    name=sqlName dataType (K_COLLATE collate=sqlName)?
 ;
 
 postgresqlEnumType:
@@ -1558,12 +1559,22 @@ doStatement:
 
 // undocumented in PostgreSQL 16.3: language option after code
 // subtree is optionally populated when creating an IslandSqlDocument instance
+// subtree added for this option if code is a string
 postgresqlDo:
     K_DO (
-          code=string
-        | K_LANGUAGE languageName=expression code=string
-        | code=string K_LANGUAGE languageName=expression
+          code=postgresqlCode
+        | K_LANGUAGE languageName=expression code=postgresqlCode
+        | code=postgresqlCode K_LANGUAGE languageName=expression
     )
+;
+
+postgresqlCode:
+    elements+=postgresqlCodeElement+
+;
+
+postgresqlCodeElement:
+      string                # stringCodeElement
+    | psqlStringVariable    # variableCodeElement
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -1658,7 +1669,18 @@ insertIntoClause:
 ;
 
 columnReference:
-    qualifiedName postgresqlSubscript*
+    items+=columnReferenceItem (PERIOD items+=columnReferenceItem)*
+;
+
+columnReferenceItem:
+      sqlName
+    | postgresqlSubscriptReference+
+    | sqlName postgresqlSubscriptReference+
+;
+
+postgresqlSubscriptReference:
+      postgresqlSubscript
+    | LSQB lower=expression RSQB
 ;
 
 insertValuesClause:
@@ -1708,9 +1730,7 @@ postgresqlOnConflictTarget:
 ;
 
 postgresqlOnConflictTargetItem:
-    (indexColumnName=sqlName|LPAR indexExpression=expression RPAR)
-    (K_COLLATE collate=sqlName)?
-    (opclass=sqlName)?
+    expr=expression (opclass=sqlName)?
 ;
 
 postgresqlOnConflictAction:
@@ -1729,8 +1749,8 @@ postgresqlOnConflictActionDoUpdate:
 ;
 
 postgresqlOnConflictActionDoUpdateItem:
-      column+=sqlName EQUALS exprs+=expression
-    | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+      columns+=columnReference EQUALS exprs+=expression
+    | LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS K_ROW? LPAR ((exprs+=expression (COMMA exprs+=expression)*) | subquery) RPAR
 ;
 
@@ -1745,7 +1765,7 @@ lockTableStatement:
 lockTable:
     K_LOCK K_TABLE? K_ONLY? // PostgreSQL: optional table, only
         objects+=lockTableObject (COMMA objects+=lockTableObject)*
-        K_IN lockMode K_MODE lockTableWaitOption?
+        (K_IN lockMode K_MODE lockTableWaitOption?)? // PostgreSQL: optional lockMode
 ;
 
 lockTableObject:
@@ -1872,7 +1892,6 @@ selectStatement:
 
 select:
     subquery
-    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create table support, see see https://github.com/IslandSQL/IslandSQL/issues/82
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
@@ -2067,7 +2086,13 @@ groupByItem:
 ;
 
 groupingSetsClause:
-    K_GROUPING K_SETS LPAR groupingSets+=expression (COMMA groupingSets+=expression)* RPAR
+    K_GROUPING K_SETS LPAR items+=groupingSetItem (COMMA items+=groupingSetItem)* RPAR
+;
+
+// nested grouping sets are allowed in PostgreSQL
+groupingSetItem:
+      expression
+    | groupingSetsClause
 ;
 
 modelClause:
@@ -2557,8 +2582,8 @@ inlineAnalyticView:
 // ensure that at least one alternative is not optional
 // make row/rows optional in offset for PostgreSQL
 rowLimitingClause:
-      K_OFFSET offset=expression (K_ROW | K_ROWS)?
-    | (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? fetchClause rowLimitingPartitionClause? rowSpecification? rowSpecification? accuracyClause?
+      K_OFFSET offset=expression (K_ROW | K_ROWS)? (fetchClause rowLimitingPartitionClause? rowSpecification? accuracyClause?)?
+    | fetchClause rowLimitingPartitionClause? rowSpecification? accuracyClause? (K_OFFSET offset=expression (K_ROW | K_ROWS)?)?
     | K_LIMIT (rowcount=expression|K_ALL) (K_OFFSET offset=expression (K_ROW | K_ROWS)?)? // PostgreSQL
     | (K_OFFSET offset=expression (K_ROW | K_ROWS)?) K_LIMIT (rowcount=expression|K_ALL)? // PostgreSQL
 ;
@@ -2652,13 +2677,13 @@ updateSetClause:
 ;
 
 updateSetClauseItem:
-      LPAR columns+=expression (COMMA columns+=expression)* RPAR
+      LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # columnListUpdateSetClauseItem
-    | LPAR columns+=expression (COMMA columns+=expression)* RPAR
+    | LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # postgresqlRowUpdateSetClauseItem
-    | LPAR columns+=expression RPAR
+    | LPAR columns+=columnReference RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # columnUpdateSetClauseItem
-    | columns+=expression EQUALS (expr=expression | LPAR query=subquery RPAR)       # columnUpdateSetClauseItem
+    | columns+=columnReference EQUALS (expr=expression | LPAR query=subquery RPAR)  # columnUpdateSetClauseItem
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -2726,10 +2751,10 @@ assocArrayTypeDef:
 ;
 
 plsqlDataType:
-      K_REF dataType            # refPlsqlDataType
-    | dataType PERCNT K_TYPE    # percentTypePlsqlDataType
-    | dataType PERCNT K_ROWTYPE # percentRowtypePlsqlDataType
-    | dataType                  # simplePlsqlDataType
+      K_REF dataType                                    # refPlsqlDataType
+    | qualifiedName PERCNT K_TYPE dataTypeArray?        # percentTypePlsqlDataType
+    | qualifiedName PERCNT K_ROWTYPE dataTypeArray?     # percentRowtypePlsqlDataType
+    | dataType                                          # simplePlsqlDataType
 ;
 
 // not documented in 23.4: optionality of "not"
@@ -3273,7 +3298,7 @@ ifStatement:
 // artificial clause
 // stmts are optional in PL/pgSQL, undocumented in 16.3
 conditionToStatements:
-    cond=expression K_THEN stmts+=plsqlStatement*
+    cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement*
 ;
 
 nullStatement:
@@ -3772,13 +3797,11 @@ transactionMode:
 // Data types
 /*----------------------------------------------------------------------------*/
 
-// array size is not documented in PosgresSQL 16.3
 dataType:
-      oracleBuiltInDatatype
-    | ansiSupportedDatatype
-    | postgresqlDatatype
-    | userDefinedType
-    | posgresqlArrayDatatype=dataType (LSQB size=NUMBER? RSQB)
+      oracleBuiltInDatatype dataTypeArray?
+    | ansiSupportedDatatype dataTypeArray?
+    | postgresqlDatatype dataTypeArray?
+    | userDefinedType dataTypeArray?  // ambiguous
 ;
 
 oracleBuiltInDatatype:
@@ -3948,6 +3971,18 @@ userDefinedType:
     name=qualifiedName (LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)?
 ;
 
+// PostgreSQL
+dataTypeArray:
+      K_ARRAY
+    | K_ARRAY dims+=dataTypeArrayDim+
+    | dims+=dataTypeArrayDim+
+;
+
+// PostgreSQL
+dataTypeArrayDim:
+    LSQB size=NUMBER? RSQB
+;
+
 /*----------------------------------------------------------------------------*/
 // Expression
 /*----------------------------------------------------------------------------*/
@@ -3959,7 +3994,7 @@ expression:
     | K_TIMESTAMP expr=string                                   # timestampLiteral
     | expr=intervalExpression                                   # intervalExpressionParent
     | LPAR expr=subquery RPAR                                   # scalarSubqueryExpression
-    | LPAR exprs+=expression (COMMA exprs+=expression)* RPAR    # expressionList                // also parenthesisCondition
+    | LPAR (exprs+=expression (COMMA exprs+=expression)*)? RPAR # expressionList                // also parenthesisCondition, empty list is undocumented
     | LPAR expr=expression K_AS
         (schema=sqlName PERIOD)? typeName=sqlName RPAR          # typeCastExpression            // undocumented in 23.3, see example 14-22
     | K_CURSOR LPAR expr=subquery RPAR                          # cursorExpression
@@ -3981,7 +4016,7 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | expr=expression postgresqlSubscript                       # postgresqlSubscriptParent     // precedence 3, PostgreSQL subscripts are handeld as model_expression
     | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
-    | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
+    | left=expression operator=K_COLLATE right=sqlName          # collateExpression             // precedence 5
     | left=expression operator=K_AT
         (
               K_LOCAL
@@ -4083,6 +4118,7 @@ postgresqlSubscript:
       LSQB lower=expression COLON upper=expression RSQB
     | LSQB lower=expression COLON RSQB
     | LSQB COLON lower=expression RSQB
+    | LSQB COLON RSQB // undocumented in PostgreSQL 16.3
 ;
 
 // PostgreSQL: single column, 0-1 result rows
@@ -4090,7 +4126,13 @@ postgresqlSubscript:
 // used in PL/SQL elements instead of expression for PL/pgSQL compatiblity
 postgresqlSqlExpression:
     expr=expression (K_AS? cAlias=sqlName)?
-    fromClause? whereClause? groupByClause? windowClause? orderByClause? rowLimitingClause?
+    fromClause?
+    whereClause?
+    groupByClause?
+    windowClause?
+    orderByClause?
+    rowLimitingClause?
+    forUpdateClause*
 ;
 
 intervalExpression:
@@ -4188,6 +4230,7 @@ elseClause:
 specialFunctionExpression:
       avExpression
     | cast
+    | collation // PostgreSQL
     | extract
     | featureCompare
     | fromVector
@@ -4411,7 +4454,9 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS K_DOMAIN? typeName=dataType domainValidateClause?
+        K_AS K_DOMAIN? typeName=dataType
+        (K_COLLATE collate=sqlName)?
+        domainValidateClause?
         defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
@@ -4424,6 +4469,11 @@ domainValidateClause:
 
 defaultOnConversionError:
     K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR
+;
+
+// PostgreSQL
+collation:
+    K_COLLATION K_FOR LPAR expr=postgresqlSqlExpression RPAR
 ;
 
 extract:
@@ -5548,6 +5598,7 @@ unaryOperator:
     | COMMAT                # postgresqlUnaryOperator
     | NUM                   # postgresqlUnaryOperator
     | TILDE                 # postgresqlUnaryOperator
+    | K_VARIADIC            # postgresqlUnaryOperator
 
 ;
 
@@ -5931,6 +5982,7 @@ keywordAsId:
     | K_EXTERNAL
     | K_EXTRA
     | K_EXTRACT
+    | K_EXTSCHEMA
     | K_FACT
     | K_FALSE
     | K_FAST
@@ -6586,8 +6638,24 @@ unicodeIdentifier:
 
 // PostgreSQL
 psqlVariable:
-      COLON variable=qualifiedName
-    | COLON stringVariable=STRING
+      psqlSimpleVariable
+    | psqlStringVariable
+    | psqlExtschemaVariable
+;
+
+// PostgreSQL
+psqlSimpleVariable:
+    COLON variable=qualifiedName
+;
+
+// PostgreSQL
+psqlStringVariable:
+    COLON stringVariable=STRING
+;
+
+// PostgreSQL
+psqlExtschemaVariable:
+    COMMAT K_EXTSCHEMA (COLON name=unquotedId)? COMMAT
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
@@ -6614,15 +6682,15 @@ qualifiedName:
 // A parser rule to distinguish between string types.
 // Furthermore, it will simplify writing a value provider for a string.
 string:
-      STRING                            # simpleString
-    | N_STRING                          # nationalString
+      STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
+    | STRING                            # simpleString
     | N_STRING STRING+                  # concatenatedNationalString    // PostgreSQL, MySQL
+    | N_STRING                          # nationalString
     | E_STRING STRING*                  # escapedString                 // PostgreSQL
     | U_AMP_STRING concats+=STRING*
         (K_UESCAPE escapeChar=STRING)?  # unicodeString                 // PostgreSQL
     | B_STRING STRING*                  # bitString                     // PostgreSQL bit string in binary format
     | X_STRING STRING*                  # bitString                     // PostgreSQL bit string in hex format
-    | STRING STRING+                    # concatenatedString            // PostgreSQL, MySQL
     | Q_STRING                          # quoteDelimiterString
     | NQ_STRING                         # nationalQuoteDelimiterString
     | DOLLAR_STRING                     # dollarString                  // PostgreSQL (no concatenation!)
@@ -6637,6 +6705,7 @@ sqlEnd:
       EOF
     | SEMI SOL?
     | SOL
+    | SEMI PSQL_EXEC // PostgreSQL: execute statement and execute results
     | PSQL_EXEC // PostgreSQL: alternative to semicolon to terminate a statement
     | BSOL SEMI // PostgreSQL: alternative to semicolon to terminate a statement
 ;

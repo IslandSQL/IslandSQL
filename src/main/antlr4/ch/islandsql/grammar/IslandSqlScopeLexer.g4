@@ -53,7 +53,7 @@ fragment ANY_EXCEPT_LOG:
           'l' 'o' ~'g'
         | 'l' ~'o'
         | ~'l'
-    )
+    ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
 fragment ANY_EXCEPT_BODY:
     (
@@ -61,7 +61,7 @@ fragment ANY_EXCEPT_BODY:
         | 'b' 'o' ~'d'
         | 'b' ~'o'
         | ~'b'
-    )
+    ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -80,8 +80,8 @@ STRING:
         | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
         | '$$' .*? '$$' {!isInquiryDirective()}?                // PostgreSQL dollar-quoted string constant
-        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?
-        | 'n'? ['] ~[']* ['] (COMMENT_OR_WS* ['] ~[']* ['])*    // simple string, PostgreSQL, MySQL string constant
+        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
+        | 'n'? ':'? ['] ~[']* ['] (COMMENT_OR_WS* ':'? ['] ~[']* ['])*  // simple string, PostgreSQL, MySQL string constant, optionally with psql variable
         | 'n'? 'q' ['] '[' .*? ']' [']
         | 'n'? 'q' ['] '(' .*? ')' [']
         | 'n'? 'q' ['] '{' .*? '}' [']
@@ -259,7 +259,7 @@ CREATE_JSON_RELATIONAL_DUALITY_VIEW:
 CREATE_MATERIALIZED_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     'materialized' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+
-    ANY_EXCEPT_LOG -> pushMode(WITH_CLAUSE_MODE)
+    (QUOTED_ID|ANY_EXCEPT_LOG) -> pushMode(WITH_CLAUSE_MODE)
 ;
 
 // handles also package body
@@ -303,7 +303,7 @@ CREATE_TRIGGER:
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
+    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
@@ -421,8 +421,8 @@ UNIT_EOF: EOF -> popMode;
 UNIT_JAVA: ('is'|'as') COMMENT_OR_WS+ 'language' COMMENT_OR_WS+ 'java' COMMENT_OR_WS+ 'name' MORE_TO_SQL_END -> popMode;
 UNIT_MLE: ('is'|'as') COMMENT_OR_WS+ 'mle' COMMENT_OR_WS+ ('module'|'language') MORE_TO_SQL_END -> popMode;
 UNIT_C: ('is'|'as') COMMENT_OR_WS+ ('language' COMMENT_OR_WS+ 'c'|'external') MORE_TO_SQL_END -> popMode;
-UNIT_PG: 'as' COMMENT_OR_WS+ ':'? STRING SQL_TEXT*? SQL_END -> popMode;
-UNIT_PG_SQL_FUNC: 'language' COMMENT_OR_WS+ 'sql' SQL_TEXT+? 'return' MORE_TO_SQL_END -> popMode;
+UNIT_PG_CODE: 'as' COMMENT_OR_WS+ STRING -> more, mode(FUNCTION_MODE);
+UNIT_PG_SQL_FUNC: 'returns' -> more, mode(FUNCTION_MODE);
 UNIT: SQL_END -> popMode;
 
 // variants ending with a code block
@@ -436,6 +436,23 @@ UNIT_STRING: STRING -> more;
 UNIT_ID: ID -> more;
 UNIT_QUOTED_ID: QUOTED_ID -> more;
 UNIT_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// PostgreSQL Function Mode (FUNC)
+/*----------------------------------------------------------------------------*/
+
+mode FUNCTION_MODE;
+
+FUNC: SQL_END -> popMode;
+FUNC_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
+
+FUNC_ML_COMMENT: ML_COMMENT -> more;
+FUNC_SL_COMMENT: SL_COMMENT -> more;
+FUNC_WS: WS -> more;
+FUNC_STRING: STRING -> more;
+FUNC_ID: ID -> more;
+FUNC_QUOTED_ID: QUOTED_ID -> more;
+FUNC_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
 // Declare Section Mode (DS)

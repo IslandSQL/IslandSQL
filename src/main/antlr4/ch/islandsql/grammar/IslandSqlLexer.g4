@@ -35,8 +35,6 @@ fragment INT: [0-9]+ (LOWBAR [0-9]+)*; // PostgreSQL allows underscores for visu
 fragment IN_AND_NESTED_COMMENT: ('/'*? ML_COMMENT | ('/'* | '*'*) ~[/*])*? '*'*?;
 fragment STRING_WITH_ESCAPE_CHARS: (['] ('\\'? .)*? ['])+;
 fragment COMMENT_OR_WS: ML_HINT|ML_COMMENT|SL_HINT|SL_COMMENT|WS;
-fragment LAST_OPERATOR_CHAR: '*'|'/'|'<'|'>'|'='|'~'|'!'|'@'|'#'|'%'|'^'|'&'|'|'|'`'|'?';
-fragment OPERATOR_CHAR: '+'|'-'|LAST_OPERATOR_CHAR;
 
 /*----------------------------------------------------------------------------*/
 // Whitespace, comments and hints
@@ -305,6 +303,7 @@ K_EXTENDED: 'extended';
 K_EXTERNAL: 'external';
 K_EXTRA: 'extra';
 K_EXTRACT: 'extract';
+K_EXTSCHEMA: 'extschema';
 K_FACT: 'fact';
 K_FALSE: 'false';
 K_FAST: 'fast';
@@ -989,10 +988,29 @@ VERBAR_VERBAR: '||';
 // Generic operators used by various PostgreSQL extensions
 /*----------------------------------------------------------------------------*/
 
+// based on https://stackoverflow.com/questions/24194110/antlr4-negative-lookahead-in-lexer
+
+// operator not ending on '+' nor '-'
 POSTGRESQL_OPERATOR:
-      OPERATOR_CHAR
-    | OPERATOR_CHAR+ LAST_OPERATOR_CHAR
-    | OPERATOR_CHAR+ ('+'|'-') {isValidOperator()}?
+    (
+          [<>=~!@#%^&|`?]
+        | ('+'|'-' {_input.LA(1) != '-'}?)+ [<>=~!@#%^&|`?] // start single-line comment not allowed
+        | '/' {_input.LA(1) != '*'}? // start of multiline comment not allowed
+        | '*' {_input.LA(1) != '/'}? // end of multiline comment not allowed
+    )+
+;
+// operator can end on '+' or '-' if it contains one of these characters: [~!@#%^&|`?]
+POSTGRESQL_OPERATOR_ENDING_ON_PLUS_OR_MINUS:
+    (
+          [<>=+]
+        | '-' {_input.LA(1) != '-'}? // start single-line comment not allowed
+        | '/' {_input.LA(1) != '*'}? // start of multiline comment not allowed
+        | '*' {_input.LA(1) != '/'}? // end of multiline comment not allowed
+    )*
+    [~!@#%^&|`?]
+    POSTGRESQL_OPERATOR?
+    ('+'|'-' {_input.LA(1) != '-'}?)+ // start single-line comment not allowed
+    -> type(POSTGRESQL_OPERATOR)
 ;
 
 /*----------------------------------------------------------------------------*/
