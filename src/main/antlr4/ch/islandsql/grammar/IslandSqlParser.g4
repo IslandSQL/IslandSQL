@@ -6587,8 +6587,24 @@ unicodeIdentifier:
 
 // PostgreSQL
 psqlVariable:
-      COLON variable=qualifiedName
-    | COLON stringVariable=STRING
+      psqlSimpleVariable
+    | psqlStringVariable
+    | psqlExtschemaVariable
+;
+
+// PostgreSQL
+psqlSimpleVariable:
+    COLON variable=qualifiedName
+;
+
+// PostgreSQL
+psqlStringVariable:
+    COLON stringVariable=STRING
+;
+
+// PostgreSQL
+psqlExtschemaVariable:
+    COMMAT K_EXTSCHEMA (COLON name=unquotedId)? COMMAT
 ;
 
 // parser rule to handle conflict with PostgreSQL & operator
