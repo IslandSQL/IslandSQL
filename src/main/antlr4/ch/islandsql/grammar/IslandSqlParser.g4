@@ -2088,7 +2088,13 @@ groupByItem:
 ;
 
 groupingSetsClause:
-    K_GROUPING K_SETS LPAR groupingSets+=expression (COMMA groupingSets+=expression)* RPAR
+    K_GROUPING K_SETS LPAR items+=groupingSetItem (COMMA items+=groupingSetItem)* RPAR
+;
+
+// nested grouping sets are allowed in PostgreSQL
+groupingSetItem:
+      expression
+    | groupingSetsClause
 ;
 
 modelClause:
