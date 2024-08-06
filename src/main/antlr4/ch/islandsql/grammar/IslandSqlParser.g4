@@ -6610,6 +6610,7 @@ reservedKeywordAsId:
 
 unquotedId:
       ID
+    | LOWBAR                        // PostgreSQL, not part of ID since LOWBAR is defined first
     | keywordAsId
 ;
 
