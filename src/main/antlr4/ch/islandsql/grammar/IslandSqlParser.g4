@@ -4110,7 +4110,13 @@ postgresqlSubscript:
 // used in PL/SQL elements instead of expression for PL/pgSQL compatiblity
 postgresqlSqlExpression:
     expr=expression (K_AS? cAlias=sqlName)?
-    fromClause? whereClause? groupByClause? windowClause? orderByClause? rowLimitingClause?
+    fromClause?
+    whereClause?
+    groupByClause?
+    windowClause?
+    orderByClause?
+    rowLimitingClause?
+    forUpdateClause*
 ;
 
 intervalExpression:
