@@ -4454,7 +4454,9 @@ cast:
               expr=expression
             | K_MULTISET LPAR subquery RPAR
         )
-        K_AS K_DOMAIN? typeName=dataType domainValidateClause?
+        K_AS K_DOMAIN? typeName=dataType
+        (K_COLLATE collate=sqlName)?
+        domainValidateClause?
         defaultOnConversionError?
         (COMMA fmt=expression (COMMA nlsparam=expression)?)?
     RPAR
