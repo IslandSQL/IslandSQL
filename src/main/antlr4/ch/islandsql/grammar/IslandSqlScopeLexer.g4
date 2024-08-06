@@ -61,7 +61,7 @@ fragment ANY_EXCEPT_BODY:
         | 'b' 'o' ~'d'
         | 'b' ~'o'
         | ~'b'
-    )
+    ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -303,7 +303,7 @@ CREATE_TRIGGER:
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ ANY_EXCEPT_BODY SQL_TEXT+? SQL_END
+    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) SQL_TEXT+? SQL_END
 ;
 
 CREATE_TYPE_BODY:
