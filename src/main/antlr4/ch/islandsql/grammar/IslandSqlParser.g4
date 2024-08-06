@@ -6702,6 +6702,7 @@ sqlEnd:
       EOF
     | SEMI SOL?
     | SOL
+    | SEMI PSQL_EXEC // PostgreSQL: execute statement and execute results
     | PSQL_EXEC // PostgreSQL: alternative to semicolon to terminate a statement
     | BSOL SEMI // PostgreSQL: alternative to semicolon to terminate a statement
 ;
