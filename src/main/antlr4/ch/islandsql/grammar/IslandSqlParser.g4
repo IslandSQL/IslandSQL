@@ -5596,6 +5596,7 @@ unaryOperator:
     | COMMAT                # postgresqlUnaryOperator
     | NUM                   # postgresqlUnaryOperator
     | TILDE                 # postgresqlUnaryOperator
+    | K_VARIADIC            # postgresqlUnaryOperator
 
 ;
 
