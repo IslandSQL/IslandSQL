@@ -4103,6 +4103,7 @@ postgresqlSubscript:
       LSQB lower=expression COLON upper=expression RSQB
     | LSQB lower=expression COLON RSQB
     | LSQB COLON lower=expression RSQB
+    | LSQB COLON RSQB // undocumented in PostgreSQL 16.3
 ;
 
 // PostgreSQL: single column, 0-1 result rows
