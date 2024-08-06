@@ -588,6 +588,7 @@ unterminatedAtomicStatement:
 // end statement excluded due to conflict with end keyword in blocks
 terminatedAtomicStatement:
       closeStatment
+    | returnStatement // undocumented in 16.3
     | postgresqlFetchStatement
     | postgresqlMoveStatement
     | K_ABORT postgreSqlStatementTrailingTokens SEMI
