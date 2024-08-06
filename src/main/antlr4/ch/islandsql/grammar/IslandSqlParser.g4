@@ -1398,8 +1398,9 @@ postgresqlViewOptions:
 ;
 
 // used also for materialized view and therefore name is a qualifiedName
+// dims is used in range type
 postgresqlOption:
-    name=qualifiedName (EQUALS value=expression)?
+    name=qualifiedName (EQUALS value=expression dims+=dataTypeArrayDim*)?
 ;
 
 // artificial clause
