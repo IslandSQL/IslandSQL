@@ -1756,7 +1756,7 @@ lockTableStatement:
 lockTable:
     K_LOCK K_TABLE? K_ONLY? // PostgreSQL: optional table, only
         objects+=lockTableObject (COMMA objects+=lockTableObject)*
-        K_IN lockMode K_MODE lockTableWaitOption?
+        (K_IN lockMode K_MODE lockTableWaitOption?)? // PostgreSQL: optional lockMode
 ;
 
 lockTableObject:
