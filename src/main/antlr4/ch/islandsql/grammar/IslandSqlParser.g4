@@ -5320,12 +5320,14 @@ xmlexists:
     K_XMLEXISTS LPAR expr=expression xmlPassingClause? RPAR
 ;
 
+// PostgreSQL: by ref
 xmlPassingClause:
-    K_PASSING (K_BY K_VALUE)? items+=xmlPassingItem (COMMA items+=xmlPassingItem)*
+    K_PASSING (K_BY (K_VALUE|K_REF))? items+=xmlPassingItem (COMMA items+=xmlPassingItem)*
 ;
 
+// PostgreSQL: by value/ref
 xmlPassingItem:
-    expr=expression (K_AS identifier=sqlName)?
+    expr=expression (K_AS identifier=sqlName)? (K_BY (K_VALUE|K_REF))?
 ;
 
 xmlforest:
