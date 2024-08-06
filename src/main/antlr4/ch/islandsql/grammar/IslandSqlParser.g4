@@ -591,15 +591,15 @@ terminatedAtomicStatement:
     | returnStatement // undocumented in 16.3
     | postgresqlFetchStatement
     | postgresqlMoveStatement
-    | K_ABORT postgreSqlStatementTrailingTokens SEMI
-    | K_LISTEN postgreSqlStatementTrailingTokens SEMI
-    | K_LOAD postgreSqlStatementTrailingTokens SEMI
-    | K_NOTIFY postgreSqlStatementTrailingTokens SEMI
-    | K_SECURITY postgreSqlStatementTrailingTokens SEMI
-    | K_SHOW postgreSqlStatementTrailingTokens SEMI
-    | K_START postgreSqlStatementTrailingTokens SEMI
-    | K_UNLISTEN postgreSqlStatementTrailingTokens SEMI
-    | K_VACUUM  postgreSqlStatementTrailingTokens SEMI
+    | K_ABORT postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_LISTEN postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_LOAD postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_NOTIFY postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_SECURITY postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_SHOW postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_START postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_UNLISTEN postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_VACUUM  postgreSqlStatementTrailingTokens (EOF|SEMI)
 ;
 
 postgreSqlStatementTrailingTokens:
