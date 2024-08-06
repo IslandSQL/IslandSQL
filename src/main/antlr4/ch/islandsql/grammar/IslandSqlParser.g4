@@ -1846,12 +1846,12 @@ mergeUpdateClause:
 
 // artifical clause
 mergeUpdateColumn:
-    column=qualifiedName EQUALS expr=expression
+    column=columnReference EQUALS expr=expression
 ;
 
 mergeInsertClause:
     K_WHEN K_NOT K_MATCHED K_THEN K_INSERT
-    (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    (LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR)?
     K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
 ;
 
@@ -1865,8 +1865,9 @@ mergeWhenClause:
 mergeUpdate:
     K_UPDATE K_SET
     (
-          columns+=qualifiedName EQUALS exprs+=expression
-        | LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR
+          columns+=columnReference EQUALS exprs+=expression
+            (COMMA columns+=columnReference EQUALS exprs+=expression)*
+        | LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
             EQUALS LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
     )
 ;
@@ -1878,7 +1879,7 @@ mergeDelete:
 
 // PostgreSQL
 mergeInsert:
-    K_INSERT (LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR)?
+    K_INSERT (LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR)?
     (K_OVERRIDING (K_SYSTEM | K_USER) K_VALUE)?
     (K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR | K_DEFAULT K_VALUES)
 ;
