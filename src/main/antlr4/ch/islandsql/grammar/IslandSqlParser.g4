@@ -3491,7 +3491,7 @@ fetchDirection:
 ;
 
 postgresqlForEachStatement:
-    K_FOREACH target=qualifiedName (K_SLICE slice=expression)?
+    K_FOREACH targets+=sqlName (COMMA targets+=sqlName)* (K_SLICE slice=expression)?
         K_IN K_ARRAY expr=postgresqlSqlExpression
         K_LOOP statements+=plsqlStatement+ K_END K_LOOP name=sqlName? SEMI
 ;
