@@ -1669,7 +1669,18 @@ insertIntoClause:
 ;
 
 columnReference:
-    qualifiedName postgresqlSubscript*
+    items+=columnReferenceItem (PERIOD items+=columnReferenceItem)*
+;
+
+columnReferenceItem:
+      sqlName
+    | postgresqlSubscriptReference+
+    | sqlName postgresqlSubscriptReference+
+;
+
+postgresqlSubscriptReference:
+      postgresqlSubscript
+    | LSQB lower=expression RSQB
 ;
 
 insertValuesClause:
@@ -1740,8 +1751,8 @@ postgresqlOnConflictActionDoUpdate:
 ;
 
 postgresqlOnConflictActionDoUpdateItem:
-      column+=sqlName EQUALS exprs+=expression
-    | LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
+      columns+=columnReference EQUALS exprs+=expression
+    | LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS K_ROW? LPAR ((exprs+=expression (COMMA exprs+=expression)*) | subquery) RPAR
 ;
 
@@ -2662,13 +2673,13 @@ updateSetClause:
 ;
 
 updateSetClauseItem:
-      LPAR columns+=expression (COMMA columns+=expression)* RPAR
+      LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS LPAR query=subquery RPAR                                             # columnListUpdateSetClauseItem
-    | LPAR columns+=expression (COMMA columns+=expression)* RPAR
+    | LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR
         EQUALS K_ROW? LPAR exprs+=expression (COMMA exprs+=expression)* RPAR        # postgresqlRowUpdateSetClauseItem
-    | LPAR columns+=expression RPAR
+    | LPAR columns+=columnReference RPAR
         EQUALS (expr=expression | LPAR query=subquery RPAR)                         # columnUpdateSetClauseItem
-    | columns+=expression EQUALS (expr=expression | LPAR query=subquery RPAR)       # columnUpdateSetClauseItem
+    | columns+=columnReference EQUALS (expr=expression | LPAR query=subquery RPAR)  # columnUpdateSetClauseItem
 ;
 
 /*----------------------------------------------------------------------------*/
