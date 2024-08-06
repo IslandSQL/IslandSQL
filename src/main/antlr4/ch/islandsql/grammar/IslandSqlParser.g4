@@ -3294,7 +3294,7 @@ ifStatement:
 // artificial clause
 // stmts are optional in PL/pgSQL, undocumented in 16.3
 conditionToStatements:
-    cond=expression K_THEN stmts+=plsqlStatement*
+    cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement*
 ;
 
 nullStatement:
