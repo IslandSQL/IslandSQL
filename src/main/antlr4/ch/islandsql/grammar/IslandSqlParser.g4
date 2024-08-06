@@ -951,7 +951,7 @@ beforeTableProperties:
 tableProperties:
     annotationsClause?
     (
-           K_AS subquery
+           K_AS subquery (K_WITH K_NO? K_DATA)? // PostgreSQL allows "with (no) data"
         | K_FOR K_EXCHANGE K_WITH K_TABLE (schema=sqlName PERIOD)? tableName=sqlName
     )?
     (K_FOR K_STAGING)?
@@ -1883,7 +1883,6 @@ selectStatement:
 
 select:
     subquery
-    (K_WITH K_NO? K_DATA)? // PostgreSQL, TODO: remove with create table support, see see https://github.com/IslandSQL/IslandSQL/issues/82
 ;
 
 // moved with_clause from query_block to support main query in parenthesis (works, undocumented)
