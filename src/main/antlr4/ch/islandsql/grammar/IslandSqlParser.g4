@@ -1285,7 +1285,7 @@ postgresqlType:
 ;
 
 postgresqlAttribute:
-    name=sqlName dataType (K_COLLATE collation=qualifiedName)?
+    name=sqlName dataType (K_COLLATE collate=sqlName)?
 ;
 
 postgresqlEnumType:
@@ -3992,7 +3992,7 @@ expression:
         LSQB (cellAssignmentList|multiColumnForLoop) RSQB       # modelExpression               // precedence 3, also PostgreSQL array element selection
     | expr=expression postgresqlSubscript                       # postgresqlSubscriptParent     // precedence 3, PostgreSQL subscripts are handeld as model_expression
     | expr=postgresqlArrayConstructor                           # postgresqlArrayConstructorParent // precedence 3
-    | left=expression operator=K_COLLATE right=expression       # collateExpression             // precedence 5
+    | left=expression operator=K_COLLATE right=sqlName          # collateExpression             // precedence 5
     | left=expression operator=K_AT
         (
               K_LOCAL
