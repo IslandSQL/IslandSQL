@@ -2736,10 +2736,10 @@ assocArrayTypeDef:
 ;
 
 plsqlDataType:
-      K_REF dataType            # refPlsqlDataType
-    | dataType PERCNT K_TYPE    # percentTypePlsqlDataType
-    | dataType PERCNT K_ROWTYPE # percentRowtypePlsqlDataType
-    | dataType                  # simplePlsqlDataType
+      K_REF dataType                                    # refPlsqlDataType
+    | qualifiedName PERCNT K_TYPE dataTypeArray?        # percentTypePlsqlDataType
+    | qualifiedName PERCNT K_ROWTYPE dataTypeArray?     # percentRowtypePlsqlDataType
+    | dataType                                          # simplePlsqlDataType
 ;
 
 // not documented in 23.4: optionality of "not"
@@ -3782,13 +3782,11 @@ transactionMode:
 // Data types
 /*----------------------------------------------------------------------------*/
 
-// array size is not documented in PosgresSQL 16.3
 dataType:
-      oracleBuiltInDatatype
-    | ansiSupportedDatatype
-    | postgresqlDatatype
-    | userDefinedType
-    | posgresqlArrayDatatype=dataType (LSQB size=NUMBER? RSQB)
+      oracleBuiltInDatatype dataTypeArray?
+    | ansiSupportedDatatype dataTypeArray?
+    | postgresqlDatatype dataTypeArray?
+    | userDefinedType dataTypeArray?  // ambiguous
 ;
 
 oracleBuiltInDatatype:
@@ -3956,6 +3954,18 @@ intervalField:
 // handles also parametrized PostGIS data types such as geography
 userDefinedType:
     name=qualifiedName (LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)?
+;
+
+// PostgreSQL
+dataTypeArray:
+      K_ARRAY
+    | K_ARRAY dims+=dataTypeArrayDim+
+    | dims+=dataTypeArrayDim+
+;
+
+// PostgreSQL
+dataTypeArrayDim:
+    LSQB size=NUMBER? RSQB
 ;
 
 /*----------------------------------------------------------------------------*/
