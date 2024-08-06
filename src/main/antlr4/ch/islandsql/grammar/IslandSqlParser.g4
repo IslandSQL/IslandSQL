@@ -549,13 +549,13 @@ postgresqlProcedureOption:
 
 atomicBlock:
     K_BEGIN K_ATOMIC
-        stmts+=atomicStatement+
+        stmts+=atomicStatement*
     K_END
 ;
 
 atomicStatement:
       statement
-    | unterminatedAtomicStatement SEMI
+    | unterminatedAtomicStatement (EOF|SEMI)
     | terminatedAtomicStatement
 ;
 
@@ -591,15 +591,15 @@ terminatedAtomicStatement:
     | returnStatement // undocumented in 16.3
     | postgresqlFetchStatement
     | postgresqlMoveStatement
-    | K_ABORT postgreSqlStatementTrailingTokens SEMI
-    | K_LISTEN postgreSqlStatementTrailingTokens SEMI
-    | K_LOAD postgreSqlStatementTrailingTokens SEMI
-    | K_NOTIFY postgreSqlStatementTrailingTokens SEMI
-    | K_SECURITY postgreSqlStatementTrailingTokens SEMI
-    | K_SHOW postgreSqlStatementTrailingTokens SEMI
-    | K_START postgreSqlStatementTrailingTokens SEMI
-    | K_UNLISTEN postgreSqlStatementTrailingTokens SEMI
-    | K_VACUUM  postgreSqlStatementTrailingTokens SEMI
+    | K_ABORT postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_LISTEN postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_LOAD postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_NOTIFY postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_SECURITY postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_SHOW postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_START postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_UNLISTEN postgreSqlStatementTrailingTokens (EOF|SEMI)
+    | K_VACUUM  postgreSqlStatementTrailingTokens (EOF|SEMI)
 ;
 
 postgreSqlStatementTrailingTokens:
@@ -1398,8 +1398,9 @@ postgresqlViewOptions:
 ;
 
 // used also for materialized view and therefore name is a qualifiedName
+// dims is used in range type
 postgresqlOption:
-    name=qualifiedName (EQUALS value=expression)?
+    name=qualifiedName (EQUALS value=expression dims+=dataTypeArrayDim*)?
 ;
 
 // artificial clause
@@ -4112,6 +4113,8 @@ expression:
     | left=expression
         K_IS K_NOT? K_DESTINATION K_OF right=expression         # destinationPredicate
     | left=expression K_OVERLAPS right=expression               # overlapsExpression
+    | left=expression K_IS K_NOT?
+        form=sqlName? operator=K_NORMALIZED                     # normalizedExpression
 ;
 
 postgresqlSubscript:
@@ -5318,12 +5321,14 @@ xmlexists:
     K_XMLEXISTS LPAR expr=expression xmlPassingClause? RPAR
 ;
 
+// PostgreSQL: by ref
 xmlPassingClause:
-    K_PASSING (K_BY K_VALUE)? items+=xmlPassingItem (COMMA items+=xmlPassingItem)*
+    K_PASSING (K_BY (K_VALUE|K_REF))? items+=xmlPassingItem (COMMA items+=xmlPassingItem)*
 ;
 
+// PostgreSQL: by value/ref
 xmlPassingItem:
-    expr=expression (K_AS identifier=sqlName)?
+    expr=expression (K_AS identifier=sqlName)? (K_BY (K_VALUE|K_REF))?
 ;
 
 xmlforest:
@@ -5397,6 +5402,7 @@ xmlTableColumn:
           K_FOR K_ORDINALITY
         | (typeName=dataType|K_XMLTYPE (LPAR K_SEQUENCE RPAR K_BY K_REF)?)
           (K_PATH path=expression)? (K_DEFAULT defaultValue=expression)?
+          (K_NOT? K_NULL)? // PostgreSQL
     )
 ;
 
@@ -6221,6 +6227,7 @@ keywordAsId:
     | K_NOPRECHECK
     | K_NORELY
     | K_NORMALIZE
+    | K_NORMALIZED
     | K_NOSCHEMACHECK
     | K_NOT
     | K_NOTHING
@@ -6607,6 +6614,7 @@ reservedKeywordAsId:
 
 unquotedId:
       ID
+    | LOWBAR                        // PostgreSQL, not part of ID since LOWBAR is defined first
     | keywordAsId
 ;
 

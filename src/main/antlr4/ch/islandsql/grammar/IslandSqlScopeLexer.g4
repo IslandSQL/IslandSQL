@@ -32,7 +32,7 @@ fragment HSPACE: [ \t]+;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
 fragment NAME: ID|QUOTED_ID;
 fragment LABEL: '<<' WS? NAME WS? '>>';
-fragment PSQL_EXEC: (WS|ML_COMMENT)* '\\g' ~[\n]* (EOF|SINGLE_NL);
+fragment PSQL_EXEC: (WS|ML_COMMENT)* ('\\g'|'\\crosstabview') ~[\n]* (EOF|SINGLE_NL);
 fragment OR_REPLACE: ('or' COMMENT_OR_WS+ 'replace' COMMENT_OR_WS+)?;
 fragment NON_EDITIONABLE: (('editionable' | 'noneditionable') COMMENT_OR_WS+)?;
 fragment TO_SQLPLUS_END: ((HSPACE|CONTINUE_LINE) SQLPLUS_TEXT*)? SQLPLUS_END;
@@ -303,7 +303,7 @@ CREATE_TRIGGER:
 // OracleDB and PostgreSQL type specifications
 CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) SQL_TEXT+? SQL_END
+    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) TO_SQL_END
 ;
 
 CREATE_TYPE_BODY:
