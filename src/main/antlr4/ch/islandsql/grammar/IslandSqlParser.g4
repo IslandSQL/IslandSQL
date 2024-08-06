@@ -5399,6 +5399,7 @@ xmlTableColumn:
           K_FOR K_ORDINALITY
         | (typeName=dataType|K_XMLTYPE (LPAR K_SEQUENCE RPAR K_BY K_REF)?)
           (K_PATH path=expression)? (K_DEFAULT defaultValue=expression)?
+          (K_NOT? K_NULL)? // PostgreSQL
     )
 ;
 
