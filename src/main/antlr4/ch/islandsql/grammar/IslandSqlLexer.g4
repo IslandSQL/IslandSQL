@@ -1092,7 +1092,7 @@ POSITIONAL_PARAMETER: '$'[0-9]+;
 // psql exec query command
 /*----------------------------------------------------------------------------*/
 
-PSQL_EXEC: (WS|ML_COMMENT|ML_HINT)* '\\g' ~[\n]* (EOF|SINGLE_NL);
+PSQL_EXEC: (WS|ML_COMMENT|ML_HINT)* ('\\g'|'\\crosstabview') ~[\n]* (EOF|SINGLE_NL);
 
 /*----------------------------------------------------------------------------*/
 // Any other token
