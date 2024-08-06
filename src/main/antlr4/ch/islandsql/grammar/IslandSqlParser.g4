@@ -4215,6 +4215,7 @@ elseClause:
 specialFunctionExpression:
       avExpression
     | cast
+    | collation // PostgreSQL
     | extract
     | featureCompare
     | fromVector
@@ -4451,6 +4452,11 @@ domainValidateClause:
 
 defaultOnConversionError:
     K_DEFAULT returnValue=expression K_ON K_CONVERSION K_ERROR
+;
+
+// PostgreSQL
+collation:
+    K_COLLATION K_FOR LPAR expr=postgresqlSqlExpression RPAR
 ;
 
 extract:
