@@ -214,6 +214,12 @@ CREATE_SCHEMA:
 ;
 
 // hide keyword: with
+CREATE_SUBSCRIPTION:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'subscription'
+        MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
+// hide keyword: with
 CREATE_USER:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ 'user'
         MORE_TO_SQL_END -> channel(HIDDEN)
