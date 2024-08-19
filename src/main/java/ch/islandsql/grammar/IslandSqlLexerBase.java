@@ -17,6 +17,7 @@
 package ch.islandsql.grammar;
 
 import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.IntStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
@@ -65,6 +66,20 @@ public abstract class IslandSqlLexerBase extends Lexer {
             // WS (1) must be ignored and STRING (2) is not relevant
             this.lastToken = token;
         }
+    }
+
+    /**
+     * Sets the input stream and resets cached values, which is important when reusing the lexer.
+     *
+     * @param input Input stream to be set
+     */
+    @Override
+    public void setInputStream(IntStream input) {
+        super.setInputStream(input);
+        lastToken = null;
+        quoteDelimiter1 = null;
+        dollarIdentifier1 = null;
+        lastDollarIdentifierIndex = -1;
     }
 
     /**
