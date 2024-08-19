@@ -3130,6 +3130,7 @@ cursorForLoopStatement:
         | insert                                    // PostgreSQL with returning_clause
         | update                                    // PostgreSQL with returning_clause
         | delete                                    // PostgreSQL with returning_clause
+        | explain                                   // PostgreSQL
         | K_EXECUTE query=expression usingClause?   // PostgreSQL
     ) K_LOOP stmts+=plsqlStatement* K_END K_LOOP name=sqlName? SEMI
 ;
