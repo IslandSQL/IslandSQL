@@ -196,6 +196,12 @@ CREATE_OPERATOR:
 ;
 
 // hide keywords: select, insert, update, delete
+CREATE_POLICY:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+        'policy' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: select, insert, update, delete
 CREATE_RULE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
         'rule' COMMENT_OR_WS -> pushMode(HIDDEN_PARENTHESES_MODE), channel(HIDDEN)
