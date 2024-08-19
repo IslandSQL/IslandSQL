@@ -2245,10 +2245,10 @@ fromClause:
 // handles table aliases for all from items, simplifies from items in parentheses
 // table_tags_clause is valid only within create_json_relational_duality_view
 fromItem:
-      tableReference tableAlias? tableTagsClause?   # tableReferenceFromItem
-    | fromItem joins+=joinVariant+                  # joinClause
-    | inlineAnalyticView tableAlias?                # inlineAnalyticViewFromItem
-    | LPAR fromItem RPAR tableAlias?                # parenFromItem
+      tableReference tableAlias? tableTagsClause? sampleClausePostgresql?   # tableReferenceFromItem
+    | fromItem joins+=joinVariant+                                          # joinClause
+    | inlineAnalyticView tableAlias?                                        # inlineAnalyticViewFromItem
+    | LPAR fromItem RPAR tableAlias?                                        # parenFromItem
 ;
 
 // PostgreSQL allows caliases
@@ -2331,9 +2331,14 @@ externalFileLocation:
     | (directory=sqlName COLON)? locationSpecifier=string
 ;
 
+// OracleDB: placed before the table alias
 sampleClause:
-      K_SAMPLE K_BLOCK? LPAR samplePercent=expression RPAR (K_SEED LPAR seedValue=expression RPAR)? // OracleDB
-    | K_TABLESAMPLE samplingMethod=sqlName LPAR args+=expression (COMMA args+=expression)* RPAR (K_REPEATABLE LPAR seedValue=expression RPAR)? // PostgreSQL
+    K_SAMPLE K_BLOCK? LPAR samplePercent=expression RPAR (K_SEED LPAR seedValue=expression RPAR)?
+;
+
+// PostgreSQL: placed after the table alias
+sampleClausePostgresql:
+    K_TABLESAMPLE samplingMethod=sqlName LPAR args+=expression (COMMA args+=expression)* RPAR (K_REPEATABLE LPAR seedValue=expression RPAR)? // PostgreSQL
 ;
 
 inlineExternalTable:
