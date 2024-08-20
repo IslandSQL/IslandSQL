@@ -1858,7 +1858,8 @@ mergeInsertClause:
 // PostgreSQL
 mergeWhenClause:
       K_WHEN K_MATCHED (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
-    | K_WHEN K_NOT K_MATCHED (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED K_BY K_SOURCE (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_BY K_TARGET)? (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
 ;
 
 // PostgreSQL
