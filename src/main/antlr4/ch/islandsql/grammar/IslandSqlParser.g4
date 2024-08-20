@@ -1907,7 +1907,7 @@ subquery:
     | left=subquery setOperator right=subquery                                                      # setSubquery
     | withClause? LPAR subquery RPAR forUpdateClause+ orderByClause? rowLimitingClause? intoClause? # parenSubquery
     | withClause? LPAR subquery RPAR orderByClause? rowLimitingClause? forUpdateClause* intoClause? # parenSubquery
-    | valuesClause orderByClause? rowLimitingClause? intoClause?                                    # valuesSubquery
+    | withClause? valuesClause orderByClause? rowLimitingClause? intoClause?                        # valuesSubquery // withClause in PostgreSQL only
     | K_TABLE K_ONLY? tableName=qualifiedName AST?                                                  # tableQueryBlockSubquery // PostgreSQL
 ;
 
