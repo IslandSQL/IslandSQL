@@ -153,6 +153,12 @@ ALTER_TABLESPACE:
         'tablespace' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
+// hide keyword: with
+ALTER_TEXT:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'text' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
 // hide keywords: select, insert, update, delete
 CREATE_AUDIT_POLICY:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
