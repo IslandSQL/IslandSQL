@@ -5561,8 +5561,9 @@ overClause:
     K_OVER (windowName=sqlName|LPAR analyticClause RPAR)
 ;
 
+// PostgreSQL allows windowing_clause without a preceding order_by_clause (OracleDB does not)
 analyticClause:
-    (windowName=sqlName|queryPartitionClause)? (orderByClause windowingClause?)?
+    (windowName=sqlName|queryPartitionClause)? orderByClause? windowingClause?
 ;
 
 // called frame_clause in PostgreSQL
