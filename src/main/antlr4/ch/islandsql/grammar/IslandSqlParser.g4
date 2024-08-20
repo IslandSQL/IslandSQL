@@ -1833,8 +1833,9 @@ mergeIntoClause:
 
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
+// PostgreSQL: join as source is not documentend, only is handled in table_reference
 mergeUsingClause:
-    K_USING K_ONLY? queryTableExpression K_AS? talias=sqlName? // PostgreSQL: only, as
+    K_USING fromItem
 ;
 
 mergeUpdateClause:
@@ -2271,7 +2272,7 @@ postgresqlColumnDefinition:
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
-    | K_ONLY? qte=queryTableExpression flashbackQueryClause? // Postgresql: only (allowed without parentheses)
+    | K_ONLY? qte=queryTableExpression flashbackQueryClause? // Postgresql: only (allowed without parentheses, used also in merge)
          (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
 ;
 
