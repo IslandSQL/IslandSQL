@@ -1820,7 +1820,7 @@ merge:
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
         | mergeInsertClause                     // OracleDB
-        | mergeWhenClause+                      // PostgreSQL
+        | mergeWhenClause+ returningClause?     // PostgreSQL
     )
     errorLoggingClause?
 ;
@@ -1964,6 +1964,7 @@ subqueryFactoringClause:
             | insert         // PostgreSQL
             | update         // PostgreSQL
             | delete         // PostgreSQL
+            | merge          // PostgreSQL
         )
     RPAR
     searchClause?
