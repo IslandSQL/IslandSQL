@@ -857,6 +857,7 @@ K_UROWID: 'urowid';
 K_USE: 'use';
 K_USER: 'user';
 K_USING: 'using';
+K_UTF8: 'utf8';
 K_UUID: 'uuid';
 K_VACUUM: 'vacuum';
 K_VALIDATE: 'validate';

@@ -6553,6 +6553,7 @@ keywordAsId:
     | K_USE
     | K_USER
     | K_USING
+    | K_UTF8
     | K_UUID
     | K_VACUUM
     | K_VALIDATE
