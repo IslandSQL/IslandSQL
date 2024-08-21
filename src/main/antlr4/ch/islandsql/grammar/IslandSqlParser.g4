@@ -4249,6 +4249,7 @@ specialFunctionExpression:
     | fromVector
     | fuzzyMatch
     | graphTable
+    | json // PostgreSQL
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -4627,6 +4628,13 @@ fullEdgePointingLeft:
 fullEdgeAnyDirection:
       MINUS LSQB elementPatternFiller RSQB MINUS
     | LT MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
+;
+
+json:
+    K_JSON LPAR
+        expr=expression
+        formatClause? jsonUniqueKeys? // PostgreSQL
+    RPAR
 ;
 
 jsonArray:
