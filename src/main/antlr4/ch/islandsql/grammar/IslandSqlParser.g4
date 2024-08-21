@@ -4688,15 +4688,8 @@ jsonOnNullClause:
 ;
 
 jsonReturningClause:
-    K_RETURNING
-        (
-              K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? (K_WITH K_TYPENAME)?
-            | K_CLOB
-            | K_BLOB
-            | K_JSON
-            | K_BYTEA   // PostgreSQL
-        )
-        formatClause? // PostgreSQL in json_array
+    K_RETURNING dataType (K_WITH K_TYPENAME)? // PostgreSQL: any data type is allowed, e.g. domains
+        formatClause? // PostgreSQL in json_array and other functions
 ;
 
 jsonTransformReturningClause:
