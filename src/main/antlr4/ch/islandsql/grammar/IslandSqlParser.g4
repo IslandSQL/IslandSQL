@@ -6367,6 +6367,7 @@ keywordAsId:
     | K_PUNCTUATION
     | K_QUALIFY
     | K_QUERY
+    | K_QUOTES
     | K_RAISE
     | K_RANGE
     | K_RANK

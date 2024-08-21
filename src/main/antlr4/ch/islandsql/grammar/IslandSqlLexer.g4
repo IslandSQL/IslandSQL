@@ -648,6 +648,7 @@ K_PROCEDURE: 'procedure';
 K_PUNCTUATION: 'punctuation';
 K_QUALIFY: 'qualify';
 K_QUERY: 'query';
+K_QUOTES: 'quotes';
 K_RAISE: 'raise';
 K_RANGE: 'range';
 K_RANK: 'rank';
