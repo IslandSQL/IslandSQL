@@ -5767,8 +5767,8 @@ jsonConditionOption:
     | K_LAX                                         # laxJsonConditionOption
     | K_ALLOW K_SCALARS                             # allowScalarsJsonConditionOption
     | K_DISALLOW K_SCALARS                          # disallowSclarsJsonConditionOption
-    | K_WITH K_UNIQUE K_KEYS                        # withUniqueKeysJsonConditionOption
-    | K_WITHOUT K_UNIQUE K_KEYS                     # withoutUniqueKeysJsonConditionOption
+    | K_WITH K_UNIQUE K_KEYS?                       # withUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
+    | K_WITHOUT K_UNIQUE K_KEYS?                    # withoutUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
     | K_VALIDATE K_CAST? K_USING? schema=expression # validateJsonConditionOption
 ;
 
