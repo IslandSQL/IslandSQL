@@ -4686,7 +4686,9 @@ jsonReturningClause:
             | K_CLOB
             | K_BLOB
             | K_JSON
+            | K_BYTEA   // PostgreSQL
         )
+        formatClause? // PostgreSQL in json_array
 ;
 
 jsonTransformReturningClause:
