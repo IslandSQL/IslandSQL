@@ -4759,7 +4759,12 @@ jsonObjectContent:
         | entries+=entry (COMMA entries+=entry)*
     )
     jsonOnNullClause? jsonReturningClause? options+=jsonOption*
-    (K_WITH K_UNIQUE K_KEYS)?
+    jsonUniqueKeys?
+;
+
+jsonUniqueKeys:
+      K_WITH K_UNIQUE K_KEYS?       # withJsonUniqueKeys        // keys is optional in PostgreSQL
+    | K_WITHOUT K_UNIQUE K_KEYS?    # withoutJsonUniqueKeys     // PostgreSQL
 ;
 
 entry:
