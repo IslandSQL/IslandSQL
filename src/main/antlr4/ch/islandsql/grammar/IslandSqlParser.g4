@@ -4672,6 +4672,7 @@ jsonModifierList:
 
 formatClause:
     K_FORMAT K_JSON
+    (K_ENCODING K_UTF8)? // PostgreSQL
 ;
 
 jsonOnNullClause:
