@@ -5734,8 +5734,9 @@ jsonPassingItem:
     expr=expression K_AS identifier=sqlName
 ;
 
+// Postgresql: unknown
 jsonExistsOnErrorClause:
-    (K_ERROR|K_TRUE|K_FALSE) K_ON K_ERROR
+    (K_ERROR|K_TRUE|K_FALSE|K_UNKNOWN) K_ON K_ERROR
 ;
 
 jsonExistsOnEmptyClause:
