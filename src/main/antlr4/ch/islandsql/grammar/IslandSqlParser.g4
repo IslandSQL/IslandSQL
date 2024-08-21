@@ -4835,7 +4835,13 @@ jsonScalar:
 ;
 
 jsonSerialize:
-    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? options+=jsonOption* jsonQueryOnErrorClause? RPAR
+    K_JSON_SERIALIZE LPAR
+        expr=expression
+        formatClause? // PostgreSQL
+        jsonReturningClause?
+        options+=jsonOption*
+        jsonQueryOnErrorClause?
+    RPAR
 ;
 
 // jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
