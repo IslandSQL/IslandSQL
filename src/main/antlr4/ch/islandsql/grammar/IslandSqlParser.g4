@@ -4789,9 +4789,17 @@ regularEntry:
 ;
 
 jsonObjectagg:
-    K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
-    jsonOnNullClause? jsonReturningClause? options+=jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
+    K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression (COLON|K_VALUE) valExpr=expression formatClause?
+    options+=jsonObjectaggOption* RPAR
     postgresqlFilterClause? overClause?
+;
+
+// artificial clause to support different position of jsonUniqueKeys in OracleDB and PostgreSQL
+jsonObjectaggOption:
+      jsonOnNullClause
+    | jsonReturningClause
+    | jsonOption
+    | jsonUniqueKeys
 ;
 
 jsonQuery:
