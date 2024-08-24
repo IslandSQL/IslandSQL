@@ -1820,7 +1820,7 @@ merge:
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
         | mergeInsertClause                     // OracleDB
-        | mergeWhenClause+                      // PostgreSQL
+        | mergeWhenClause+ returningClause?     // PostgreSQL
     )
     errorLoggingClause?
 ;
@@ -1833,8 +1833,9 @@ mergeIntoClause:
 
 // artifical clause, undocumented: database link, table function
 // simplified using values_clause, subquery, database link, table function as query_table_expression
+// PostgreSQL: join as source is not documentend, only is handled in table_reference
 mergeUsingClause:
-    K_USING K_ONLY? queryTableExpression K_AS? talias=sqlName? // PostgreSQL: only, as
+    K_USING fromItem
 ;
 
 mergeUpdateClause:
@@ -1858,7 +1859,8 @@ mergeInsertClause:
 // PostgreSQL
 mergeWhenClause:
       K_WHEN K_MATCHED (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
-    | K_WHEN K_NOT K_MATCHED (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED K_BY K_SOURCE (K_AND cond=expression)? K_THEN (mergeUpdate | mergeDelete | K_DO K_NOTHING)
+    | K_WHEN K_NOT K_MATCHED (K_BY K_TARGET)? (K_AND cond=expression)? K_THEN (mergeInsert | K_DO K_NOTHING)
 ;
 
 // PostgreSQL
@@ -1964,6 +1966,7 @@ subqueryFactoringClause:
             | insert         // PostgreSQL
             | update         // PostgreSQL
             | delete         // PostgreSQL
+            | merge          // PostgreSQL
         )
     RPAR
     searchClause?
@@ -2269,7 +2272,7 @@ postgresqlColumnDefinition:
 tableReference:
       K_ONLY LPAR qte=queryTableExpression RPAR flashbackQueryClause?
         (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
-    | K_ONLY? qte=queryTableExpression flashbackQueryClause? // Postgresql: only (allowed without parentheses)
+    | K_ONLY? qte=queryTableExpression flashbackQueryClause? // Postgresql: only (allowed without parentheses, used also in merge)
          (invalidTalias=sqlName? (pivotClause|unpivotClause|rowPatternClause))?
 ;
 
@@ -4246,6 +4249,7 @@ specialFunctionExpression:
     | fromVector
     | fuzzyMatch
     | graphTable
+    | json // PostgreSQL
     | jsonArray
     | jsonArrayagg
     | jsonMergepatch
@@ -4626,6 +4630,13 @@ fullEdgeAnyDirection:
     | LT MINUS LSQB elementPatternFiller RSQB (MINUS GT|MINUS_GT)
 ;
 
+json:
+    K_JSON LPAR
+        expr=expression
+        formatClause? jsonUniqueKeys? // PostgreSQL
+    RPAR
+;
+
 jsonArray:
       K_JSON_ARRAY LPAR jsonArrayContent RPAR
     | K_JSON LSQB jsonArrayContent RSQB
@@ -4669,6 +4680,7 @@ jsonModifierList:
 
 formatClause:
     K_FORMAT K_JSON
+    (K_ENCODING K_UTF8)? // PostgreSQL
 ;
 
 jsonOnNullClause:
@@ -4676,13 +4688,8 @@ jsonOnNullClause:
 ;
 
 jsonReturningClause:
-    K_RETURNING
-        (
-              K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? (K_WITH K_TYPENAME)?
-            | K_CLOB
-            | K_BLOB
-            | K_JSON
-        )
+    K_RETURNING dataType (K_WITH K_TYPENAME)? // PostgreSQL: any data type is allowed, e.g. domains
+        formatClause? // PostgreSQL in json_array and other functions
 ;
 
 jsonTransformReturningClause:
@@ -4702,21 +4709,19 @@ jsonQueryReturnType:
 
 jsonValueReturningClause:
     K_RETURNING jsonValueReturnType options+=jsonOption*
+    formatClause? // PostgreSQL
 ;
 
 jsonValueReturnType:
-      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? K_TRUNCATE?
-    | K_CLOB
-    | K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
+      dataType jsonValueReturnTypeOption?
     | (K_ALLOW|K_DISALLOW) K_BOOLEAN? K_TO K_NUMBER K_CONVERSION?
-    | K_DATE ((K_TRUNCATE|K_PRESERVE) K_TIME)?
-    | K_TIMESTAMP (K_WITH K_TIMEZONE)?
-    | K_SDO_GEOMETRY
-    | jsonValueReturnObjectInstance
 ;
 
-jsonValueReturnObjectInstance:
-    objectTypeName=qualifiedName jsonValueMapperClause?
+// artificial clause to handle any data type with options
+jsonValueReturnTypeOption:
+      K_TRUNCATE
+    | (K_TRUNCATE|K_PRESERVE) K_TIME
+    | jsonValueMapperClause
 ;
 
 jsonValueMapperClause:
@@ -4726,6 +4731,7 @@ jsonValueMapperClause:
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
+        postgresqlFilterClause? overClause?
 ;
 
 jsonMergepatch:
@@ -4751,9 +4757,21 @@ jsonObjectContent:
     (
           AST
         | entries+=entry (COMMA entries+=entry)*
-    )
-    jsonOnNullClause? jsonReturningClause? options+=jsonOption*
-    (K_WITH K_UNIQUE K_KEYS)?
+    )? // PostgreSQL: content is optional
+    options+=jsonObjectContentOption*
+;
+
+// artificial clause, arbitrary order allowed
+jsonObjectContentOption:
+      jsonOnNullClause
+    | jsonReturningClause
+    | jsonOption
+    | jsonUniqueKeys
+;
+
+jsonUniqueKeys:
+      K_WITH K_UNIQUE K_KEYS?       # withJsonUniqueKeys        // keys is optional in PostgreSQL
+    | K_WITHOUT K_UNIQUE K_KEYS?    # withoutJsonUniqueKeys     // PostgreSQL
 ;
 
 entry:
@@ -4769,14 +4787,36 @@ regularEntry:
 ;
 
 jsonObjectagg:
-    K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
-    jsonOnNullClause? jsonReturningClause? options+=jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
+    K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression (COLON|K_VALUE) valExpr=expression formatClause?
+    options+=jsonObjectaggOption* RPAR
+    postgresqlFilterClause? overClause?
+;
+
+// artificial clause to support different position of jsonUniqueKeys in OracleDB and PostgreSQL
+jsonObjectaggOption:
+      jsonOnNullClause
+    | jsonReturningClause
+    | jsonOption
+    | jsonUniqueKeys
 ;
 
 jsonQuery:
-    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
-    (K_RETURNING jsonQueryReturnType)? options+=jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
-    jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? jsonTypeClause? RPAR
+    K_JSON_QUERY LPAR
+        expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
+        options+=jsonQueryOption*
+    RPAR
+;
+
+// artificial clause to support arbitrary order
+jsonQueryOption:
+      jsonReturningClause
+    | jsonOption
+    | jsonQueryWrapperClause
+    | jsonQueryOnErrorClause
+    | jsonQueryOnEmptyClause
+    | jsonQueryOnMismatchClause
+    | jsonTypeClause
+    | jsonQueryQuotesClause
 ;
 
 jsonTypeClause:
@@ -4784,13 +4824,19 @@ jsonTypeClause:
 ;
 
 // in SQL it is just a string
+// PostgreSQL: alias is documented for jsonNestedPath only
 jsonBasicPathExpression:
-    expr=expression
+    expr=expression (K_AS alias=sqlName)?
 ;
 
 jsonQueryWrapperClause:
       K_WITHOUT K_ARRAY? K_WRAPPER
     | K_WITH (K_UNCONDITIONAL|K_CONDITIONAL)? K_ARRAY? K_WRAPPER
+;
+
+// PostgreSQL
+jsonQueryQuotesClause:
+    (K_KEEP | K_OMIT) K_QUOTES (K_ON K_SCALAR K_STRING)?
 ;
 
 jsonQueryOnErrorClause:
@@ -4800,6 +4846,7 @@ jsonQueryOnErrorClause:
         | K_EMPTY
         | K_EMPTY K_ARRAY
         | K_EMPTY K_OBJECT
+        | K_DEFAULT expr=expression // PostgreSQL
     ) K_ON K_ERROR
 ;
 
@@ -4810,6 +4857,7 @@ jsonQueryOnEmptyClause:
         | K_EMPTY
         | K_EMPTY K_ARRAY
         | K_EMPTY K_OBJECT
+        | K_DEFAULT expr=expression // PostgreSQL
     ) K_ON K_EMPTY
 ;
 
@@ -4824,13 +4872,20 @@ jsonScalar:
 ;
 
 jsonSerialize:
-    K_JSON_SERIALIZE LPAR expr=expression jsonReturningClause? options+=jsonOption* jsonQueryOnErrorClause? RPAR
+    K_JSON_SERIALIZE LPAR
+        expr=expression
+        formatClause? // PostgreSQL
+        jsonReturningClause?
+        options+=jsonOption*
+        jsonQueryOnErrorClause?
+    RPAR
 ;
 
 // jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
 // see https://github.com/IslandSQL/IslandSQL/issues/48
+// PostgreSQL: jsonPassingClause
 jsonTable:
-    K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
+    K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)? jsonPassingClause?
     jsonTableOnErrorClause? jsonTypeClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
 ;
 
@@ -4848,7 +4903,7 @@ jsonColumnsClause:
     (
           LPAR columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)* RPAR
         | columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)*
-    )
+    )  jsonColumnsErrorClause? // PostgreSQL
 ;
 
 jsonColumnDefinition:
@@ -4857,6 +4912,11 @@ jsonColumnDefinition:
     | jsonValueColumn
     | jsonNestedPath
     | ordinalityColumn
+;
+
+// PostgreSQL
+jsonColumnsErrorClause:
+    (K_ERROR|K_EMPTY K_ARRAY?) K_ON K_ERROR
 ;
 
 jsonExistColumn:
@@ -4870,16 +4930,35 @@ jsonQueryColumn:
 ;
 
 jsonValueColumn:
-    columnName=sqlName jsonValueReturnType? K_TRUNCATE? (K_PATH jsonPath)?
-    jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
+    columnName=sqlName jsonValueReturnType? formatClause? K_TRUNCATE? (K_PATH jsonPath)?
+    options+=jsonValueColumnOption*
+;
+
+// artificial clause to support arbitrary order of options
+jsonValueColumnOption:
+       jsonValueOnErrorClause
+     | jsonValueOnEmptyClause
+     | jsonValueOnMismatchClause
+     | jsonQueryWrapperClause // PostgreSQL
+     | jsonQueryQuotesClause // PostgreSQL
 ;
 
 jsonValueOnErrorClause:
-    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_ERROR
+    (
+          K_ERROR
+        | K_NULL
+        | K_DEFAULT literal=expression
+        | K_EMPTY (K_ARRAY | K_OBJECT)? // PostgreSQL
+    ) K_ON K_ERROR
 ;
 
 jsonValueOnEmptyClause:
-    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_EMPTY
+    (
+          K_ERROR
+        | K_NULL
+        | K_DEFAULT literal=expression
+        | K_EMPTY (K_ARRAY | K_OBJECT)? // PostgreSQL
+    ) K_ON K_EMPTY
 ;
 
 jsonValueOnMismatchClause:
@@ -4893,6 +4972,7 @@ jsonValueOnMismatchClauseOption:
     | K_TYPE K_ERROR
 ;
 
+// PostgreSQL: jsonPathName
 jsonNestedPath:
     K_NESTED K_PATH? jsonPath jsonColumnsClause
 ;
@@ -5131,8 +5211,17 @@ onNullHandler:
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
-    jsonPassingClause? jsonValueReturningClause? jsonValueOnErrorClause?
-    jsonValueOnEmptyClause? jsonValueOnMismatchClause? jsonTypeClause? RPAR
+    options+=jsonValueOption* RPAR
+;
+
+// artificial clause, allow arbitrary order of options
+jsonValueOption:
+      jsonPassingClause
+    | jsonValueReturningClause
+    | jsonValueOnErrorClause
+    | jsonValueOnEmptyClause
+    | jsonValueOnMismatchClause
+    | jsonTypeClause
 ;
 
 jsonEqualCondition:
@@ -5709,8 +5798,9 @@ jsonPassingItem:
     expr=expression K_AS identifier=sqlName
 ;
 
+// Postgresql: unknown
 jsonExistsOnErrorClause:
-    (K_ERROR|K_TRUE|K_FALSE) K_ON K_ERROR
+    (K_ERROR|K_TRUE|K_FALSE|K_UNKNOWN) K_ON K_ERROR
 ;
 
 jsonExistsOnEmptyClause:
@@ -5742,8 +5832,8 @@ jsonConditionOption:
     | K_LAX                                         # laxJsonConditionOption
     | K_ALLOW K_SCALARS                             # allowScalarsJsonConditionOption
     | K_DISALLOW K_SCALARS                          # disallowSclarsJsonConditionOption
-    | K_WITH K_UNIQUE K_KEYS                        # withUniqueKeysJsonConditionOption
-    | K_WITHOUT K_UNIQUE K_KEYS                     # withoutUniqueKeysJsonConditionOption
+    | K_WITH K_UNIQUE K_KEYS?                       # withUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
+    | K_WITHOUT K_UNIQUE K_KEYS?                    # withoutUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
     | K_VALIDATE K_CAST? K_USING? schema=expression # validateJsonConditionOption
 ;
 
@@ -6341,6 +6431,7 @@ keywordAsId:
     | K_PUNCTUATION
     | K_QUALIFY
     | K_QUERY
+    | K_QUOTES
     | K_RAISE
     | K_RANGE
     | K_RANK
@@ -6550,6 +6641,7 @@ keywordAsId:
     | K_USE
     | K_USER
     | K_USING
+    | K_UTF8
     | K_UUID
     | K_VACUUM
     | K_VALIDATE

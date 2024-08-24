@@ -117,12 +117,13 @@ PROMPT_COMMAND:
 ;
 
 /*----------------------------------------------------------------------------*/
-// SQL*Plus commands with keywords conflicting with islands of interest
+// SQL*Plus command with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
 
-// hide keyword: insert, select
+// hide keyword: insert, select (SQL*Plus command)
 COPY_COMMAND:
-    'copy' {isBeginOfCommand("copy")}? TO_SQLPLUS_END -> channel(HIDDEN)
+    'copy' {isBeginOfCommand("copy")}?
+        COMMENT_OR_WS+ ('from'|'to') -> pushMode(TO_END_SQLPLUS_MODE), channel(HIDDEN)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -157,6 +158,12 @@ ALTER_TABLESPACE:
 ALTER_TEXT:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
         'text' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
+// hide keywords: with, select, insert, update, delete, merge
+COPY:
+    'copy' {isBeginOfStatement("copy")}? (COMMENT_OR_WS+|'(')
+        -> pushMode(TO_SQL_END_MODE), channel(HIDDEN)
 ;
 
 // hide keywords: select, insert, update, delete
@@ -624,3 +631,21 @@ HP_STRING: STRING -> more;
 HP_ID: ID -> more;
 HP_QUOTED_ID: QUOTED_ID -> more;
 HP_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// TO_SQL_END_MODE (SQL)
+/*----------------------------------------------------------------------------*/
+
+mode TO_SQL_END_MODE;
+
+SQL_STMT: SQL_END -> popMode, channel(HIDDEN);
+SQL_SQL_TEXT: SQL_TEXT -> more;
+
+/*----------------------------------------------------------------------------*/
+// TO_SQLPLUS_END_MODE (PLUS)
+/*----------------------------------------------------------------------------*/
+
+mode TO_END_SQLPLUS_MODE;
+
+EC_COMMAND: (EOF|SINGLE_NL) -> popMode, channel(HIDDEN);
+EC_SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE) -> more;
