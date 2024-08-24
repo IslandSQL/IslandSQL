@@ -4758,9 +4758,16 @@ jsonObjectContent:
     (
           AST
         | entries+=entry (COMMA entries+=entry)*
-    )
-    jsonOnNullClause? jsonReturningClause? options+=jsonOption*
-    jsonUniqueKeys?
+    )? // PostgreSQL: content is optional
+    options+=jsonObjectContentOption*
+;
+
+// artificial clause, arbitrary order allowed
+jsonObjectContentOption:
+      jsonOnNullClause
+    | jsonReturningClause
+    | jsonOption
+    | jsonUniqueKeys
 ;
 
 jsonUniqueKeys:
