@@ -4709,21 +4709,19 @@ jsonQueryReturnType:
 
 jsonValueReturningClause:
     K_RETURNING jsonValueReturnType options+=jsonOption*
+    formatClause? // PostgreSQL
 ;
 
 jsonValueReturnType:
-      K_VARCHAR2 (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)? K_TRUNCATE?
-    | K_CLOB
-    | K_NUMBER (LPAR precision=expression (COMMA scale=expression)? RPAR)?
+      dataType jsonValueReturnTypeOption?
     | (K_ALLOW|K_DISALLOW) K_BOOLEAN? K_TO K_NUMBER K_CONVERSION?
-    | K_DATE ((K_TRUNCATE|K_PRESERVE) K_TIME)?
-    | K_TIMESTAMP (K_WITH K_TIMEZONE)?
-    | K_SDO_GEOMETRY
-    | jsonValueReturnObjectInstance
 ;
 
-jsonValueReturnObjectInstance:
-    objectTypeName=qualifiedName jsonValueMapperClause?
+// artificial clause to handle any data type with options
+jsonValueReturnTypeOption:
+      K_TRUNCATE
+    | (K_TRUNCATE|K_PRESERVE) K_TIME
+    | jsonValueMapperClause
 ;
 
 jsonValueMapperClause:
@@ -5186,8 +5184,17 @@ onNullHandler:
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
 jsonValue:
     K_JSON_VALUE LPAR expr=expression formatClause? COMMA jsonBasicPathExpression
-    jsonPassingClause? jsonValueReturningClause? jsonValueOnErrorClause?
-    jsonValueOnEmptyClause? jsonValueOnMismatchClause? jsonTypeClause? RPAR
+    options+=jsonValueOption* RPAR
+;
+
+// artificial clause, allow arbitrary order of options
+jsonValueOption:
+      jsonPassingClause
+    | jsonValueReturningClause
+    | jsonValueOnErrorClause
+    | jsonValueOnEmptyClause
+    | jsonValueOnMismatchClause
+    | jsonTypeClause
 ;
 
 jsonEqualCondition:
