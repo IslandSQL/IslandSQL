@@ -4733,6 +4733,7 @@ jsonValueMapperClause:
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
+        postgresqlFilterClause? overClause?
 ;
 
 jsonMergepatch:
@@ -4790,6 +4791,7 @@ regularEntry:
 jsonObjectagg:
     K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression K_VALUE valExpr=expression
     jsonOnNullClause? jsonReturningClause? options+=jsonOption* (K_WITH K_UNIQUE K_KEYS)? RPAR
+    postgresqlFilterClause? overClause?
 ;
 
 jsonQuery:
