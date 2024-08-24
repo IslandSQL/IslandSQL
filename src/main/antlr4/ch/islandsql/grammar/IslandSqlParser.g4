@@ -4803,9 +4803,22 @@ jsonObjectaggOption:
 ;
 
 jsonQuery:
-    K_JSON_QUERY LPAR expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
-    (K_RETURNING jsonQueryReturnType)? options+=jsonOption* jsonQueryWrapperClause? jsonQueryOnErrorClause?
-    jsonQueryOnEmptyClause? jsonQueryOnMismatchClause? jsonTypeClause? RPAR
+    K_JSON_QUERY LPAR
+        expr=expression formatClause? COMMA jsonBasicPathExpression jsonPassingClause?
+        options+=jsonQueryOption*
+    RPAR
+;
+
+// artificial clause to support arbitrary order
+jsonQueryOption:
+      jsonReturningClause
+    | jsonOption
+    | jsonQueryWrapperClause
+    | jsonQueryOnErrorClause
+    | jsonQueryOnEmptyClause
+    | jsonQueryOnMismatchClause
+    | jsonTypeClause
+    | jsonQueryQuotesClause
 ;
 
 jsonTypeClause:
@@ -4822,6 +4835,11 @@ jsonQueryWrapperClause:
     | K_WITH (K_UNCONDITIONAL|K_CONDITIONAL)? K_ARRAY? K_WRAPPER
 ;
 
+// PostgreSQL
+jsonQueryQuotesClause:
+    (K_KEEP | K_OMIT) K_QUOTES (K_ON K_SCALAR K_STRING)?
+;
+
 jsonQueryOnErrorClause:
     (
           K_ERROR
@@ -4829,6 +4847,7 @@ jsonQueryOnErrorClause:
         | K_EMPTY
         | K_EMPTY K_ARRAY
         | K_EMPTY K_OBJECT
+        | K_DEFAULT expr=expression // PostgreSQL
     ) K_ON K_ERROR
 ;
 
@@ -4839,6 +4858,7 @@ jsonQueryOnEmptyClause:
         | K_EMPTY
         | K_EMPTY K_ARRAY
         | K_EMPTY K_OBJECT
+        | K_DEFAULT expr=expression // PostgreSQL
     ) K_ON K_EMPTY
 ;
 
