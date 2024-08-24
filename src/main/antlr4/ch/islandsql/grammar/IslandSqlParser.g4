@@ -4824,8 +4824,9 @@ jsonTypeClause:
 ;
 
 // in SQL it is just a string
+// PostgreSQL: alias is documented for jsonNestedPath only
 jsonBasicPathExpression:
-    expr=expression
+    expr=expression (K_AS alias=sqlName)?
 ;
 
 jsonQueryWrapperClause:
@@ -4882,8 +4883,9 @@ jsonSerialize:
 
 // jsonTypeClause does not work in 23.3, might be not supported yet or the syntax is still wrong
 // see https://github.com/IslandSQL/IslandSQL/issues/48
+// PostgreSQL: jsonPassingClause
 jsonTable:
-    K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)?
+    K_JSON_TABLE LPAR expr=expression formatClause? (COMMA jsonBasicPathExpression)? jsonPassingClause?
     jsonTableOnErrorClause? jsonTypeClause? jsonTableOnEmptyClause? jsonColumnsClause RPAR
 ;
 
@@ -4901,7 +4903,7 @@ jsonColumnsClause:
     (
           LPAR columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)* RPAR
         | columns+=jsonColumnDefinition (COMMA columns+=jsonColumnDefinition)*
-    )
+    )  jsonColumnsErrorClause? // PostgreSQL
 ;
 
 jsonColumnDefinition:
@@ -4910,6 +4912,11 @@ jsonColumnDefinition:
     | jsonValueColumn
     | jsonNestedPath
     | ordinalityColumn
+;
+
+// PostgreSQL
+jsonColumnsErrorClause:
+    (K_ERROR|K_EMPTY K_ARRAY?) K_ON K_ERROR
 ;
 
 jsonExistColumn:
@@ -4923,16 +4930,35 @@ jsonQueryColumn:
 ;
 
 jsonValueColumn:
-    columnName=sqlName jsonValueReturnType? K_TRUNCATE? (K_PATH jsonPath)?
-    jsonValueOnErrorClause? jsonValueOnEmptyClause? jsonValueOnMismatchClause?
+    columnName=sqlName jsonValueReturnType? formatClause? K_TRUNCATE? (K_PATH jsonPath)?
+    options+=jsonValueColumnOption*
+;
+
+// artificial clause to support arbitrary order of options
+jsonValueColumnOption:
+       jsonValueOnErrorClause
+     | jsonValueOnEmptyClause
+     | jsonValueOnMismatchClause
+     | jsonQueryWrapperClause // PostgreSQL
+     | jsonQueryQuotesClause // PostgreSQL
 ;
 
 jsonValueOnErrorClause:
-    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_ERROR
+    (
+          K_ERROR
+        | K_NULL
+        | K_DEFAULT literal=expression
+        | K_EMPTY (K_ARRAY | K_OBJECT)? // PostgreSQL
+    ) K_ON K_ERROR
 ;
 
 jsonValueOnEmptyClause:
-    (K_ERROR|K_NULL|K_DEFAULT literal=expression) K_ON K_EMPTY
+    (
+          K_ERROR
+        | K_NULL
+        | K_DEFAULT literal=expression
+        | K_EMPTY (K_ARRAY | K_OBJECT)? // PostgreSQL
+    ) K_ON K_EMPTY
 ;
 
 jsonValueOnMismatchClause:
@@ -4946,6 +4972,7 @@ jsonValueOnMismatchClauseOption:
     | K_TYPE K_ERROR
 ;
 
+// PostgreSQL: jsonPathName
 jsonNestedPath:
     K_NESTED K_PATH? jsonPath jsonColumnsClause
 ;
