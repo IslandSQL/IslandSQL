@@ -569,8 +569,8 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
 CB_STMT: 'end' (COMMENT_OR_WS+ NAME {!getText().matches("(?is)^end.*\\send$")}?)? COMMENT_OR_WS* ';' -> popMode;
-// stay in current mode when 'end' seems to be an identifier
-CB_CASE_EXPR: 'end' {_modeStack.size() > 2}? -> popMode;
+// stay in current mode when 'end' seems to be an identifier, consume also label named 'case'
+CB_CASE_EXPR: 'end' (COMMENT_OR_WS+ 'case')? {_modeStack.size() > 2}? -> popMode;
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
