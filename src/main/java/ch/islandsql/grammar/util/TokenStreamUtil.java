@@ -16,6 +16,7 @@
 
 package ch.islandsql.grammar.util;
 
+import ch.islandsql.grammar.IslandSqlDialect;
 import ch.islandsql.grammar.IslandSqlScopeLexer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CodePointCharStream;
@@ -38,9 +39,12 @@ public class TokenStreamUtil {
      * by the IslandSqlScopeLexer are moved to the hidden channel.
      *
      * @param tokenStream The tokensStream produced by islandSqlLexer to process.
+     * @param errorListener The errorListner to be used for the scope lexer.
+     * @param dialect The dialect to be used for the scope lexer.
      * @return The lexer metrics.
      */
-    static public LexerMetrics hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener) {
+    static public LexerMetrics hideOutOfScopeTokens(CommonTokenStream tokenStream, SyntaxErrorListener errorListener,
+                                                    IslandSqlDialect dialect) {
         long lexerStartTime = System.nanoTime();
         long lexerStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         try {
@@ -66,6 +70,9 @@ public class TokenStreamUtil {
         List<CommonToken> tokens = tokenStream.getTokens().stream().map(t -> (CommonToken)t).collect(Collectors.toList());
         CodePointCharStream charStream = CharStreams.fromString(tokenStream.getText());
         IslandSqlScopeLexer scopeLexer = new IslandSqlScopeLexer(charStream);
+        if (dialect != null) {
+            scopeLexer.setDialect(dialect);
+        }
         if (errorListener != null) {
             scopeLexer.removeErrorListeners();
             scopeLexer.addErrorListener(errorListener);
