@@ -1854,7 +1854,7 @@ mergeUpdateColumn:
 mergeInsertClause:
     K_WHEN K_NOT K_MATCHED K_THEN K_INSERT
     (LPAR columns+=columnReference (COMMA columns+=columnReference)* RPAR)?
-    K_VALUES LPAR values+=expression (COMMA values+=expression)* RPAR whereClause?
+    insertValuesClause whereClause?
 ;
 
 // PostgreSQL
