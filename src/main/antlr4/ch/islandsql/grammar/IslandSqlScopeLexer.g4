@@ -309,6 +309,7 @@ CREATE_TABLE:
         | 'duplicated' COMMENT_OR_WS+
         | ('immutable' COMMENT_OR_WS+)? 'blockchain' COMMENT_OR_WS+
         | 'immutable' COMMENT_OR_WS+
+        | 'json' COMMENT_OR_WS+ 'collection' COMMENT_OR_WS+
     )?
     'table' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
