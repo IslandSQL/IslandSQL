@@ -622,6 +622,7 @@ createTable:
         | K_DUPLICATED
         | K_IMMUTABLE? K_BLOCKCHAIN
         | K_IMMUTABLE
+        | K_JSON K_COLLECTION
         | (K_GLOBAL | K_LOCAL)? (K_TEMPORARY | K_TEMP)   // PostgreSQL
         | K_UNLOGGED    // PostgreSQL
     )?
@@ -637,9 +638,9 @@ createTable:
     )?
 ;
 
-// simplified, handles also object_table and xmltype_table
+// simplified, handles also object_table, xmltype_table and json_collection_table
 relationalTable:
-    (LPAR relationalProperties RPAR)?
+    (K_WITH K_ETAG)? (LPAR relationalProperties RPAR)?
     (
           tableProperties
         | beforeTableProperties tableProperties
