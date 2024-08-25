@@ -168,6 +168,7 @@ K_CLUSTER: 'cluster';
 K_COLLATE: 'collate';
 K_COLLATION: 'collation';
 K_COLLECT: 'collect';
+K_COLLECTION: 'collection';
 K_COLUMN: 'column';
 K_COLUMNS: 'columns';
 K_COLUMN_NAME: 'column_name';
