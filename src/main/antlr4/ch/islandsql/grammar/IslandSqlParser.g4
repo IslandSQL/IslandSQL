@@ -5493,11 +5493,12 @@ xmltableOptions:
     (K_COLUMNS columns+=xmlTableColumn (COMMA columns+=xmlTableColumn)*)?
 ;
 
+// undocumented in 23.5: typeName is optional
 xmlTableColumn:
     column=sqlName
     (
           K_FOR K_ORDINALITY
-        | (typeName=dataType|K_XMLTYPE (LPAR K_SEQUENCE RPAR K_BY K_REF)?)
+        | (typeName=dataType|K_XMLTYPE (LPAR K_SEQUENCE RPAR K_BY K_REF)?)?
           (K_PATH path=expression)? (K_DEFAULT defaultValue=expression)?
           (K_NOT? K_NULL)? // PostgreSQL
     )
