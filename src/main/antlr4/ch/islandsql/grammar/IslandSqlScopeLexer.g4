@@ -648,5 +648,5 @@ SQL_SQL_TEXT: SQL_TEXT -> more;
 
 mode TO_END_SQLPLUS_MODE;
 
-EC_COMMAND: (EOF|SINGLE_NL) -> popMode, channel(HIDDEN);
-EC_SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE) -> more;
+PLUS_COMMAND: (EOF|SINGLE_NL) -> popMode, channel(HIDDEN);
+PLUS_SQLPLUS_TEXT: (~[\r\n]|CONTINUE_LINE) -> more;
