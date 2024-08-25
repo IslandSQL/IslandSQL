@@ -5952,6 +5952,7 @@ keywordAsId:
     | K_COLLATE
     | K_COLLATION
     | K_COLLECT
+    | K_COLLECTION
     | K_COLUMN
     | K_COLUMNS
     | K_COLUMN_NAME
