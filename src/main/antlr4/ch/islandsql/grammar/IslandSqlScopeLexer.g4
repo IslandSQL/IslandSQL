@@ -568,7 +568,7 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
-CB_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
+CB_STMT: 'end' (COMMENT_OR_WS+ NAME {!getText().toLowerCase().endsWith("end")}?)? COMMENT_OR_WS* ';' -> popMode;
 // stay in current mode when 'end' seems to be an identifier
 CB_CASE_EXPR: 'end' {_modeStack.size() > 2}? -> popMode;
 
