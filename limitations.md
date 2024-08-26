@@ -65,7 +65,7 @@ Removing the semicolon in the scripts will result in a parse error.
 
 ## Multiline Comments
 
-The grammar consumes only complete multiline comments. As a result incomplete multiline comments lead to parse errors.
+The implementation of multiline comments is specific to the IslandSQL dialect. The grammar consumes only complete multiline comments. As a result incomplete multiline comments may lead to parse errors.
 
 Here's an example:
 
@@ -76,7 +76,7 @@ end of (nested) multiline comment */
 select 42;
 ```
 
-IslandSQL reports an `mismatched input '*'` error on line 1 because the outer multiline comment is not terminated. Only line 2 and 3 are recognized as a multiline comment. This behaviour is different to the DBMSs in scope.
+IslandSQL reports an `mismatched input '*'` error on line 1 for GENERIC and POSTGRESQL dialects because the outer multiline comment is not terminated. Only line 2 and 3 are recognized as a multiline comment. This behaviour is different to the DBMSs in scope.
 
 The OracleDB executes `select 42;` without reporting an error. PostgreSQL doesn't execute anything because it waits for the outer comment to be terminated. In other words in PostgreSQL the whole SQL script is interpreted as a comment.
 
@@ -89,16 +89,16 @@ select 42;
 */ 
 ```
 
-IslandSQL reports an `extraneous input '*'` error on line 4 because there is no matching start of the multiline comment. Only line 1 and 2 are recognized as multiline comment. This behaviour matches the one of the OracleDB and PostgreSQL, even if PostgreSQL does not report an error on line 4.
+IsqlandSQL ignores the incomplete multiline comment on line 4 for all dialects. This is different to the behaviour of OracleDB and PostgreSQL. Both DBMSs report an error on line 4.
 
-Furthermore, IslandSQL supports nested multiline comments. Here's an example:
+Furthermore, IslandSQL supports nested multiline comments for GENERIC and POSTGRESQL dialects. Here's an example:
 
 ```sql
 /* level 1 /* level 2 /* level 3 */ level 2 */ level 1 */
 select 42;
 ```
 
-Like PostgreSQL, IslandSQL recognises the first line as a multiline comment. OracleDB, however, recognized only `/* level 1 /* level 2 /* level 3 */` as comment. Everything up to the first `*/`.
+For ORACLEDB dialect only `/* level 1 /* level 2 /* level 3 */` is recognised as comment. Everything up to the first `*/`. This matches the behaviour of the DBMSs in scope.
 
 ## SQL\*Plus Substitution Variables
 
