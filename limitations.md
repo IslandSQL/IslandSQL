@@ -38,9 +38,9 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
-## SQL*PLUS PROMPT and REMARK Commands
+## SQL\*Plus PROMPT and REMARK Commands
 
-The SQL*Plus PROMPT and REMARK commands are treated like comments. They are recognized in the lexer and put on the hidden channel. So they are simply ignored by the parser. However, this may lead to parser errors if the following identifiers are used on a new line:
+The SQL\*Plus PROMPT and REMARK commands are treated like comments. They are recognized in the lexer and put on the hidden channel. So they are simply ignored by the parser. However, this may lead to parser errors if the following identifiers are used on a new line:
 
 - `pro`
 - `prom`
