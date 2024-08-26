@@ -215,18 +215,21 @@ public abstract class IslandSqlLexerBase extends Lexer {
      * A command must start on a new line. Between the new line and
      * the start of command an unbounded number of whitespace is
      * allowed. In other words a command can start in any column.
-     * A command can start at begin-of-file.
+     * A command can start at begin-of-file. SQL*Plus commands are
+     * not recognized when the dialect is POSTGRESQL.
      *
      * @param beforeString String used to determine start of a command.
      * @return Returns true if the current position is valid for a command.
      */
     public boolean isBeginOfCommand(String beforeString) {
-        int i = _input.index() - beforeString.length() - 1;
-        while (isCharOneOf(" \t\r\n", i)) {
-            if (i < 0 || isCharOneOf("\r\n", i)) {
-                return true;
+        if (dialect != IslandSqlDialect.POSTGRESQL) {
+            int i = _input.index() - beforeString.length() - 1;
+            while (isCharOneOf(" \t\r\n", i)) {
+                if (i < 0 || isCharOneOf("\r\n", i)) {
+                    return true;
+                }
+                i--;
             }
-            i--;
         }
         return false;
     }

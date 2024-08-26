@@ -38,6 +38,46 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
+## SQL*PLUS PROMPT and REMARK Commands
+
+The SQL*Plus PROMPT and REMARK commands are treated like comments. They are recognized in the lexer and put on the hidden channel. So they are simply ignored by the parser. However, this may lead to parser errors if the following identifiers are used on a new line:
+
+- `pro`
+- `prom`
+- `promp`
+- `prompt`
+- `rem`
+- `rema`
+- `remar`
+- `remark`
+
+Here's an example:
+
+```sql
+with 
+pro as (select 42)
+select * from pro;
+```
+
+In this case the second line is recognized as a prompt command and put on the hidden channel. The remaining statement `with select * from pro;` is not a valid statement anymore and a syntax error is reported.
+
+The workaround is to reformat the statement and ensure `pro` does not start on a new line as shown below:
+
+```sql
+with pro as (select 42)
+select * from pro;
+```
+
+There are also cases where an identifier is swallowed and does not appear in the parse tree. Here's an example:
+
+```sql
+select 42
+rem
+;
+```
+
+In this case `rem` is not identified as column alias by the parser. As a workaround write the statement on a single line or change the alias e.g. to `"REM"`.
+
 ## Dynamic Grammar of SQL\*Plus and psql
 
 The following commands affect the grammar and are not interpreted by IslandSQL. The IslandSQL grammar is built on the default settings. As a result other values lead to errors.
