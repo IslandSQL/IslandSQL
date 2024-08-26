@@ -38,6 +38,46 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
+## SQL*PLUS PROMPT and REMARK Commands
+
+The SQL*Plus PROMPT and REMARK commands are treated like comments. They are recognized in the lexer and put on the hidden channel. So they are simply ignored by the parser. However, this may lead to parser errors if the following identifiers are used on a new line:
+
+- `pro`
+- `prom`
+- `promp`
+- `prompt`
+- `rem`
+- `rema`
+- `remar`
+- `remark`
+
+Here's an example:
+
+```sql
+with 
+pro as (select 42)
+select * from pro;
+```
+
+In this case the second line is recognized as a prompt command and put on the hidden channel. The remaining statement `with select * from pro;` is not a valid statement anymore and a syntax error is reported.
+
+The workaround is to reformat the statement and ensure `pro` does not start on a new line as shown below:
+
+```sql
+with pro as (select 42)
+select * from pro;
+```
+
+There are also cases where an identifier is swallowed and does not appear in the parse tree. Here's an example:
+
+```sql
+select 42
+rem
+;
+```
+
+In this case `rem` is not identified as column alias by the parser. As a workaround write the statement on a single line or change the alias e.g. to `"REM"`.
+
 ## Dynamic Grammar of SQL\*Plus and psql
 
 The following commands affect the grammar and are not interpreted by IslandSQL. The IslandSQL grammar is built on the default settings. As a result other values lead to errors.
@@ -65,7 +105,7 @@ Removing the semicolon in the scripts will result in a parse error.
 
 ## Multiline Comments
 
-The grammar consumes only complete multiline comments. As a result incomplete multiline comments lead to parse errors.
+The implementation of multiline comments is specific to the IslandSQL dialect. The grammar consumes only complete multiline comments. As a result incomplete multiline comments may lead to parse errors.
 
 Here's an example:
 
@@ -76,7 +116,7 @@ end of (nested) multiline comment */
 select 42;
 ```
 
-IslandSQL reports an `mismatched input '*'` error on line 1 because the outer multiline comment is not terminated. Only line 2 and 3 are recognized as a multiline comment. This behaviour is different to the DBMSs in scope.
+IslandSQL reports an `mismatched input '*'` error on line 1 for GENERIC and POSTGRESQL dialects because the outer multiline comment is not terminated. Only line 2 and 3 are recognized as a multiline comment. This behaviour is different to the DBMSs in scope.
 
 The OracleDB executes `select 42;` without reporting an error. PostgreSQL doesn't execute anything because it waits for the outer comment to be terminated. In other words in PostgreSQL the whole SQL script is interpreted as a comment.
 
@@ -89,16 +129,16 @@ select 42;
 */ 
 ```
 
-IslandSQL reports an `extraneous input '*'` error on line 4 because there is no matching start of the multiline comment. Only line 1 and 2 are recognized as multiline comment. This behaviour matches the one of the OracleDB and PostgreSQL, even if PostgreSQL does not report an error on line 4.
+IsqlandSQL ignores the incomplete multiline comment on line 4 for all dialects. This is different to the behaviour of OracleDB and PostgreSQL. Both DBMSs report an error on line 4.
 
-Furthermore, IslandSQL supports nested multiline comments. Here's an example:
+Furthermore, IslandSQL supports nested multiline comments for GENERIC and POSTGRESQL dialects. Here's an example:
 
 ```sql
 /* level 1 /* level 2 /* level 3 */ level 2 */ level 1 */
 select 42;
 ```
 
-Like PostgreSQL, IslandSQL recognises the first line as a multiline comment. OracleDB, however, recognized only `/* level 1 /* level 2 /* level 3 */` as comment. Everything up to the first `*/`.
+For ORACLEDB dialect only `/* level 1 /* level 2 /* level 3 */` is recognised as comment. Everything up to the first `*/`. This matches the behaviour of the DBMSs in scope.
 
 ## SQL\*Plus Substitution Variables
 

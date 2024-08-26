@@ -26,7 +26,7 @@ options {
 /*----------------------------------------------------------------------------*/
 
 fragment SINGLE_NL: '\r'? '\n';
-fragment COMMENT_OR_WS: ML_COMMENT|(SL_COMMENT (EOF|SINGLE_NL))|WS;
+fragment COMMENT_OR_WS: ML_COMMENT|ML_COMMENT_ORCL|(SL_COMMENT (EOF|SINGLE_NL))|WS;
 fragment SQL_TEXT: COMMENT_OR_WS|STRING|NAME|~[;\\];
 fragment HSPACE: [ \t]+;
 fragment SLASH_END: '/' {isBeginOfCommand("/")}? HSPACE? (EOF|SINGLE_NL);
@@ -101,7 +101,8 @@ QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> channel(HIDDEN);
 // Comments
 /*----------------------------------------------------------------------------*/
 
-ML_COMMENT: '/*' IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
+ML_COMMENT: '/*' {getDialect() != IslandSqlDialect.ORACLEDB}? IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
+ML_COMMENT_ORCL: '/*' {getDialect() == IslandSqlDialect.ORACLEDB}? .*? '*/' -> type(ML_COMMENT), channel(HIDDEN);
 SL_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
@@ -455,7 +456,7 @@ UNIT: SQL_END -> popMode;
 UNIT_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
 UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
 
-UNIT_ML_COMMENT: ML_COMMENT -> more;
+UNIT_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 UNIT_SL_COMMENT: SL_COMMENT -> more;
 UNIT_WS: WS -> more;
 UNIT_STRING: STRING -> more;
@@ -472,7 +473,7 @@ mode FUNCTION_MODE;
 FUNC: SQL_END -> popMode;
 FUNC_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
 
-FUNC_ML_COMMENT: ML_COMMENT -> more;
+FUNC_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 FUNC_SL_COMMENT: SL_COMMENT -> more;
 FUNC_WS: WS -> more;
 FUNC_STRING: STRING -> more;
@@ -494,7 +495,7 @@ DS_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 DS_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 DS_BEGIN: 'begin' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
 
-DS_ML_COMMENT: ML_COMMENT -> more;
+DS_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 DS_SL_COMMENT: SL_COMMENT -> more;
 DS_WS: WS -> more;
 DS_STRING: STRING -> more;
@@ -516,7 +517,7 @@ WC: SQL_END -> popMode;
 WC_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 WC_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 
-WC_ML_COMMENT: ML_COMMENT -> more;
+WC_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 WC_SL_COMMENT: SL_COMMENT -> more;
 WC_WS: WS -> more;
 WC_STRING: STRING -> more;
@@ -540,7 +541,7 @@ PKG_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 PKG_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 PKG_INITIALIZE_SECTION_START: 'begin' -> more, mode(CODE_BLOCK_MODE);
 
-PKG_ML_COMMENT: ML_COMMENT -> more;
+PKG_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 PKG_SL_COMMENT: SL_COMMENT -> more;
 PKG_WS: WS -> more;
 PKG_STRING: STRING -> more;
@@ -583,7 +584,7 @@ CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
 CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
 
 CB_POSITION_FROM_END: 'position' COMMENT_OR_WS+ 'from' COMMENT_OR_WS+ 'end' -> more; // lead_lag_clause, av_level_ref
-CB_ML_COMMENT: ML_COMMENT -> more;
+CB_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 CB_SL_COMMENT: SL_COMMENT -> more;
 CB_WS: WS -> more;
 CB_STRING: STRING -> more;
@@ -625,7 +626,7 @@ HP_STMT: SQL_END {_modeStack.size() == 1}? -> popMode, channel(HIDDEN);
 
 HP_OPEN_PAREN: '(' -> more, pushMode(HIDDEN_PARENTHESES_MODE);
 
-HP_ML_COMMENT: ML_COMMENT -> more;
+HP_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 HP_SL_COMMENT: SL_COMMENT -> more;
 HP_WS: WS -> more;
 HP_STRING: STRING -> more;
