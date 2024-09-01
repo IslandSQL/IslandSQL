@@ -2915,7 +2915,7 @@ functionDefinition:
 ;
 
 // contains also options for package body function defintion
-// not documented in 23.4: accessible_by_clause, shard_enable_clause
+// not documented in 23.4: accessible_by_clause, shard_enable_clause, sql_macro_clause
 functionDefinitionOption:
       accessibleByClause
     | deterministicClause
@@ -2923,6 +2923,7 @@ functionDefinitionOption:
     | pipelinedClause
     | parallelEnableClause
     | resultCacheClause
+    | sqlMacroClause
 ;
 
 callSpec:
