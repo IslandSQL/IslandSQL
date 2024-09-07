@@ -5941,6 +5941,7 @@ keywordAsId:
     | K_CHARACTERISTICS
     | K_CHARACTERS
     | K_CHARS
+    | K_CHARSET
     | K_CHARSETFORM
     | K_CHARSETID
     | K_CHAR_CS

@@ -156,6 +156,7 @@ K_CHARACTER: 'character';
 K_CHARACTERISTICS: 'characteristics';
 K_CHARACTERS: 'characters';
 K_CHARS: 'chars';
+K_CHARSET: 'charset';
 K_CHARSETFORM: 'charsetform';
 K_CHARSETID: 'charsetid';
 K_CHAR_CS: 'char_cs';
