@@ -2761,10 +2761,14 @@ assocArrayTypeDef:
     K_TABLE K_OF type=plsqlDataType (K_NOT? K_NULL)? K_INDEX K_BY indexType=plsqlDataType
 ;
 
+// characterSetDataType are reserved for Oracle implementation
+// of supplied package types and are only allowed for subprogram parameters.
 plsqlDataType:
       K_REF dataType                                    # refPlsqlDataType
     | qualifiedName PERCNT K_TYPE dataTypeArray?        # percentTypePlsqlDataType
     | qualifiedName PERCNT K_ROWTYPE dataTypeArray?     # percentRowtypePlsqlDataType
+    | qualifiedName K_CHARACTER K_SET
+        charSetName=qualifiedName (PERCNT K_CHARSET)?   # characterSetDataType
     | dataType                                          # simplePlsqlDataType
 ;
 
