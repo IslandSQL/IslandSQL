@@ -77,7 +77,7 @@ public class ParserMetrics {
     /**
      * Get the relevant decision information gathered during profiling of the parser.
      * <p>
-     * Relevant are entries with a time spent > 0.
+     * Relevant are entries with a time spent &gt; 0.
      * The entries are sorted by the time spent in descending order.
      * </p>
      *
