@@ -29,12 +29,13 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>8</release>
+                    <release>11</release>
                     <compilerArgument>-Xlint:-options</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
                 <!-- generate Java clases based on Antlr4 .g4 files -->
+                <!-- requires JDK 11 or newer -->
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>${antlr.version}</version>
