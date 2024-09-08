@@ -321,10 +321,11 @@ createMaterializedViewStatement:
     createMaterializedView sqlEnd
 ;
 
-// wrong documentation in 23.4:
+// wrong documentation in 23.5:
 // - column list is optional and parentheses start/close the list not the column
 // - on prebuilt table is optional
 // - phyisical_properties and materialized_view_props are optional
+// - materialized_view_props can also be defined before phyiscal_properties
 createMaterializedView:
     K_CREATE K_MATERIALIZED K_VIEW
     (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? mviewName=sqlName
@@ -333,7 +334,10 @@ createMaterializedView:
     (K_USING method=sqlName)? postgresqlViewOptions?  // PostgreSQL only
     defaultCollationClause?
     (K_ON K_PREBUILT K_TABLE ((K_WITH | K_WITHOUT) K_REDUCED K_PRECISION)?)?
-    physicalProperties? materializedViewProps
+    (
+          physicalProperties? materializedViewProps
+        | materializedViewProps physicalProperties?
+    )
     (
           K_USING K_INDEX physicalAttributesClause?
         | K_USING K_NO K_INDEX
