@@ -357,9 +357,10 @@ scopedTableRefConstraint:
 ;
 
 // simplified as list of tokens
+// wrong documentation in 23.5: deferredSegementCreation can be used without other physical properties
 physicalProperties:
     (
-          deferredSegmentCreation
+          deferredSegmentCreation ~SEMI*?
         | segmentAttributesClause
         | K_ORGANIZATION ~SEMI+?
         | K_EXTERNAL ~SEMI+?
