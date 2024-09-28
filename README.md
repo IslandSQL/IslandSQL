@@ -3,7 +3,8 @@
 ## Introduction
 
 IslandSQL is an ANTLR 4 based parser for grammars used in SQL files.
-The parser requires a Java Virtual Machine supporting version 11 or newer and is available on [Maven Central](https://central.sonatype.com/artifact/ch.islandsql/islandsql).
+The parser requires a Java Virtual Machine supporting version 11 or newer and is available
+on [Maven Central](https://central.sonatype.com/artifact/ch.islandsql/islandsql).
 
 ## Scope
 
@@ -17,11 +18,12 @@ The following table shows the DBMS and their grammar versions in scope:
 |            | SQLcl    | 24.2 G10284-02        | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/24.2/sqcug/index.html) | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
 |            | SQL      | 23ai F47038-15 (23.5) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/sqlrf/)                   | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
 |            | PL/SQL   | 23ai F46753-06 (23.5) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/23/lnpls/)                   | [PDF](https://islandsql.github.io/IslandSQL/database-pl-sql-language-reference.pdf) |
-| PostgreSQL | psql     | 17rc1                 | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/17/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | SQL      | 17rc1                 | [SQL Commands](https://www.postgresql.org/docs/17/sql-commands.html)                                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | PL/pgSQL | 17rc1                 | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/17/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+| PostgreSQL | psql     | 17                    | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/17/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | SQL      | 17                    | [SQL Commands](https://www.postgresql.org/docs/17/sql-commands.html)                                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | PL/pgSQL | 17                    | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/17/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 
-The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format represents the version that was used to define the grammar.
+The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format
+represents the version that was used to define the grammar.
 
 ### Statements
 
@@ -59,9 +61,12 @@ The current islands of interests are:
 | other | `anonymous PL/SQL block`              | :white_check_mark: |        n/a         |
 |       | `do`                                  |        n/a         | :white_check_mark: |
 
-Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream represents the complete input (file).
+Tokens that are not part of the statements listed above are preserved as hidden tokens. As a result, the token stream
+represents the complete input (file).
 
-Statements containing other languages such as Java or JavaScript are not within the scope of IslandSQL, as the source code in these languages is most likely developed, linted, tested and packaged outside the database before being deployed in the database.
+Statements containing other languages such as Java or JavaScript are not within the scope of IslandSQL, as the source
+code in these languages is most likely developed, linted, tested and packaged outside the database before being deployed
+in the database.
 
 ## IslandSQL Grammar
 
@@ -76,4 +81,5 @@ See [FAQ](faq.md).
 
 ## License
 
-IslandSQL is licensed under the Apache License, Version 2.0. You may obtain a copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
+IslandSQL is licensed under the Apache License, Version 2.0. You may obtain a copy of the License
+at <http://www.apache.org/licenses/LICENSE-2.0>.
