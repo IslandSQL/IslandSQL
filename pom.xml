@@ -34,7 +34,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- generate Java clases based on Antlr4 .g4 files -->
+                <!-- generate Java classes based on ANTLR4 .g4 files -->
                 <!-- requires JDK 11 or newer -->
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-maven-plugin</artifactId>
