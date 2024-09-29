@@ -64,6 +64,23 @@ fragment ANY_EXCEPT_BODY:
     ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
 
+// simplified ranges based on https://www.unicode.org/Public/16.0.0/ucd/emoji/emoji-data.txt
+// \p{Emoji} includes #, *, 0-9 and therefore cannot be used
+fragment EMOJI_BASE:
+       [\u00A9\u00AE]           // copyright, registered
+     | [\u203C-\u3299]          // double exclamation mark .. Japanese “secret” button
+     | [\u{1F000}-\u{1FAF8}]    // mahjong tile east wind .. rightwards pushing hand
+     | [\u{1FAF9}-\u{1FAFF}]    // reserved
+     | [\u{1FC00}-\u{1FFFD}]    // reserved
+;
+// https://www.unicode.org/reports/tr44/#Property_Index
+fragment EMOJI_MODIFIER:
+      [\p{Emoji_Modifier}]
+    | [\p{Variation_Selector}]
+    | [\u200D]                  // Zero Width Joiner, e.g. used to build the family emoji
+;
+fragment EMOJI: EMOJI_BASE EMOJI_MODIFIER?;
+
 /*----------------------------------------------------------------------------*/
 // Whitespace and comments
 /*----------------------------------------------------------------------------*/
@@ -94,7 +111,7 @@ STRING:
 // Identifier
 /*----------------------------------------------------------------------------*/
 
-ID: [_\p{Alpha}] [_$#0-9\p{Alpha}]* -> channel(HIDDEN);
+ID: ([_\p{Alpha}]|EMOJI) ([_$#0-9\p{Alpha}]|EMOJI)* -> channel(HIDDEN);
 QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
