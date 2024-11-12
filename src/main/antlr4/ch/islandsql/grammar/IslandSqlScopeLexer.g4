@@ -557,6 +557,7 @@ PKG_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_M
 PKG_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 PKG_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 PKG_INITIALIZE_SECTION_START: 'begin' -> more, mode(CODE_BLOCK_MODE);
+PKG_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
 
 PKG_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 PKG_SL_COMMENT: SL_COMMENT -> more;
