@@ -38,6 +38,38 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
+## Keyword `end` as Identifier at the end of a statement in a PL/SQL block
+
+If you use the [scope lexer to hide out-of-scope tokens](https://github.com/IslandSQL/IslandSQL/blob/v0.13.0/src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L241-L251), you must not use the `end` keyword as an identifier to terminate a statement within a PL/SQL block.
+
+Here's an example of an unsupported use of the `end` keyword:
+
+```sql
+declare
+   l_count integer;
+begin
+   select count(*)
+     into l_count
+     from end;
+end;
+/
+```
+
+In this case, the scope lexer hides the tokens in last two lines 7 and 8. As a result the parser will report a syntax error.
+
+As a workaround you can disable the `hideOutOfScopeTokens` feature (the parser can handle this), or change the code. For example, as follows:
+
+```sql
+declare
+   l_count integer;
+begin
+   select count(*)
+     into l_count
+     from "END";
+end;
+/
+```
+
 ## SQL\*Plus PROMPT and REMARK Commands
 
 The SQL\*Plus PROMPT and REMARK commands are treated like comments. They are recognized in the lexer and put on the hidden channel. So they are simply ignored by the parser. However, this may lead to parser errors if the following identifiers are used on a new line:
