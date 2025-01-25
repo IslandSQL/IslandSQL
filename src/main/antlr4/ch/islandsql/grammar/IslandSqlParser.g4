@@ -1385,7 +1385,7 @@ createView:
           K_EDITIONING
         | K_EDITIONABLE K_EDITIONING?
         | K_NONEDITIONABLE
-    )? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    )? (K_JSON K_COLLECTION)? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
     sharingClause?
     (
           relationalViewClause
