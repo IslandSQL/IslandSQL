@@ -3878,7 +3878,12 @@ rowidDatatype:
 ;
 
 jsonDatatype:
-    K_JSON (LPAR jsonColumnModifier RPAR)?
+    K_JSON (LPAR
+        (
+              jsonColumnModifier jsonLimitClause?
+            | jsonLimitClause?
+        )
+    RPAR)?
 ;
 
 jsonColumnModifier:
@@ -3900,6 +3905,10 @@ jsonScalarModifier:
     | K_BINARY
     | K_INTERVAL K_YEAR K_TO K_MONTH
     | K_INTERVAL K_DAY K_TO K_SECOND
+;
+
+jsonLimitClause:
+    K_LIMIT limit=expression
 ;
 
 booleanDatatype:
