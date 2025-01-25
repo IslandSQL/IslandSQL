@@ -6034,6 +6034,7 @@ keywordAsId:
     | K_DEFINER
     | K_DELETE
     | K_DEMAND
+    | K_DENSE
     | K_DENSE_RANK
     | K_DEPRECATE
     | K_DEPTH
@@ -6559,6 +6560,7 @@ keywordAsId:
     | K_SORT
     | K_SOURCE
     | K_SPACE
+    | K_SPARSE
     | K_SPLIT
     | K_SQL
     | K_SQLSTATE
