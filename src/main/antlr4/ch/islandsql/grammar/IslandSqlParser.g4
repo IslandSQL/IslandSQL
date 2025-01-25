@@ -3907,7 +3907,11 @@ booleanDatatype:
 ;
 
 vectorDatatype:
-    K_VECTOR (LPAR numberOfDimensions=expression (COMMA dimensionElementFormat=expression)? RPAR)?
+    K_VECTOR
+    (LPAR numberOfDimensions=expression
+        (COMMA dimensionElementFormat=expression)?
+        (COMMA density=(K_DENSE|K_SPARSE))?
+   RPAR)?
 ;
 
 ansiSupportedDatatype:
