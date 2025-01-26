@@ -833,9 +833,11 @@ inlineRefConstraint:
 ;
 
 // wrong documentation in 23.4: optionality of unusable_edition_clause
+// materialized is not documented in SQL Language Reference 23.7
 virtualColumnDefinition:
     column=sqlName (typeName=datatypeDomain (K_COLLATE collate=sqlName)?)?
-    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR K_VIRTUAL?
+    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR
+    (K_VIRTUAL | K_MATERIALIZED)?
     evaluationEditionClause? unusableEditionsClause constraints+=inlineConstraint*
 ;
 
@@ -1385,7 +1387,7 @@ createView:
           K_EDITIONING
         | K_EDITIONABLE K_EDITIONING?
         | K_NONEDITIONABLE
-    )? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    )? (K_JSON K_COLLECTION)? K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
     sharingClause?
     (
           relationalViewClause
@@ -3878,7 +3880,12 @@ rowidDatatype:
 ;
 
 jsonDatatype:
-    K_JSON (LPAR jsonColumnModifier RPAR)?
+    K_JSON (LPAR
+        (
+              jsonColumnModifier jsonLimitClause?
+            | jsonLimitClause?
+        )
+    RPAR)?
 ;
 
 jsonColumnModifier:
@@ -3902,12 +3909,20 @@ jsonScalarModifier:
     | K_INTERVAL K_DAY K_TO K_SECOND
 ;
 
+jsonLimitClause:
+    K_LIMIT limit=expression
+;
+
 booleanDatatype:
     K_BOOLEAN
 ;
 
 vectorDatatype:
-    K_VECTOR (LPAR numberOfDimensions=expression (COMMA dimensionElementFormat=expression)? RPAR)?
+    K_VECTOR
+    (LPAR numberOfDimensions=expression
+        (COMMA dimensionElementFormat=expression)?
+        (COMMA density=(K_DENSE|K_SPARSE))?
+   RPAR)?
 ;
 
 ansiSupportedDatatype:
@@ -4279,6 +4294,7 @@ specialFunctionExpression:
     | overlay
     | substring
     | tableFunction
+    | timeBucket
     | treat
     | trim
     | validateConversion
@@ -5301,6 +5317,21 @@ tableFunction:
     (K_TABLE|K_THE) LPAR (query=subquery|expr=expression) RPAR
 ;
 
+timeBucket:
+    K_TIME_BUCKET LPAR dateTime=expression
+        COMMA stride=expression
+        COMMA origin=expression
+        (COMMA startOrEnd=expression)?
+        timeBucketOptionalClause?
+    RPAR
+;
+
+timeBucketOptionalClause:
+      K_ON K_OVERFLOW K_ROUND
+    | K_ON K_OVERFLOW K_ERROR
+    | K_LAST K_DAY K_OF K_MONTH
+;
+
 treat:
     K_TREAT LPAR expr=expression K_AS
         (
@@ -6034,6 +6065,7 @@ keywordAsId:
     | K_DEFINER
     | K_DELETE
     | K_DEMAND
+    | K_DENSE
     | K_DENSE_RANK
     | K_DEPRECATE
     | K_DEPTH
@@ -6493,6 +6525,7 @@ keywordAsId:
     | K_RNDS
     | K_RNPS
     | K_ROLLBACK
+    | K_ROUND
     | K_ROW
     | K_ROWID
     | K_ROWS
@@ -6559,6 +6592,7 @@ keywordAsId:
     | K_SORT
     | K_SOURCE
     | K_SPACE
+    | K_SPARSE
     | K_SPLIT
     | K_SQL
     | K_SQLSTATE
@@ -6610,6 +6644,7 @@ keywordAsId:
     | K_TIMESTAMPTZ
     | K_TIMETZ
     | K_TIMEZONE
+    | K_TIME_BUCKET
     | K_TIMING
     | K_TO
     | K_TRAILING

@@ -10,7 +10,7 @@ Code that has been wrapped with the [wrap](https://docs.oracle.com/en/database/o
 
 ## Keywords as Identifiers
 
-The grammar allows the use of keywords as identifiers. This makes the grammar robust and supports the fact OracleDB allows the use of keywords in various places.
+The grammar allows keywords to be used as identifiers. This makes the grammar robust and supports the fact that OracleDB allows the use of keywords in various places.
 
 However, there are cases where this leads to an unexpected parse tree, even if no keywords as identifiers are used. Here's an example: 
 

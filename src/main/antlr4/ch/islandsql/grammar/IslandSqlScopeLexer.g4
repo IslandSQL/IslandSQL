@@ -367,7 +367,7 @@ CREATE_VIEW:
                      | ('editionable' COMMENT_OR_WS+ 'editioning')
                      | 'noneditionable'
                  ) COMMENT_OR_WS+
-             )?
+             )? ('json' COMMENT_OR_WS+ 'collection' COMMENT_OR_WS+)?
     )
     'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
