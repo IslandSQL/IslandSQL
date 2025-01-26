@@ -833,9 +833,11 @@ inlineRefConstraint:
 ;
 
 // wrong documentation in 23.4: optionality of unusable_edition_clause
+// materialized is not documented in SQL Language Reference 23.7
 virtualColumnDefinition:
     column=sqlName (typeName=datatypeDomain (K_COLLATE collate=sqlName)?)?
-    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR K_VIRTUAL?
+    (K_VISIBLE | K_INVISIBLE)? (K_GENERATED K_ALWAYS)? K_AS LPAR expr=expression RPAR
+    (K_VIRTUAL | K_MATERIALIZED)?
     evaluationEditionClause? unusableEditionsClause constraints+=inlineConstraint*
 ;
 
