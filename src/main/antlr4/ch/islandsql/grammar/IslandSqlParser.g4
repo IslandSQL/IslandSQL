@@ -4294,6 +4294,7 @@ specialFunctionExpression:
     | overlay
     | substring
     | tableFunction
+    | timeBucket
     | treat
     | trim
     | validateConversion
@@ -5314,6 +5315,21 @@ substring:
 
 tableFunction:
     (K_TABLE|K_THE) LPAR (query=subquery|expr=expression) RPAR
+;
+
+timeBucket:
+    K_TIME_BUCKET LPAR dateTime=expression
+        COMMA stride=expression
+        COMMA origin=expression
+        (COMMA startOrEnd=expression)?
+        timeBucketOptionalClause?
+    RPAR
+;
+
+timeBucketOptionalClause:
+      K_ON K_OVERFLOW K_ROUND
+    | K_ON K_OVERFLOW K_ERROR
+    | K_LAST K_DAY K_OF K_MONTH
 ;
 
 treat:
