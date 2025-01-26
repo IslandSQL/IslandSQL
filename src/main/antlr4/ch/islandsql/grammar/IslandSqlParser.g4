@@ -6509,6 +6509,7 @@ keywordAsId:
     | K_RNDS
     | K_RNPS
     | K_ROLLBACK
+    | K_ROUND
     | K_ROW
     | K_ROWID
     | K_ROWS
@@ -6627,6 +6628,7 @@ keywordAsId:
     | K_TIMESTAMPTZ
     | K_TIMETZ
     | K_TIMEZONE
+    | K_TIME_BUCKET
     | K_TIMING
     | K_TO
     | K_TRAILING
