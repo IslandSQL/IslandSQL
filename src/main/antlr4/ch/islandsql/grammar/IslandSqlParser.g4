@@ -4092,16 +4092,16 @@ expression:
     | expr=expression LPAR PLUS RPAR                            # outerJoinExpression
     | expr=sqlName                                              # simpleExpressionName
     // starting with 23.2 a condition is treated as a synonym to an expression
-    | operator=K_NOT cond=expression                            # notCondition
-    | left=expression operator=K_AND right=expression           # logicalCondition
-    | left=expression operator=K_OR right=expression            # logicalCondition
     | left=expression
         operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                        # groupComparisionCondition
+        right=expression                                        # groupComparisionCondition     // presendence 11
     | left=expression
         operator=simpleComparisionOperator
-        right=expression                                        # simpleComparisionCondition
+        right=expression                                        # simpleComparisionCondition    // presendence 12
+    | operator=K_NOT cond=expression                            # notCondition
+    | left=expression operator=K_AND right=expression           # logicalCondition
+    | left=expression operator=K_OR right=expression            # logicalCondition
     | expr=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)                 # floatingPointCondition
     | expr=expression operator=K_IS K_ANY                       # isAnyCondition            // "any" only is handled as sqlName
@@ -5793,13 +5793,13 @@ postgresqlArrayElement:
 // based on condition, considering only those conditions with a leading expression predicate
 // that can be ommitted in a dangling_predicate of a case expression and case statement
 danglingCondition:
-      operator=K_AND right=expression                   # logicalConditionDangling
-    | operator=K_OR right=expression                    # logicalConditionDangling
-    | operator=simpleComparisionOperator
+       operator=simpleComparisionOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                # groupComparisionConditionDangling
-    | operator=simpleComparisionOperator
-        right=expression                                # simpleComparisionConditionDangling
+        right=expression                                # groupComparisionConditionDangling // precedence 1
+    |  operator=simpleComparisionOperator
+        right=expression                                # simpleComparisionConditionDangling // precedence 2
+    | operator=K_AND right=expression                   # logicalConditionDangling
+    | operator=K_OR right=expression                    # logicalConditionDangling
     | operator=K_IS K_NOT? (K_NAN|K_INFINITE)           # floatingPointConditionDangling
     | operator=K_IS K_ANY                               # isAnyConditionDangling // "any" only is handled as sqlName
     | operator=K_IS K_PRESENT                           # isPresentConditionDangling
