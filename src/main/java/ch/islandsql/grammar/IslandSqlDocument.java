@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
  */
 public class IslandSqlDocument {
     private final IslandSqlDialect dialect;
-    private final CommonTokenStream tokenStream;
     private final IslandSqlParser.FileContext file;
     private final List<SyntaxErrorEntry> syntaxErrors;
     private final LexerMetrics lexerMetrics;
@@ -58,7 +57,7 @@ public class IslandSqlDocument {
         SyntaxErrorListener errorListener = new SyntaxErrorListener();
         lexer.removeErrorListeners();
         lexer.addErrorListener(errorListener);
-        this.tokenStream = new CommonTokenStream(lexer);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         this.lexerMetrics = !builder.hideOutOfScopeTokens ? null : TokenStreamUtil.hideOutOfScopeTokens(tokenStream, errorListener, dialect);
         IslandSqlParser parser = new IslandSqlParser(tokenStream);
         parser.setProfile(builder.profile);
@@ -67,6 +66,7 @@ public class IslandSqlDocument {
         long parserStartTime = System.nanoTime();
         long parserStartMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         this.file = parser.file();
+        file.setTokenStream(tokenStream);
         parseSubtrees(builder, file, lexer, parser);
         long parserTime = System.nanoTime() - parserStartTime;
         long parserMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory() - parserStartMemory;
@@ -194,7 +194,8 @@ public class IslandSqlDocument {
             lexer.setCharPositionInLine(codeAsString.start.getCharPositionInLine() + ConverterUtil.startOffsetFromString(codeAsString));
             CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             parser.setTokenStream(tokenStream);
-            ParserRuleContext codeSubtree = language.equals("sql") ? parser.postgresqlSqlCode() : parser.postgresqlPlpgsqlCode();
+            IslandSqlParserRuleContext codeSubtree = language.equals("sql") ? parser.postgresqlSqlCode() : parser.postgresqlPlpgsqlCode();
+            codeSubtree.setTokenStream(tokenStream);
             if (codeSubtree.children.size() > 1) {
                 if (codeSubtree.children.get(codeSubtree.children.size() - 1).getText().equals("<EOF>")) {
                     codeSubtree.removeLastChild();
@@ -365,7 +366,7 @@ public class IslandSqlDocument {
      * @return Token stream.
      */
     public CommonTokenStream getTokenStream() {
-        return tokenStream;
+        return this.file.getTokenStream();
     }
 
     /**
