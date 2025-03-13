@@ -19,6 +19,7 @@ parser grammar IslandSqlParser;
 options {
     tokenVocab=IslandSqlLexer;
     superClass=IslandSqlParserBase;
+    contextSuperClass=IslandSqlParserRuleContext;
 }
 
 /*----------------------------------------------------------------------------*/

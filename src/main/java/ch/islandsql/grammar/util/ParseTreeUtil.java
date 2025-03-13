@@ -214,7 +214,7 @@ public class ParseTreeUtil {
 
     /**
      * Gets the label name of an alternative.
-     * If an alternative is labeld with "#someLabel" in the grammar, then
+     * If an alternative is labeled with "#someLabel" in the grammar, then
      * a subclass named "IslandSqlParser$SomeLabelContext" of another
      * rule class (not ParserRuleContext) is created.
      *
@@ -222,7 +222,7 @@ public class ParseTreeUtil {
      * @return Returns the label name or null, if no label is defined.
      */
     public static String getLabelName(ParserRuleContext ctx) {
-        if (ctx.getClass().getSuperclass().getSimpleName().equals("ParserRuleContext")) {
+        if (ctx.getClass().getSuperclass().getSimpleName().equals("IslandSqlParserRuleContext")) {
             return null;
         } else {
             String className = ctx.getClass().getName();
