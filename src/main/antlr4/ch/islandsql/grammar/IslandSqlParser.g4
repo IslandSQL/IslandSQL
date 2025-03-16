@@ -889,7 +889,7 @@ postgresqlTableConstraint:
 ;
 
 postgresqlExcludeColumn:
-    excludeElement=sqlName K_WITH (binaryOperator | simpleComparisionOperator)
+    excludeElement=sqlName K_WITH (binaryOperator | simpleComparisonOperator)
 ;
 
 outOfLineRefConstraint:
@@ -4094,12 +4094,12 @@ expression:
     | expr=sqlName                                              # simpleExpressionName
     // starting with 23.2 a condition is treated as a synonym to an expression
     | left=expression
-        operator=simpleComparisionOperator
+        operator=simpleComparisonOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                        # groupComparisionCondition     // presendence 11
+        right=expression                                        # groupComparisonCondition     // presendence 11
     | left=expression
-        operator=simpleComparisionOperator
-        right=expression                                        # simpleComparisionCondition    // presendence 12
+        operator=simpleComparisonOperator
+        right=expression                                        # simpleComparisonCondition    // presendence 12
     | operator=K_NOT cond=expression                            # notCondition
     | left=expression operator=K_AND right=expression           # logicalCondition
     | left=expression operator=K_OR right=expression            # logicalCondition
@@ -5662,7 +5662,7 @@ orderByItem:
 
 // PostgreSQL (member of some B-tree operator family)
 orderByUsingOperator:
-      simpleComparisionOperator
+      simpleComparisonOperator
     | binaryOperator
 ;
 
@@ -5794,11 +5794,11 @@ postgresqlArrayElement:
 // based on condition, considering only those conditions with a leading expression predicate
 // that can be ommitted in a dangling_predicate of a case expression and case statement
 danglingCondition:
-       operator=simpleComparisionOperator
+       operator=simpleComparisonOperator
         groupOperator=(K_ANY|K_SOME|K_ALL)
-        right=expression                                # groupComparisionConditionDangling // precedence 1
-    |  operator=simpleComparisionOperator
-        right=expression                                # simpleComparisionConditionDangling // precedence 2
+        right=expression                                # groupComparisonConditionDangling // precedence 1
+    |  operator=simpleComparisonOperator
+        right=expression                                # simpleComparisonConditionDangling // precedence 2
     | operator=K_AND right=expression                   # logicalConditionDangling
     | operator=K_OR right=expression                    # logicalConditionDangling
     | operator=K_IS K_NOT? (K_NAN|K_INFINITE)           # floatingPointConditionDangling
@@ -5851,7 +5851,7 @@ jsonExistsOnEmptyClause:
     (K_ERROR|K_TRUE|K_FALSE) K_ON K_EMPTY
 ;
 
-simpleComparisionOperator:
+simpleComparisonOperator:
       EQUALS            # eq
     | EXCL_EQUALS       # ne
     | EXCL EQUALS       # ne
