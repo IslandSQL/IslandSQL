@@ -1360,7 +1360,7 @@ funcDeclInType:
 ;
 
 constructorDeclaration:
-    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=dataType
+    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=sqlName
     (
         LPAR (K_SELF K_IN K_OUT selfType=dataType COMMA)?
         parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR
