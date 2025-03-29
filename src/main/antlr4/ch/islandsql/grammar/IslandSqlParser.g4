@@ -2740,13 +2740,13 @@ itemlistItem:
     | typeDefinition
     | cursorDeclaration
     | cursorDefinition
-    | itemDeclaration
     | functionDeclaration
     | functionDefinition
     | procedureDeclaration
     | procedureDefinition
     | selectionDirective
     | postgresqlCursorDefinition
+    | itemDeclaration
 ;
 
 typeDefinition:
