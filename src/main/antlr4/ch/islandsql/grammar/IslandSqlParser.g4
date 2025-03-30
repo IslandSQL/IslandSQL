@@ -2854,7 +2854,7 @@ constantDeclaration:
 // not documented in 23.4: use of null without assignment
 // = allowed in PL/pgSQL as alternative to :=, DEFAULT
 variableDeclaration:
-    variable=sqlName type=plsqlDataType postgresqlCollation?
+    {_input.LA(1) != K_BEGIN }? variable=sqlName type=plsqlDataType postgresqlCollation?
         ((K_NOT? K_NULL)? (COLON_EQUALS | K_DEFAULT | EQUALS) expr=postgresqlSqlExpression | K_NULL)? SEMI
 ;
 
