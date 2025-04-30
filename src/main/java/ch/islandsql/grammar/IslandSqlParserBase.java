@@ -58,4 +58,18 @@ public abstract class IslandSqlParserBase extends Parser {
             }
         }
     }
+
+    /**
+     * Checks if the current token is a preprocessor control token that follows a $THEN token
+     * to ensure reluctant consumption of selectionDirectiveText. Supporting nested
+     * conditional compilation blocks.
+     *
+     * @return true if the current token is a preprocessor control token, false otherwise.
+     */
+    public boolean isPreprocessorControlToken() {
+        return _input.LA(1) == IslandSqlLexer.DOLLAR_IF
+                || _input.LA(1) == IslandSqlLexer.DOLLAR_ELSIF
+                || _input.LA(1) == IslandSqlLexer.DOLLAR_ELSE
+                || _input.LA(1) == IslandSqlLexer.DOLLAR_END;
+    }
 }
