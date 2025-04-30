@@ -3404,7 +3404,7 @@ returnStatement:
 selectionDirective:
     DOLLAR_IF conditionToStmts+=selectionDirectiveConditionToStatements
     (DOLLAR_ELSIF conditionToStmts+=selectionDirectiveConditionToStatements)*
-    (DOLLAR_ELSE elseTexts=selectionDirectiveText*)?
+    (DOLLAR_ELSE elseTexts+=selectionDirectiveText*)?
     DOLLAR_END
 ;
 
