@@ -2965,16 +2965,20 @@ scriptBody:
     script=.*? // handles all kind of delimiters
 ;
 
-// undocumented in 23.4: nameSchema and libNameSchema
+// undocumented in 23.8: nameSchema and libNameSchema, unorderd options, language c and external can be used both
 cDeclaration:
-    (K_LANGUAGE K_C | K_EXTERNAL)
-        (
-              (K_NAME (nameSchema=sqlName PERIOD)? name=sqlName)? K_LIBRARY (libNameSchema=sqlName PERIOD)? libName=sqlName
-            | K_LIBRARY (libNameSchema=sqlName PERIOD)? libName=sqlName (K_NAME (nameSchema=sqlName PERIOD)? name=sqlName)?
-        )
-        (K_AGENT K_IN LPAR args+=sqlName (COMMA args+=sqlName)* RPAR)?
-        (K_WITH K_CONTEXT)?
-        (K_PARAMETERS LPAR params+=externalParameter (COMMA params+=externalParameter)* RPAR)?
+    options+=cDeclarationOption+
+;
+
+// artifical clause to handle undocumented ordering of options
+cDeclarationOption:
+      K_LANGUAGE K_C                                                                        # cDeclarationLanguageC
+    | K_EXTERNAL                                                                            # cDeclarationExternal
+    | K_NAME (nameSchema=sqlName PERIOD)? name=sqlName                                      # cDeclarationName
+    | K_LIBRARY (libNameSchema=sqlName PERIOD)? libName=sqlName                             # cDeclarationLibrary
+    | K_AGENT K_IN LPAR args+=sqlName (COMMA args+=sqlName)* RPAR                           # cDeclarationAgent
+    | K_WITH K_CONTEXT                                                                      # cDeclarationWithContext
+    | K_PARAMETERS LPAR params+=externalParameter (COMMA params+=externalParameter)* RPAR   # cDeclarationParameters
 ;
 
 externalParameter:
