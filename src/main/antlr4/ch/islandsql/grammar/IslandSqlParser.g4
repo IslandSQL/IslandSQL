@@ -3886,23 +3886,41 @@ rowidDatatype:
 ;
 
 jsonDatatype:
-    K_JSON (LPAR
-        (
-              jsonColumnModifier jsonLimitClause?
-            | jsonLimitClause?
-        )
-    RPAR)?
+    K_JSON (LPAR jsonTypeModifier RPAR)?
+;
+
+jsonTypeModifier:
+      specs+=jsonModifierSpec (COMMA specs+=jsonModifierSpec)* jsonLimitClause?
+    | jsonLimitClause
 ;
 
 // replaced value with sequence in 23.8
-jsonColumnModifier:
+jsonModifierSpec:
       K_SEQUENCE
-    | K_ARRAY
     | K_OBJECT
-    | K_SCALAR jsonScalarModifier?
+    | jsonArraySpec
+    | jsonScalarSpecList
 ;
 
-jsonScalarModifier:
+jsonArraySpec:
+    K_ARRAY (LPAR
+        jsonScalarSpec
+            (
+                (K_ALLOW | K_DISALLOW) K_NULL
+                (COMMA arrayDimension=expression (COMMA K_SORT)?)?
+            )?
+    RPAR)?
+;
+
+jsonScalarSpecList:
+    specs+=jsonScalarSpecItem (COMMA specs+=jsonScalarSpecItem)*
+;
+
+jsonScalarSpecItem:
+    K_SCALAR jsonScalarSpec?
+;
+
+jsonScalarSpec:
       K_NUMBER
     | K_STRING
     | K_BINARY_DOUBLE
@@ -3916,6 +3934,7 @@ jsonScalarModifier:
     | K_INTERVAL K_DAY K_TO K_SECOND
 ;
 
+// artificial clause, size is limited to 33554432 bytes (32 MB)
 jsonLimitClause:
     K_LIMIT limit=expression
 ;
@@ -4124,11 +4143,9 @@ expression:
     | expr=expression operator=K_IS K_NOT? K_DOCUMENT           # isDocumentCondition       // PostgreSQL
     | expr=expression
         operator=K_IS K_NOT? K_JSON
-        jsonModifierList? formatClause?
-        (
-            LPAR (options+=jsonConditionOption+) RPAR
-          | options+=jsonConditionOption*
-        )                                                       # isJsonCondition
+        jsonModifierList?
+        options+=jsonConditionOption*
+        (LPAR (options+=jsonConditionOption+) RPAR)?            # isJsonCondition
     | left=expression operator=K_IS K_NOT?
         K_DISTINCT K_FROM right=expression                      # isDistinctFromCondition   // PostgreSQL
     | left=expression K_NOT? operator=K_MEMBER
@@ -4708,8 +4725,8 @@ jsonArrayElement:
 ;
 
 jsonModifierList:
-      LPAR modifiers+=jsonColumnModifier (COMMA modifiers+=jsonColumnModifier)* RPAR
-    | modifiers+=jsonColumnModifier
+      LPAR modifiers+=jsonTypeModifier (COMMA modifiers+=jsonTypeModifier)* RPAR
+    | modifiers+=jsonTypeModifier
 ;
 
 formatClause:
@@ -5817,11 +5834,9 @@ danglingCondition:
     | operator=K_IS K_NOT? K_FALSE                      # isFalseConditionDangling
     | operator=K_IS K_NOT? K_DANGLING                   # isDanglingConditionDangling
     | operator=K_IS K_NOT? K_JSON
-        jsonModifierList? formatClause?
-        (
-            LPAR (options+=jsonConditionOption+) RPAR
-          | options+=jsonConditionOption*
-        )                                               # isJsonConditionDangling
+        jsonModifierList?
+        options+=jsonConditionOption*
+        (LPAR (options+=jsonConditionOption+) RPAR)?    # isJsonConditionDangling
     | K_NOT? operator=K_MEMBER
         K_OF? right=expression                          # memberConditionDangling
     | K_NOT? operator=K_SUBMULTISET
@@ -5877,14 +5892,17 @@ simpleComparisonOperator:
 
 // it's possible but not documented that options can be used in an arbitrary order
 // it's also possible but not documented to place the options in parenthesis
+// based on is_json_args, changed to handle all options of OracleDB and PostgreSQL
 jsonConditionOption:
-      K_STRICT                                      # strictJsonConditionOption
+      K_FORMAT K_JSON                               # formatJsonConditionOption
+    | K_STRICT                                      # strictJsonConditionOption
     | K_LAX                                         # laxJsonConditionOption
     | K_ALLOW K_SCALARS                             # allowScalarsJsonConditionOption
     | K_DISALLOW K_SCALARS                          # disallowSclarsJsonConditionOption
     | K_WITH K_UNIQUE K_KEYS?                       # withUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
     | K_WITHOUT K_UNIQUE K_KEYS?                    # withoutUniqueKeysJsonConditionOption // PostgreSQL: keys is optional
     | K_VALIDATE K_CAST? K_USING? schema=expression # validateJsonConditionOption
+    | K_ENCODING K_UTF8                             # encodingUtf8ConditionOption // PostgreSQL
 ;
 
 isOfTypeConditionItem:
