@@ -2955,7 +2955,7 @@ javascriptDeclaration:
         (
               K_MODULE (schema=sqlName PERIOD)? moduleName=sqlName
                 (K_ENV (envSchema=sqlName PERIOD)? envName=sqlName)? K_SIGNATURE signature=string
-            | K_LANGUAGE languageName=sqlName (code=string|scriptBody)
+            | K_LANGUAGE languageName=sqlName K_PURE? (code=string|scriptBody)
         )
 ;
 
