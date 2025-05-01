@@ -3894,8 +3894,9 @@ jsonDatatype:
     RPAR)?
 ;
 
+// replaced value with sequence in 23.8
 jsonColumnModifier:
-      K_VALUE
+      K_SEQUENCE
     | K_ARRAY
     | K_OBJECT
     | K_SCALAR jsonScalarModifier?
