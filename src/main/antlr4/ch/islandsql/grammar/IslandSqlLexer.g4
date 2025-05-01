@@ -668,6 +668,7 @@ K_PRIVATE: 'private';
 K_PROBES: 'probes';
 K_PROCEDURE: 'procedure';
 K_PUNCTUATION: 'punctuation';
+K_PURE: 'pure';
 K_QUALIFY: 'qualify';
 K_QUERY: 'query';
 K_QUOTES: 'quotes';
