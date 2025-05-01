@@ -6500,6 +6500,7 @@ keywordAsId:
     | K_PROBES
     | K_PROCEDURE
     | K_PUNCTUATION
+    | K_PURE
     | K_QUALIFY
     | K_QUERY
     | K_QUOTES
