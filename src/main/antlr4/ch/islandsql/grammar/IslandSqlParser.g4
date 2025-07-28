@@ -3957,14 +3957,14 @@ vectorDatatype:
 ;
 
 ansiSupportedDatatype:
-      K_CHARACTER (K_VARYING? LPAR size=expression RPAR)?                       // optional size in PostgreSQL
+      K_CHARACTER (K_VARYING? LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?      // optional size in PostgreSQL
     | (K_CHAR|K_NCHAR) (K_VARYING LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?  // optional size in PostgreSQL
     | K_VARCHAR (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?                   // optional size in PostgreSQL
     | K_NATIONAL (K_CHARACTER|K_CHAR) K_VARYING? LPAR size=expression RPAR
     | (K_NUMERIC|K_DECIMAL|K_DEC) (LPAR precision=expression (COMMA scale=expression)? RPAR)?
     | (K_INTEGER|K_INT|K_SMALLINT)
     | K_FLOAT (LPAR size=expression RPAR)?
-    | K_DOUBLE K_PRECISION
+    | K_DOUBLE K_PRECISION (LPAR size=expression RPAR)?                         // size allowed in PL/SQL
     | K_REAL
 ;
 
