@@ -3861,9 +3861,9 @@ numberDatatype:
 ;
 
 longAndRawDatatype:
-      K_LONG
-    | K_LONG K_RAW
-    | K_RAW LPAR size=expression RPAR
+      K_LONG (LPAR size=expression RPAR)?       // size is accepted in PL/SQL
+    | K_LONG K_RAW (LPAR size=expression RPAR)? // size is accepted in PL/SQL
+    | K_RAW (LPAR size=expression RPAR)?        // is optional in PL/SQL
 ;
 
 datetimeDatatype:
