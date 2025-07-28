@@ -456,6 +456,7 @@ K_LAG: 'lag';
 K_LAG_DIFF: 'lag_diff';
 K_LAG_DIFF_PERCENT: 'lag_diff_percent';
 K_LANGUAGE: 'language';
+K_LARGE: 'large';
 K_LAST: 'last';
 K_LATERAL: 'lateral';
 K_LAX: 'lax';

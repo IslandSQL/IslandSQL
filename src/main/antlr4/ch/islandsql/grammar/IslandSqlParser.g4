@@ -3861,9 +3861,9 @@ numberDatatype:
 ;
 
 longAndRawDatatype:
-      K_LONG
-    | K_LONG K_RAW
-    | K_RAW LPAR size=expression RPAR
+      K_LONG (LPAR size=expression RPAR)?       // size is accepted in PL/SQL
+    | K_LONG K_RAW (LPAR size=expression RPAR)? // size is accepted in PL/SQL
+    | K_RAW (LPAR size=expression RPAR)?        // is optional in PL/SQL
 ;
 
 datetimeDatatype:
@@ -3874,10 +3874,15 @@ datetimeDatatype:
 ;
 
 largeObjectDatatype:
-      K_BLOB
-    | K_CLOB
-    | K_NCLOB
-    | K_BFILE
+      K_BLOB                                        # blobDatatype
+    | K_BINARY K_LARGE K_OBJECT                     # blobDatatype
+    | K_CLOB                                        # clobDatatype
+    | K_CHARACTER K_LARGE K_OBJECT                  # clobDatatype
+    | K_CHAR K_LARGE K_OBJECT                       # clobDatatype
+    | K_NCLOB                                       # nclobDatatype
+    | K_NATIONAL K_CHARACTER K_LARGE K_OBJECT       # nclobDatatype
+    | K_NCHAR K_LARGE K_OBJECT                      # nclobDatatype
+    | K_BFILE                                       # bfileDatatype
 ;
 
 rowidDatatype:
@@ -3952,14 +3957,14 @@ vectorDatatype:
 ;
 
 ansiSupportedDatatype:
-      K_CHARACTER (K_VARYING? LPAR size=expression RPAR)?                       // optional size in PostgreSQL
+      K_CHARACTER (K_VARYING? LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?      // optional size in PostgreSQL
     | (K_CHAR|K_NCHAR) (K_VARYING LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?  // optional size in PostgreSQL
     | K_VARCHAR (LPAR size=expression (K_BYTE|K_CHAR)? RPAR)?                   // optional size in PostgreSQL
     | K_NATIONAL (K_CHARACTER|K_CHAR) K_VARYING? LPAR size=expression RPAR
     | (K_NUMERIC|K_DECIMAL|K_DEC) (LPAR precision=expression (COMMA scale=expression)? RPAR)?
     | (K_INTEGER|K_INT|K_SMALLINT)
     | K_FLOAT (LPAR size=expression RPAR)?
-    | K_DOUBLE K_PRECISION
+    | K_DOUBLE K_PRECISION (LPAR size=expression RPAR)?                         // size allowed in PL/SQL
     | K_REAL
 ;
 
@@ -4031,7 +4036,11 @@ intervalField:
 // handles also Oracle_supplied_types, which are just a special type of user_defined_types
 // handles also parametrized PostGIS data types such as geography
 userDefinedType:
-    name=qualifiedName (LPAR exprs+=expression (COMMA exprs+=expression)* RPAR)?
+    name=qualifiedName
+    (
+          LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+        | LPAR exprs+=expression (K_CHAR|K_BYTE) RPAR // constrainted PL/SQL char subtypes like string, see #229
+    )?
 ;
 
 // PostgreSQL
@@ -6288,6 +6297,7 @@ keywordAsId:
     | K_LAG_DIFF
     | K_LAG_DIFF_PERCENT
     | K_LANGUAGE
+    | K_LARGE
     | K_LAST
     | K_LATERAL
     | K_LAX
