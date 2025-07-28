@@ -6288,6 +6288,7 @@ keywordAsId:
     | K_LAG_DIFF
     | K_LAG_DIFF_PERCENT
     | K_LANGUAGE
+    | K_LARGE
     | K_LAST
     | K_LATERAL
     | K_LAX
