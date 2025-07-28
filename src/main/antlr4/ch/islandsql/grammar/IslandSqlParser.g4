@@ -3874,10 +3874,15 @@ datetimeDatatype:
 ;
 
 largeObjectDatatype:
-      K_BLOB
-    | K_CLOB
-    | K_NCLOB
-    | K_BFILE
+      K_BLOB                                        # blobDatatype
+    | K_BINARY K_LARGE K_OBJECT                     # blobDatatype
+    | K_CLOB                                        # clobDatatype
+    | K_CHARACTER K_LARGE K_OBJECT                  # clobDatatype
+    | K_CHAR K_LARGE K_OBJECT                       # clobDatatype
+    | K_NCLOB                                       # nclobDatatype
+    | K_NATIONAL K_CHARACTER K_LARGE K_OBJECT       # nclobDatatype
+    | K_NCHAR K_LARGE K_OBJECT                      # nclobDatatype
+    | K_BFILE                                       # bfileDatatype
 ;
 
 rowidDatatype:
