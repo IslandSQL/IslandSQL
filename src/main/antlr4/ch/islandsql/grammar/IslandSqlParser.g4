@@ -593,7 +593,7 @@ unterminatedAtomicStatement:
 // SQL statement not fully parsed by this parser, used in atomicBlock only
 // end statement excluded due to conflict with end keyword in blocks
 terminatedAtomicStatement:
-      closeStatment
+      closeStatement
     | returnStatement // undocumented in 16.3
     | postgresqlFetchStatement
     | postgresqlMoveStatement
@@ -3062,7 +3062,7 @@ plsqlStatement:
           assignmentStatement
         | basicLoopStatement
         | caseStatement
-        | closeStatment
+        | closeStatement
         | continueStatement
         | cursorForLoopStatement
         | executeImmediateStatement
@@ -3137,7 +3137,7 @@ searchedCaseStatementWhenClause:
     K_WHEN cond=postgresqlSqlExpression K_THEN stmts+=plsqlStatement*
 ;
 
-closeStatment:
+closeStatement:
     K_CLOSE COLON? cursor=qualifiedName SEMI
 ;
 
