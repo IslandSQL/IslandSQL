@@ -1328,7 +1328,7 @@ createTypeBody:
 
 plsqlTypeBodySource:
     (schema=sqlName PERIOD)? typeName=sqlName sharingClause?
-    (K_IS | K_AS) items+=plsqlTypeBodyItem+ K_END SEMI
+    (K_IS | K_AS) items+=plsqlTypeBodyItem+ K_END name=sqlName? SEMI // undocumented, end label is supported in OracleDB 23.2
 ;
 
 // wrong documentation in 23.3 type body: missing inheritanceClauses
