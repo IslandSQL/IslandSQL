@@ -3215,7 +3215,7 @@ iterandDecl:
 ;
 
 constrainedType:
-    dataType (K_NOT? K_NULL)?
+    plsqlDataType (K_NOT? K_NULL)?
 ;
 
 iterationCtlSeq:
