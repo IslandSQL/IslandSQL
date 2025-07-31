@@ -2088,6 +2088,7 @@ hierarchicalQueryClause:
 ;
 
 // PostgreSQL: all, distinct
+// OralceDB: all introduced in 23.9 is supported as an groupByItem
 groupByClause:
       K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)* (K_HAVING cond=expression)?
     | K_HAVING cond=expression (K_GROUP K_BY (K_ALL|K_DISTINCT)? items+=groupByItem (COMMA items+=groupByItem)*)? // undocumented, but allowed in OracleDB
