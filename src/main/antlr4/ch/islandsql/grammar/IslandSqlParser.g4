@@ -1665,7 +1665,8 @@ singleTableInsert:
     postgresqlOverridingClause?
     (
           insertValuesClause
-        | subquery
+        | insertSetClause
+        | byNamePositionClause? subquery
         | postgresqlDefaultValuesClause
     )
     postgresqlOnConflictClause?
@@ -1697,11 +1698,33 @@ insertValuesClause:
     K_VALUES rows+=valuesRow (COMMA rows+=valuesRow)*
 ;
 
+insertSetClause:
+    K_SET
+    (
+           pairs+=columnValuePairs
+        |  LPAR pairs+=columnValuePairs RPAR (COMMA LPAR pairs+=columnValuePairs RPAR)*
+    )
+;
+
+columnValuePairs:
+    pairs+=columnValuePair (COMMA pairs+=columnValuePair)*
+;
+
+// artificial clause, simplified value
+columnValuePair:
+      LPAR columns+=qualifiedName (COMMA columns+=qualifiedName)* RPAR EQUALS value=expression
+    | columns+=qualifiedName EQUALS value=expression
+;
+
+byNamePositionClause:
+    K_BY (K_NAME | K_POSITION)
+;
+
 multiTableInsert:
     (
           unconditionalInsertClause
         | conditionalInsertClause
-    ) subquery
+    ) byNamePositionClause? subquery
 ;
 
 unconditionalInsertClause:
@@ -1709,7 +1732,7 @@ unconditionalInsertClause:
 ;
 
 multiTableInsertClause:
-    insertIntoClause insertValuesClause? errorLoggingClause?
+    insertIntoClause (insertValuesClause|insertSetClause)? errorLoggingClause?
 ;
 
 conditionalInsertClause:
