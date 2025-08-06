@@ -549,7 +549,7 @@ WC_ANY_OTHER: . -> more;
 mode PACKAGE_MODE;
 
 // fail-safe, process tokens that are waiting to be assigned after "more"
-PKG_EOF: EOF -> popMode;
+PKG_EOF: EOF -> popMode, channel(HIDDEN);
 
 PKG_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 
