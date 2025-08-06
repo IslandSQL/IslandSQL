@@ -1086,7 +1086,7 @@ NQ_STRING:
 ;
 
 DOLLAR_STRING:
-    '$$' .*? '$$' {!isInquiryDirective()}?
+    '$$' (('$' ~'$')|~'$')* '$$' {!isInquiryDirective()}?
 ;
 
 DOLLAR_ID_STRING:
