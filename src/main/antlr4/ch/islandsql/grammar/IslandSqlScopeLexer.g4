@@ -96,13 +96,13 @@ STRING:
           'e' (['] ('\\'? .)*? ['])+ (COMMENT_OR_WS* ['] ('\\'? .)*? ['])*  // PostgreSQL string constant with C-style escapes
         | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
-        | '$$' .*? '$$' {!isInquiryDirective()}?                // PostgreSQL dollar-quoted string constant
+        | '$$' (('$' ~'$')|~'$')* '$$' {!isInquiryDirective()}? // PostgreSQL dollar-quoted string constant
         | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
         | 'n'? ':'? ['] ~[']* ['] (COMMENT_OR_WS* ':'? ['] ~[']* ['])*  // simple string, PostgreSQL, MySQL string constant, optionally with psql variable
-        | 'n'? 'q' ['] '[' .*? ']' [']
-        | 'n'? 'q' ['] '(' .*? ')' [']
-        | 'n'? 'q' ['] '{' .*? '}' [']
-        | 'n'? 'q' ['] '<' .*? '>' [']
+        | 'n'? 'q' ['] '[' ( ~']' | ']' ~['] )* ']' [']
+        | 'n'? 'q' ['] '(' ( ~')' | ')' ~['] )* ')' [']
+        | 'n'? 'q' ['] '{' ( ~'}' | '}' ~['] )* '}' [']
+        | 'n'? 'q' ['] '<' ( ~'>' | '>' ~['] )* '>' [']
         | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
     ) -> channel(HIDDEN)
 ;
@@ -112,7 +112,7 @@ STRING:
 /*----------------------------------------------------------------------------*/
 
 ID: ([_\p{Alpha}]|EMOJI) ([_$#0-9\p{Alpha}]|EMOJI)* -> channel(HIDDEN);
-QUOTED_ID: '"' .*? '"' ('"' .*? '"')* -> channel(HIDDEN);
+QUOTED_ID: '"' ~["]* '"' ( '"' ~["]* '"' )* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
 // Comments
