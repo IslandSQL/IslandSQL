@@ -1112,7 +1112,7 @@ NUMBER:
 /*----------------------------------------------------------------------------*/
 
 UQUOTED_ID: ('u&') '"' ~["]* '"';
-QUOTED_ID: '"' .*? '"' ('"' .*? '"')*;
+QUOTED_ID: '"' ~["]* '"' ( '"' ~["]* '"' )*;
 ID: ([_\p{Alpha}]|EMOJI) ([_$#0-9\p{Alpha}]|EMOJI)*;
 PLSQL_INQUIRY_DIRECTIVE: '$$' ID;
 POSITIONAL_PARAMETER: '$'[0-9]+;
