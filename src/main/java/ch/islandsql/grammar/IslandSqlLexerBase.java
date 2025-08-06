@@ -100,10 +100,11 @@ public abstract class IslandSqlLexerBase extends Lexer {
     public boolean isInquiryDirective() {
         if (dialect == IslandSqlDialect.POSTGRESQL) {
             return false;
+        } else if (dialect == IslandSqlDialect.ORACLEDB) {
+            return true;
         } else {
             String text = getText().toLowerCase();
-            return (dialect == IslandSqlDialect.ORACLEDB
-                    || text.startsWith("$$plsql_line")
+            return (text.startsWith("$$plsql_line")
                     || text.startsWith("$$plsql_unit") // handles also plsql_unit_owner, plsql_unit_type
                     || text.startsWith("$$plscope_settings")
                     || text.startsWith("$$plsql_ccflags")
