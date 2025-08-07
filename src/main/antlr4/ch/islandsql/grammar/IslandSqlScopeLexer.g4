@@ -557,7 +557,7 @@ PKG_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_M
 PKG_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 PKG_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 PKG_INITIALIZE_SECTION_START: 'begin' -> more, mode(CODE_BLOCK_MODE);
-PKG_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
+PKG_CASE_START: 'case' -> more, pushMode(CASE_MODE);
 
 PKG_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
 PKG_SL_COMMENT: SL_COMMENT -> more;
@@ -580,7 +580,6 @@ CB_EOF: EOF -> popMode;
 CB_SLASH: SLASH_END -> popMode;
 
 CB_LOOP: 'end' COMMENT_OR_WS+ 'loop' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
-CB_CASE_STMT: 'end' COMMENT_OR_WS+ 'case' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
 CB_COMPOUND_TRIGGER:
     (
           'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'statement' COMMENT_OR_WS* ';'
@@ -588,8 +587,6 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
 CB_STMT: 'end' (COMMENT_OR_WS+ NAME {!getText().matches("(?is)^end.*\\send$")}?)? COMMENT_OR_WS* ';' -> popMode;
-// stay in current mode when 'end' seems to be an identifier, consume also label named 'case'
-CB_CASE_EXPR: 'end' (COMMENT_OR_WS+ 'case')? {_modeStack.size() > 2}? -> popMode;
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
@@ -599,7 +596,7 @@ CB_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 CB_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
 CB_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
 CB_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
-CB_CASE_START: 'case' -> more, pushMode(CODE_BLOCK_MODE);
+CB_CASE_START: 'case' -> more, pushMode(CASE_MODE);
 
 CB_POSITION_FROM_END: 'position' COMMENT_OR_WS+ 'from' COMMENT_OR_WS+ 'end' -> more; // lead_lag_clause, av_level_ref
 CB_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
@@ -609,6 +606,36 @@ CB_STRING: STRING -> more;
 CB_ID: ID -> more;
 CB_QUOTED_ID: QUOTED_ID -> more;
 CB_ANY_OTHER: . -> more;
+
+
+/*----------------------------------------------------------------------------*/
+// Case Statement or Case Expression Mode (CS)
+/*----------------------------------------------------------------------------*/
+
+mode CASE_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+CS_EOF: EOF -> popMode;
+
+// end of case statement or expression
+CS_CASE: 'end' (COMMENT_OR_WS+ 'case')? -> popMode;
+
+CS_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
+
+// handle everything that has end keyword allowed in a case statement or case expression
+CS_BEGIN_START: 'begin' -> more, pushMode(CODE_BLOCK_MODE);
+CS_LOOP_START: 'loop' -> more, pushMode(CODE_BLOCK_MODE);
+CS_IF_START: 'if' -> more, pushMode(CODE_BLOCK_MODE);
+CS_CASE_START: 'case' -> more, pushMode(CASE_MODE);
+
+CS_POSITION_FROM_END: 'position' COMMENT_OR_WS+ 'from' COMMENT_OR_WS+ 'end' -> more; // lead_lag_clause, av_level_ref
+CS_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
+CS_SL_COMMENT: SL_COMMENT -> more;
+CS_WS: WS -> more;
+CS_STRING: STRING -> more;
+CS_ID: ID -> more;
+CS_QUOTED_ID: QUOTED_ID -> more;
+CS_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
 // Conditional Compilation Directive Mode (CC)
