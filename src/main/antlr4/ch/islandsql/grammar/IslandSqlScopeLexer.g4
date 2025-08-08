@@ -97,7 +97,7 @@ STRING:
         | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
         | '$$' (('$' ~'$')|~'$')* '$$' {!isInquiryDirective()}? // PostgreSQL dollar-quoted string constant
-        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
+        | '$' ID '$' {saveDollarIdentifier1()}? .*? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
         | 'n'? ':'? ['] ~[']* ['] (COMMENT_OR_WS* ':'? ['] ~[']* ['])*  // simple string, PostgreSQL, MySQL string constant, optionally with psql variable
         | 'n'? 'q' ['] '[' ( ~']' | ']' ~['] )* ']' [']
         | 'n'? 'q' ['] '(' ( ~')' | ')' ~['] )* ')' [']
