@@ -97,13 +97,13 @@ STRING:
         | 'b' ['] ~[']* [']                                     // PostgreSQL bit-string constant
         | 'u&' ['] ~[']* [']                                    // PostgreSQL string constant with unicode escapes
         | '$$' (('$' ~'$')|~'$')* '$$' {!isInquiryDirective()}? // PostgreSQL dollar-quoted string constant
-        | '$' ID '$' {saveDollarIdentifier1()}? .+? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
+        | '$' ID '$' {saveDollarIdentifier1()}? .*? '$' ID '$' {checkDollarIdentifier2()}?  // PostgreSQL dollar-quoted string constant with an ID/tag
         | 'n'? ':'? ['] ~[']* ['] (COMMENT_OR_WS* ':'? ['] ~[']* ['])*  // simple string, PostgreSQL, MySQL string constant, optionally with psql variable
         | 'n'? 'q' ['] '[' ( ~']' | ']' ~['] )* ']' [']
         | 'n'? 'q' ['] '(' ( ~')' | ')' ~['] )* ')' [']
         | 'n'? 'q' ['] '{' ( ~'}' | '}' ~['] )* '}' [']
         | 'n'? 'q' ['] '<' ( ~'>' | '>' ~['] )* '>' [']
-        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .*? . ['] {checkQuoteDelimiter2()}?
     ) -> channel(HIDDEN)
 ;
 
@@ -119,7 +119,7 @@ QUOTED_ID: '"' ~["]* '"' ( '"' ~["]* '"' )* -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 ML_COMMENT: '/*' {getDialect() != IslandSqlDialect.ORACLEDB}? IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
-ML_COMMENT_ORCL: '/*' {getDialect() == IslandSqlDialect.ORACLEDB}? .*? '*/' -> type(ML_COMMENT), channel(HIDDEN);
+ML_COMMENT_ORCL: '/' '*'+ {getDialect() == IslandSqlDialect.ORACLEDB}? (~'*'|'*' ~'/')*? '*'+ '/' -> type(ML_COMMENT), channel(HIDDEN);
 SL_COMMENT: ('--'|'//') ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
