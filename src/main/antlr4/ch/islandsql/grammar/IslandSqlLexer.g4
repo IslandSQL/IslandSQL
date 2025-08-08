@@ -1077,7 +1077,7 @@ Q_STRING:
         | ['] '(' ( ~')' | ')' ~['] )* ')' [']
         | ['] '{' ( ~'}' | '}' ~['] )* '}' [']
         | ['] '<' ( ~'>' | '>' ~['] )* '>' [']
-        | ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+        | ['] . {saveQuoteDelimiter1()}? .*? . ['] {checkQuoteDelimiter2()}?
     )
 ;
 

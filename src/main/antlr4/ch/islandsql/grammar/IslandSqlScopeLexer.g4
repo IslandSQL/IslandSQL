@@ -103,7 +103,7 @@ STRING:
         | 'n'? 'q' ['] '(' ( ~')' | ')' ~['] )* ')' [']
         | 'n'? 'q' ['] '{' ( ~'}' | '}' ~['] )* '}' [']
         | 'n'? 'q' ['] '<' ( ~'>' | '>' ~['] )* '>' [']
-        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .+? . ['] {checkQuoteDelimiter2()}?
+        | 'n'? 'q' ['] . {saveQuoteDelimiter1()}? .*? . ['] {checkQuoteDelimiter2()}?
     ) -> channel(HIDDEN)
 ;
 
