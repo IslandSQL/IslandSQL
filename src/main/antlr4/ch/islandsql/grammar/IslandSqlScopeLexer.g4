@@ -658,7 +658,10 @@ CC: '$end' -> more, popMode;
 // error directive has an $end keyword, treat as a nested conditional compilation directive
 CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
+CC_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
+CC_SL_COMMENT: SL_COMMENT -> more;
 CC_WS: WS -> more;
+CC_STRING: STRING -> more;
 CC_ID: ID -> more;
 CC_QUOTED_ID: QUOTED_ID -> more;
 CC_ANY_OTHER: . -> more;
