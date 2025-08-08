@@ -531,6 +531,9 @@ WC_EOF: EOF -> popMode;
 
 WC: SQL_END -> popMode;
 
+// columns using a keyword as column name, hide keyword to avoid pushing to other modes
+WC_KEYWORD_COLUMN: ('function'|'procedure') COMMENT_OR_WS+ 'varchar2' -> more;
+
 WC_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
 WC_PROCEDURE: 'procedure' -> more, pushMode(UNIT_MODE);
 
