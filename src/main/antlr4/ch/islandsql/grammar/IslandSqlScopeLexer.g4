@@ -119,7 +119,7 @@ QUOTED_ID: '"' ~["]* '"' ( '"' ~["]* '"' )* -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 ML_COMMENT: '/*' {getDialect() != IslandSqlDialect.ORACLEDB}? IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
-ML_COMMENT_ORCL: '/' '*'+ {getDialect() == IslandSqlDialect.ORACLEDB}? (~'*'|'*' ~'/')*? '*'+ '/' -> type(ML_COMMENT), channel(HIDDEN);
+ML_COMMENT_ORCL: '/' '*'+? {getDialect() == IslandSqlDialect.ORACLEDB}? (~'*'|'*' ~'/')*? '*'+? '/' -> type(ML_COMMENT), channel(HIDDEN);
 SL_COMMENT: ('--'|'//') ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
