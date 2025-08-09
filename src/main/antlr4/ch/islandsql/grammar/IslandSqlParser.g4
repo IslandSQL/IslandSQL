@@ -1851,7 +1851,7 @@ merge:
     )
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
-        | mergeInsertClause                     // OracleDB
+        | mergeInsertClause mergeUpdateClause?  // OracleDB
         | mergeWhenClause+ returningClause?     // PostgreSQL
     )
     errorLoggingClause?
