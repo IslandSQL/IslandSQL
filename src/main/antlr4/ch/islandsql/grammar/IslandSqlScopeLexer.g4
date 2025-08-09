@@ -119,7 +119,7 @@ QUOTED_ID: '"' ~["]* '"' ( '"' ~["]* '"' )* -> channel(HIDDEN);
 /*----------------------------------------------------------------------------*/
 
 ML_COMMENT: '/*' {getDialect() != IslandSqlDialect.ORACLEDB}? IN_AND_NESTED_COMMENT '*/' -> channel(HIDDEN);
-ML_COMMENT_ORCL: '/' '*'+ {getDialect() == IslandSqlDialect.ORACLEDB}? (~'*'|'*' ~'/')*? '*'+ '/' -> type(ML_COMMENT), channel(HIDDEN);
+ML_COMMENT_ORCL: '/' '*'+? {getDialect() == IslandSqlDialect.ORACLEDB}? (~'*'|'*' ~'/')*? '*'+? '/' -> type(ML_COMMENT), channel(HIDDEN);
 SL_COMMENT: ('--'|'//') ~[\r\n]* -> channel(HIDDEN);
 
 /*----------------------------------------------------------------------------*/
@@ -469,6 +469,9 @@ UNIT_PG_CODE: 'as' {getDialect() != IslandSqlDialect.ORACLEDB}? COMMENT_OR_WS+ S
 UNIT_PG_SQL_FUNC: 'returns' -> more, mode(FUNCTION_MODE);
 UNIT: SQL_END -> popMode;
 
+// variants using as keyword which is do not start a declare section
+UNIT_CAST: 'cast' COMMENT_OR_WS* '(' -> more, pushMode(PARENTHESES_MODE);
+
 // variants ending with a code block
 UNIT_ORCL: ('is'|'as') -> more, mode(DECLARE_SECTION_MODE);
 UNIT_PG_BLOCK: 'begin' COMMENT_OR_WS+ 'atomic' -> more, mode(CODE_BLOCK_MODE);
@@ -655,10 +658,34 @@ CC: '$end' -> more, popMode;
 // error directive has an $end keyword, treat as a nested conditional compilation directive
 CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
+CC_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
+CC_SL_COMMENT: SL_COMMENT -> more;
 CC_WS: WS -> more;
+CC_STRING: STRING -> more;
 CC_ID: ID -> more;
 CC_QUOTED_ID: QUOTED_ID -> more;
 CC_ANY_OTHER: . -> more;
+
+/*----------------------------------------------------------------------------*/
+// Parentheses Mode (PA)
+/*----------------------------------------------------------------------------*/
+
+mode PARENTHESES_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+PA_EOF: EOF -> popMode;
+PA_STMT: SQL_END {_modeStack.size() == 1}? -> popMode;
+
+PA_CLOSE_PAREN: ')' -> more, popMode;
+PA_OPEN_PAREN: '(' -> more, pushMode(PARENTHESES_MODE);
+
+PA_ML_COMMENT: (ML_COMMENT|ML_COMMENT_ORCL) -> more;
+PA_SL_COMMENT: SL_COMMENT -> more;
+PA_WS: WS -> more;
+PA_STRING: STRING -> more;
+PA_ID: ID -> more;
+PA_QUOTED_ID: QUOTED_ID -> more;
+PA_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
 // Hidden Parentheses Mode (HP)
