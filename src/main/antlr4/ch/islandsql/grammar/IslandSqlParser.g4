@@ -3033,10 +3033,12 @@ procedureDeclaration:
 ;
 
 // contains also options in package_procedure_declaration
+// not documented in 23.8: parallel_enable_clause
 procedureOption:
       accessibleByClause
     | defaultCollationClause
     | invokerRightsclause
+    | parallelEnableClause
 ;
 
 accessibleByClause:
