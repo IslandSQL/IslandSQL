@@ -2799,7 +2799,7 @@ plsqlDataType:
       K_REF dataType                                    # refPlsqlDataType
     | qualifiedName PERCNT K_TYPE dataTypeArray?        # percentTypePlsqlDataType
     | qualifiedName PERCNT K_ROWTYPE dataTypeArray?     # percentRowtypePlsqlDataType
-    | qualifiedName K_CHARACTER K_SET
+    | dataType K_CHARACTER K_SET
         charSetName=qualifiedName (PERCNT K_CHARSET)?   # characterSetDataType
     | dataType                                          # simplePlsqlDataType
 ;
