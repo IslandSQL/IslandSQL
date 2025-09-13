@@ -4291,8 +4291,10 @@ jsonObjectAccessExpression:
     talias=sqlName PERIOD jsonColumn=sqlName (PERIOD keys+=jsonObjectKey)+
 ;
 
+// array steps are mandatory to ensure qualifiedExpressionParant has higher precendence.
+// the key is a qualified name instead of a sqlName to handle cases without array steps.
 jsonObjectKey:
-    key=sqlName arraySteps+=jsonArrayStep+
+    key=qualifiedName arraySteps+=jsonArrayStep+
 ;
 
 jsonArrayStep:
