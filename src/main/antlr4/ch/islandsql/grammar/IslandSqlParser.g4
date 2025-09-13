@@ -1844,7 +1844,7 @@ merge:
     withClause? // PostgreSQL
     {unhideFirstHint();} K_MERGE hint?
     mergeIntoClause
-    mergeUsingClause
+    mergeUsingClause?
     K_ON (
           LPAR cond=expression RPAR  // OracleDB
         | cond=expression            // PostgreSQL
