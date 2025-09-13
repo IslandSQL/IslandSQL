@@ -5087,59 +5087,38 @@ jsonTransform:
     jsonTransformReturningClause? options+=jsonOption* jsonTypeClause? jsonPassingClause? RPAR
 ;
 
-// case, copy, intersect, merge, minus, prepend, union are implemented according the description in the JSON Developer's Guide
 operation:
-      removeOp
-    | insertOp
-    | replaceOp
+      addSetOp
     | appendOp
-    | setOp
-    | renameOp
-    | keepOp
-    | sortOp
-    | nestedPathOp
     | caseOp
     | copyOp
+    | insertOp
     | intersectOp
+    | keepOp
     | mergeOp
     | minusOp
+    | nestedPathOp
     | prependOp
+    | removeOp
+    | removeSetOp
+    | renameOp
+    | replaceOp
+    | setOp
+    | sortOp
     | unionOp
 ;
 
-removeOp:
-    K_REMOVE pathExpr=expression
+addSetOp:
+    K_ADD_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
-          onExistingHandler
-        | onMissingHandler
-    )*
-;
-
-// works only if there is no space before INSERT as long as the INSERT statement is not supported fully
-// not documented optional use of "path" keyword
-insertOp:
-    K_INSERT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    (
-          onExistingHandler
-        | onMissingHandler
-        | onNullHandler
-        | onErrorHandler
-    )*
-;
-
-// not documented optional use of "path" keyword
-replaceOp:
-    K_REPLACE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    (
-          onExistingHandler
-        | onMissingHandler
+          onMissingHandler
         | onNullHandler
         | onEmptyHandler
-        | onErrorHandler
+        | ignoreIfHandler
+
     )*
 ;
 
-// not documented optional use of "path" keyword
 appendOp:
     K_APPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
@@ -5148,51 +5127,6 @@ appendOp:
         | onNullHandler
         | onEmptyHandler
     )*
-
-    ((K_CREATE|K_IGNORE|K_ERROR) K_ON K_MISSING)?
-    ((K_NULL|K_IGNORE|K_ERROR) K_ON K_NULL)?
-;
-
-// not documented optional use of "path" keyword
-setOp:
-    K_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
-    (
-          onExistingHandler
-        | onMissingHandler
-        | onNullHandler
-        | onEmptyHandler
-        | onErrorHandler
-    )*
-;
-
-renameOp:
-    K_RENAME pathExpr=expression K_WITH renamed=expression
-    (
-          onExistingHandler
-        | onMissingHandler
-    )*
-;
-
-keepOp:
-    K_KEEP items+=expression (COMMA items+=expression)* onMissingHandler?
-;
-
-sortOp:
-    K_SORT pathExpr=expression
-    (
-          orderByClause?
-        | (K_ASC | K_DESC) K_UNIQUE?
-        | K_UNIQUE
-    )
-    (
-          onMissingHandler
-        | onMismatchHandler
-        | onEmptyHandler
-    )*
-;
-
-nestedPathOp:
-    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
 ;
 
 caseOp:
@@ -5221,6 +5155,19 @@ copyOp:
     )*
 ;
 
+// missing is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
+insertOp:
+    K_INSERT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onExistingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | onMissingHandler
+        | onErrorHandler
+    )*
+;
+
+// mismatch is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
 intersectOp:
     K_INTERSECT pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
@@ -5228,6 +5175,10 @@ intersectOp:
         | onMismatchHandler
         | onNullHandler
     )*
+;
+
+keepOp:
+    K_KEEP items+=expression (COMMA items+=expression)* onMissingHandler?
 ;
 
 mergeOp:
@@ -5240,6 +5191,7 @@ mergeOp:
     )*
 ;
 
+// mismatch is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
 minusOp:
     K_MINUS pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
@@ -5249,7 +5201,10 @@ minusOp:
     )*
 ;
 
-// not documented, syntax according append
+nestedPathOp:
+    K_NESTED K_PATH? pathExpr=expression LPAR (operations+=operation (COMMA operations+=operation)*)? RPAR
+;
+
 prependOp:
     K_PREPEND pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
@@ -5260,6 +5215,77 @@ prependOp:
     )*
 ;
 
+// existing is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
+removeOp:
+    K_REMOVE pathExpr=expression
+    (
+          onExistingHandler
+        | onMissingHandler
+    )*
+;
+
+// ignore if is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
+removeSetOp:
+    K_REMOVE_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | ignoreIfHandler
+    )*
+;
+
+// existing is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
+// EQUALS is not documented in SQL Language Reference, but there is an example in JSON Developer's Guide (23.9)
+renameOp:
+    K_RENAME pathExpr=expression (K_WITH|EQUALS) renamed=expression
+    (
+          onExistingHandler
+        | onMissingHandler
+    )*
+;
+
+// existing is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
+replaceOp:
+    K_REPLACE pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onExistingHandler
+        | onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | onErrorHandler
+    )*
+;
+
+setOp:
+    K_SET pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
+    (
+          onExistingHandler
+        | onMissingHandler
+        | onNullHandler
+        | onEmptyHandler
+        | onErrorHandler
+    )*
+;
+
+sortOp:
+    K_SORT pathExpr=expression
+    (
+          K_REVERSE
+        | orderByClause
+        | K_REMOVE K_NULLS orderByClause?
+        | (K_ASC | K_DESC) K_UNIQUE? (K_REMOVE K_NULLS)?
+        | K_UNIQUE (K_REMOVE K_NULLS)?
+    )
+    (
+          onMissingHandler
+        | onMismatchHandler
+        | onEmptyHandler
+        | onErrorHandler
+    )*
+;
+
+// mismatch is not documented in SQL Language Reference, but in JSON Developer's Guide (23.9)
 unionOp:
     K_UNION pathExpr=expression EQUALS K_PATH? rhsExpr=expression formatClause?
     (
@@ -5269,34 +5295,41 @@ unionOp:
     )*
 ;
 
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
-onEmptyHandler:
-    (K_NULL|K_ERROR|K_IGNORE) K_ON K_EMPTY
-;
-
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
 onErrorHandler:
     (K_NULL|K_ERROR|K_IGNORE) K_ON K_ERROR
 ;
 
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
+onEmptyHandler:
+    (K_NULL|K_ERROR|K_IGNORE) K_ON K_EMPTY
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
 onExistingHandler:
     (K_ERROR|K_IGNORE|K_REPLACE|K_REMOVE) K_ON K_EXISTING
 ;
 
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
-onMismatchHandler:
-    (K_NULL|K_ERROR|K_IGNORE|K_CREATE|K_REPLACE) K_ON K_MISMATCH
-;
-
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
+// copy uses null as documented in SQL Language Reference (23.9)
 onMissingHandler:
     (K_ERROR|K_IGNORE|K_CREATE|K_NULL) K_ON K_MISSING
 ;
 
-// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/oracle-sql-function-json_transform.html#GUID-7BED994B-EAA3-4FF0-824D-C12ADAB862C1__GUID-B26D1238-D0C8-47AD-B904-50AE9573D7F7
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
+onMismatchHandler:
+    (K_NULL|K_ERROR|K_IGNORE|K_CREATE|K_REPLACE) K_ON K_MISMATCH
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
 onNullHandler:
     (K_NULL|K_ERROR|K_IGNORE|K_REMOVE) K_ON K_NULL
+;
+
+// according https://docs.oracle.com/en/database/oracle/oracle-database/23/adjsn/json_transform-operation-handlers.html
+// not documented in SQL Language Reference (23.9)
+ignoreIfHandler:
+    K_IGNORE K_IF (K_ABSENT|K_PRESENT)
 ;
 
 // jsonBasicPathExpression is documented as optional, which makes no sense with a preceding comma
