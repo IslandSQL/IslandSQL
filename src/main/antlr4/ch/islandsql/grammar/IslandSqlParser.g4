@@ -4779,8 +4779,11 @@ jsonOnNullClause:
 ;
 
 jsonReturningClause:
-    K_RETURNING dataType (K_WITH K_TYPENAME)? // PostgreSQL: any data type is allowed, e.g. domains
-        formatClause? // PostgreSQL in json_array and other functions
+    (
+          K_RETURNING dataType (K_WITH K_TYPENAME)? // PostgreSQL: any data type is allowed, e.g. domains
+        | K_WITH K_TYPENAME // undocumented variant in 23.9, but an example in JSON Developer's Guide
+    )
+    formatClause? // PostgreSQL in json_array and other functions
 ;
 
 jsonTransformReturningClause:
