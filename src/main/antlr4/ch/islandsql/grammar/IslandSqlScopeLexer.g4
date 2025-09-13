@@ -148,16 +148,22 @@ COPY_COMMAND:
 // SQL statements with keywords conflicting with islands of interest
 /*----------------------------------------------------------------------------*/
 
+// hide keyword: select, insert, update, delete
+ALTER_AUDIT_POLICY:
+    'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
+        'audit' COMMENT_OR_WS+ 'policy' MORE_TO_SQL_END -> channel(HIDDEN)
+;
+
 // hide keyword: with
 ADMINISTER_KEY_MANAGEMENT:
     'administer' {isBeginOfStatement("administer")}? COMMENT_OR_WS+
         'key' COMMENT_OR_WS+ 'management' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
-// hide keyword: select, insert, update, delete
-ALTER_AUDIT_POLICY:
+// hide keyword: select
+ALTER_MLE_MODULE:
     'alter' {isBeginOfStatement("alter")}? COMMENT_OR_WS+
-        'audit' COMMENT_OR_WS+ 'policy' MORE_TO_SQL_END -> channel(HIDDEN)
+        'mle' COMMENT_OR_WS+ 'module' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
 // hide keyword: merge
