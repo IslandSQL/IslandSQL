@@ -1266,10 +1266,10 @@ nestedTableTypeSpec:
     )
 ;
 
-// not documented in 23.4: optionality of attributes
+// attributes are optional, but parentheses around attributes are mandatory
 objectSubtypeDef:
     K_UNDER (schema=sqlName PERIOD)? superType=sqlName
-    (LPAR objectSubtypeElements RPAR)?
+    LPAR objectSubtypeElements? RPAR
     options+=objectTypeDefOption*
 ;
 
