@@ -4810,13 +4810,14 @@ jsonValueReturningClause:
 
 jsonValueReturnType:
       dataType jsonValueReturnTypeOption?
-    | (K_ALLOW|K_DISALLOW) K_BOOLEAN? K_TO K_NUMBER K_CONVERSION?
 ;
 
 // artificial clause to handle any data type with options
+// wrong documentation in OracleDB 23.9, to number conversion requires number data type
 jsonValueReturnTypeOption:
       K_TRUNCATE
     | (K_TRUNCATE|K_PRESERVE) K_TIME
+    | (K_ALLOW|K_DISALLOW) K_BOOLEAN? K_TO K_NUMBER K_CONVERSION?
     | jsonValueMapperClause
 ;
 
