@@ -4597,7 +4597,7 @@ respectIgnoreNullsClause:
 ;
 
 fromVector:
-    K_FROM_VECTOR LPAR expr=expression (K_RETURNING dataType)? RPAR
+    K_FROM_VECTOR LPAR expr=expression (K_RETURNING dataType)? (K_FORMAT (K_SPARSE|K_DENSE))? RPAR
 ;
 
 fuzzyMatch:
