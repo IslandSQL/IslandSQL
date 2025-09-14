@@ -210,7 +210,7 @@ CREATE_DATABASE:
 
 // hide keywords: with
 CREATE_INDEX:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ (('unique'|'bitmap'|'multivalue') COMMENT_OR_WS+)?
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ (('unique'|'bitmap'|'multivalue'|'vector') COMMENT_OR_WS+)?
         'index' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
