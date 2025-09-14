@@ -2715,7 +2715,7 @@ updateSetClause:
     (
           K_ROW EQUALS expr=expression
         | items+=updateSetClauseItem (COMMA items+=updateSetClauseItem)*
-        | K_VALUE LPAR talias=sqlName RPAR EQUALS (expr=expression | LPAR query=subquery RPAR)
+        | K_VALUE LPAR talias=qualifiedName RPAR EQUALS (expr=expression | LPAR query=subquery RPAR)
     )
 ;
 
