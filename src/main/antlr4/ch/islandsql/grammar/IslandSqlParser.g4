@@ -3405,10 +3405,9 @@ procedureCall:
           specialFunctionExpression
         | qualifiedProcedureName // based on functionExpression
             (COMMAT dblink=qualifiedName)?
-            procedureCallDimensions+=procedureCallDimension*
             (LPAR ((params+=functionParameter (COMMA params+=functionParameter)*)? | functionParameterSuffix?) RPAR)?
     )
-    (PERIOD expr=expression)? // methods applied on previous function call returning an object type/collection type
+    (procedureCallDimensions+=procedureCallDimension* PERIOD expr=expression)? // methods applied on previous function call returning an object type/collection type
     SEMI
 ;
 
