@@ -3653,7 +3653,7 @@ selectionDirectiveConditionToStatements:
 selectionDirectiveText:
       errorDirective
     | selectionDirective
-    | {!isPreprocessorControlToken()}? .+?
+    | {!isPreprocessorControlToken()}? .
 ;
 
 errorDirective:
