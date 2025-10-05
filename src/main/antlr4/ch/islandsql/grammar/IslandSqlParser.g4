@@ -1520,7 +1520,7 @@ delete:
 
 dmlTableExpressionClause:
       (schema=sqlName PERIOD)? table=sqlName AST? (partitionExtensionClause | COMMAT dblink=qualifiedName)? // PostgreSQL: *
-    | LPAR query=subquery RPAR
+    | LPAR query=subquery subqueryRestrictionClause? RPAR
     | tableCollectionExpression
 ;
 
