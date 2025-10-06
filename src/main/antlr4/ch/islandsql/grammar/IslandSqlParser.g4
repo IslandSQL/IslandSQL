@@ -757,7 +757,7 @@ inlineConstraint:
 // constraints not handled by inlineConstraint
 postgresqlColumnConstraint:
       K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
-    | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
+    | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR (K_STORED | K_VIRTUAL)?
     | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
     | K_PRIMARY K_KEY postgresqlIndexParameters*
