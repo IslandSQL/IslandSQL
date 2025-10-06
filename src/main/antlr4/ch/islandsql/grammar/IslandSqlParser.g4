@@ -799,6 +799,7 @@ constraintStateItem:
     | K_VALIDATE                                # validateConstraintStateItem
     | K_NOVALIDATE                              # novalidateConstraintStateItem
     | exceptionsClause                          # exceptionConstraintStateItem
+    | K_NOT? K_ENFORCED                         # enforcedConstraintStateItem // introduced in PostgreSQL 18.0
 ;
 
 referencesClause:
