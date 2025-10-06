@@ -875,21 +875,33 @@ outOfLineConstraint:
 postgresqlTableConstraint:
       K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
-        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+        LPAR ucols+=postgresqlUniqueColumn (COMMA ucols+=postgresqlUniqueColumn)* RPAR postgresqlIndexParameters*
     | K_PRIMARY K_KEY
-        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+        LPAR pkcols+=postgresqlPrimaryKeyColumn (COMMA pkcols+=postgresqlPrimaryKeyColumn)* RPAR postgresqlIndexParameters*
     | K_EXCLUDE (K_USING method=sqlName)?
         LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
         postgresqlIndexParameters* (K_WHERE LPAR predicate=expression RPAR)?
-    | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-        K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+    | K_FOREIGN K_KEY LPAR fkcols+=postgresqlForeignKeyColumn (COMMA fkcols+=postgresqlForeignKeyColumn)* RPAR
+        K_REFERENCES reftable=qualifiedName (LPAR refcols+=postgresqlForeignKeyColumn (COMMA refcols+=postgresqlForeignKeyColumn)* RPAR)?
         (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
         (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
         (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
 ;
 
+postgresqlUniqueColumn:
+    column=sqlName (K_WITHOUT K_OVERLAPS)?
+;
+
+postgresqlPrimaryKeyColumn:
+    column=sqlName (K_WITHOUT K_OVERLAPS)?
+;
+
 postgresqlExcludeColumn:
     excludeElement=sqlName K_WITH (binaryOperator | simpleComparisonOperator)
+;
+
+postgresqlForeignKeyColumn:
+    K_PERIOD? column=sqlName
 ;
 
 outOfLineRefConstraint:
