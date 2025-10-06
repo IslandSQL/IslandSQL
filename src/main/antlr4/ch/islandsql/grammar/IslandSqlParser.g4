@@ -1535,11 +1535,18 @@ fromUsingClause:
 ;
 
 returningClause:
-    (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
+    (K_RETURN | K_RETURNING)
+    (K_WITH LPAR aliases+=returningAlias (COMMA aliases+=returningAlias)* RPAR)? // introduced in PostgreSQL 18.0
+    sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
     (
         (K_BULK K_COLLECT)? // within PL/SQL
         K_INTO K_STRICT? targetItems+=dataItem (COMMA targetItems+=dataItem)* // strict only in PL/pgSQL
     )?  // required in OracleDB but not allowed in PostgreSQL
+;
+
+// artificial clause
+returningAlias:
+    (K_OLD | K_NEW) K_AS alias=sqlName
 ;
 
 // OLD and NEW are introduced in OracleDB 23.2
