@@ -659,7 +659,10 @@ mode CONDITIONAL_COMPILATION_MODE;
 CC_EOF: EOF -> popMode;
 
 // always part of CB
-CC: '$end' -> more, popMode;
+CC_END: '$end' -> more, popMode;
+
+// nested conditional compilation directives
+CC_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
 // error directive has an $end keyword, treat as a nested conditional compilation directive
 CC_ERROR_START: '$error' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
