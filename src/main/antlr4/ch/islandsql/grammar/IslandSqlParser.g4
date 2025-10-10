@@ -757,7 +757,7 @@ inlineConstraint:
 // constraints not handled by inlineConstraint
 postgresqlColumnConstraint:
       K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
-    | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR K_STORED?
+    | K_GENERATED K_ALWAYS K_AS LPAR expr=expression RPAR (K_STORED | K_VIRTUAL)?
     | K_GENERATED (K_ALWAYS | K_BY K_DEFAULT) K_AS K_IDENTITY (LPAR identityOption+ RPAR)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)? postgresqlIndexParameters*
     | K_PRIMARY K_KEY postgresqlIndexParameters*
@@ -799,6 +799,7 @@ constraintStateItem:
     | K_VALIDATE                                # validateConstraintStateItem
     | K_NOVALIDATE                              # novalidateConstraintStateItem
     | exceptionsClause                          # exceptionConstraintStateItem
+    | K_NOT? K_ENFORCED                         # enforcedConstraintStateItem // introduced in PostgreSQL 18.0
 ;
 
 referencesClause:
@@ -875,21 +876,33 @@ outOfLineConstraint:
 postgresqlTableConstraint:
       K_CHECK LPAR cond=expression RPAR (K_NO K_INHERIT)?
     | K_UNIQUE (K_NULLS K_NOT? K_DISTINCT)?
-        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+        LPAR ucols+=postgresqlUniqueColumn (COMMA ucols+=postgresqlUniqueColumn)* RPAR postgresqlIndexParameters*
     | K_PRIMARY K_KEY
-        LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR postgresqlIndexParameters*
+        LPAR pkcols+=postgresqlPrimaryKeyColumn (COMMA pkcols+=postgresqlPrimaryKeyColumn)* RPAR postgresqlIndexParameters*
     | K_EXCLUDE (K_USING method=sqlName)?
         LPAR ecols+=postgresqlExcludeColumn (COMMA ecols+=postgresqlExcludeColumn)* RPAR
         postgresqlIndexParameters* (K_WHERE LPAR predicate=expression RPAR)?
-    | K_FOREIGN K_KEY LPAR columns+=sqlName (COMMA columns+=sqlName)* RPAR
-        K_REFERENCES reftable=qualifiedName (LPAR refcolumn=sqlName RPAR)?
+    | K_FOREIGN K_KEY LPAR fkcols+=postgresqlForeignKeyColumn (COMMA fkcols+=postgresqlForeignKeyColumn)* RPAR
+        K_REFERENCES reftable=qualifiedName (LPAR refcols+=postgresqlForeignKeyColumn (COMMA refcols+=postgresqlForeignKeyColumn)* RPAR)?
         (K_MATCH K_FULL | K_MATCH K_PARTIAL | K_MATCH K_SIMPLE)?
         (K_ON K_DELETE onDeleteAction=postgresqlReferentialAction)?
         (K_ON K_UPDATE onUpdateAction=postgresqlReferentialAction)?
 ;
 
+postgresqlUniqueColumn:
+    column=sqlName (K_WITHOUT K_OVERLAPS)?
+;
+
+postgresqlPrimaryKeyColumn:
+    column=sqlName (K_WITHOUT K_OVERLAPS)?
+;
+
 postgresqlExcludeColumn:
     excludeElement=sqlName K_WITH (binaryOperator | simpleComparisonOperator)
+;
+
+postgresqlForeignKeyColumn:
+    K_PERIOD? column=sqlName
 ;
 
 outOfLineRefConstraint:
@@ -1535,11 +1548,18 @@ fromUsingClause:
 ;
 
 returningClause:
-    (K_RETURN | K_RETURNING) sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
+    (K_RETURN | K_RETURNING)
+    (K_WITH LPAR aliases+=returningAlias (COMMA aliases+=returningAlias)* RPAR)? // introduced in PostgreSQL 18.0
+    sourceItems+=sourceItem (COMMA sourceItems+=sourceItem)*
     (
         (K_BULK K_COLLECT)? // within PL/SQL
         K_INTO K_STRICT? targetItems+=dataItem (COMMA targetItems+=dataItem)* // strict only in PL/pgSQL
     )?  // required in OracleDB but not allowed in PostgreSQL
+;
+
+// artificial clause
+returningAlias:
+    (K_OLD | K_NEW) K_AS alias=sqlName
 ;
 
 // OLD and NEW are introduced in OracleDB 23.2
