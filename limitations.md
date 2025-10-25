@@ -16,7 +16,7 @@
 - [Shallow Parsed Clauses](#shallow-parsed-clauses)
 - [PostgreSQL Bitwise XOR Operator `#`](#postgresql-bitwise-xor-operator-)
 - [Inquiry Directives](#inquiry-directives)
-- [GraphQL Comments](#graphql-comments)
+- [GraphQL Single-Line Comments](#graphql-single-line-comments)
 
 ## Common Principle
 
@@ -327,7 +327,7 @@ To solve the problem, the following mechanisms are provided:
 
 So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted string constants that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L342) to avoid parse errors.
 
-## GraphQL Comments
+## GraphQL Single-Line Comments
 
 The [GraphQL specification](https://spec.graphql.org/September2025/#sec-Comments) supports single line comments starting with `#`. 
 IslandSQL does not support this comment style due to conflicts with PostgreSQL's `#` operator and OracleDB identifier containing a `#`.
@@ -340,7 +340,7 @@ dept @insert @update @delete
    _id: deptno
    dname
    loc
-   ext @flex
+   ext @flex                            # flexible attributes for dept
    emps: emp @insert @update @delete
       {
          empno
@@ -359,7 +359,7 @@ dept @insert @update @delete
 };
 ```
 
-As an alternative, you can use SQL single line and multi-line comments. Here's the same example using SQL comments, which are supported:
+As an alternative, you can use GraphQL multiline comments (`""" ..."""`) SQL single-line (`--`) and multiline comments (`/* ... */ `). Here's the same example using supported comments:
 
 ```sql
 create or replace json duality view dept_dv as
@@ -368,7 +368,7 @@ dept @insert @update @delete
    _id: deptno
    dname
    loc
-   ext @flex
+   ext @flex                            """ flexible attributes for dept """
    emps: emp @insert @update @delete
       {
          empno
@@ -387,7 +387,7 @@ dept @insert @update @delete
 };
 ```
 
-However, GraphQL comments are supported in the GraphQL table function since GraphQL is passed as string literal or via a variable.
+However, GraphQL single-line comments are supported in the GraphQL table function since GraphQL is passed as string literal or via a variable.
 Here's an example of a supported usage:
 
 ```sql
@@ -418,4 +418,4 @@ select json_serialize(data pretty) as data
        ') dept_dv;
 ```
 
-[GraphQL multiline comments](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/img_text/graphql_comment.html) should work as well once they are implemented in the OracleDB.
+Note: [GraphQL multiline comments](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/img_text/graphql_comment.html) are not supported in GraphQL table function by the OracleDB.
