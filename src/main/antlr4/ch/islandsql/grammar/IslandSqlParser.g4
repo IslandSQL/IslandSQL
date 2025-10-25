@@ -6031,6 +6031,7 @@ keywordAsId:
     | K_ACROSS
     | K_ACTION
     | K_ADD
+    | K_ADD_SET
     | K_AFTER
     | K_AGENT
     | K_AGGREGATE
@@ -6635,12 +6636,14 @@ keywordAsId:
     | K_RELIES_ON
     | K_RELY
     | K_REMOVE
+    | K_REMOVE_SET
     | K_RENAME
     | K_REPEAT
     | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
     | K_RESET
+    | K_RESETTABLE
     | K_RESPECT
     | K_RESTRICT
     | K_RESTRICTED

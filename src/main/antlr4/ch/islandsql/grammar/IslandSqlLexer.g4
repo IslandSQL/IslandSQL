@@ -705,6 +705,7 @@ K_REPEATABLE: 'repeatable';
 K_REPLACE: 'replace';
 K_RESERVABLE: 'reservable';
 K_RESET: 'reset';
+K_RESETTABLE: 'resettable';
 K_RESPECT: 'respect';
 K_RESTRICT: 'restrict';
 K_RESTRICTED: 'restricted';
