@@ -270,6 +270,13 @@ columnTagsClauseItem:
 ;
 
 // added "graphql" prefix to all graphql related clauses to avoid conflicts with grammar fields
+// GraphQL single-line comments (starting with '#') are not supported because there is no clear
+// start/end tokens to handle it as dedicated mode in the lexer. We need a dedicated mode/gammar to
+// handle conflicts with identifiers containg '#' and the PostgreSQL '#' operator. It would be possible
+// to pass the relevant tokens somehow to a dedicated GraphQL lexer/parser and add the result the parse tree
+// similarily as we do it for PL/pgSQL code. However, that's a lot of effort just to handle comments, especially
+// since SQL comments are supported in this case. Furthermore, GraphQL multiline-comments (""" ... """)
+// are not supported, since they are treated as a QUOTED_ID, which an appear at any postion in a GraphQL query.
 graphqlQueryForDv:
     graphqlRootQueryField
 ;
