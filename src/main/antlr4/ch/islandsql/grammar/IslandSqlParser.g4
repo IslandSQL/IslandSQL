@@ -489,6 +489,7 @@ plsqlPackageOption:
     | defaultCollationClause
     | invokerRightsclause
     | accessibleByClause
+    | resettableClause
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -506,8 +507,13 @@ createPackageBody:
 
 // wrong documentation in 23.3: declare_section is not mandatory
 plsqlPackageBodySource:
-    (schema=sqlName PERIOD)? packageName=sqlName sharingClause?
+    (schema=sqlName PERIOD)? packageName=sqlName options+=plsqlPackageBodyOption*
     (K_IS | K_AS) declareSection? initializeSection? K_END name=sqlName? SEMI
+;
+
+plsqlPackageBodyOption:
+      sharingClause
+    | resettableClause
 ;
 
 initializeSection:
@@ -3082,6 +3088,10 @@ unitKind:
     | K_PACKAGE
     | K_TRIGGER
     | K_TYPE
+;
+
+resettableClause:
+    K_RESETTABLE
 ;
 
 // the only documented option is using_nls_comp
