@@ -1,5 +1,23 @@
 # Limitations
 
+## Table of Contents
+
+- [Common Principle](#common-principle)
+- [Wrapped PL/SQL Code](#wrapped-plsql-code)
+- [Keywords as Identifiers](#keywords-as-identifiers)
+- [Keyword `end` as Identifier at the End of a Statement in a PL/SQL Block](#keyword-end-as-identifier-at-the-end-of-a-statement-in-a-plsql-block)
+- [SQL\*Plus PROMPT and REMARK Commands](#sqlplus-prompt-and-remark-commands)
+- [Dynamic Grammar of SQL\*Plus and psql](#dynamic-grammar-of-sqlplus-and-psql)
+- [Unterminated Statements](#unterminated-statements)
+- [Multiline Comments](#multiline-comments)
+- [SQL\*Plus Substitution Variables](#sqlplus-substitution-variables)
+- [Variables in psql](#variables-in-psql)
+- [Conditional Compilation (Selection Directives)](#conditional-compilation-selection-directives)
+- [Shallow Parsed Clauses](#shallow-parsed-clauses)
+- [PostgreSQL Bitwise XOR Operator `#`](#postgresql-bitwise-xor-operator-)
+- [Inquiry Directives](#inquiry-directives)
+- [GraphQL Comments](#graphql-comments)
+
 ## Common Principle
 
 If a SQL script runs without errors, but IslandSQL reports parse errors, then we consider this to be a bug. Exceptions are documented here.
@@ -38,7 +56,7 @@ In this example OracleDB selects 15 rows (an empty emp for deptno `40`). The tok
 
 Prohibiting keywords as identifiers in certain places could lead to parse errors for working SQL. Therefore, the production of a false parse tree due to the support of keywords as identifiers is considered acceptable.
 
-## Keyword `end` as Identifier at the end of a statement in a PL/SQL block
+## Keyword `end` as Identifier at the End of a Statement in a PL/SQL Block
 
 If you use the [scope lexer to hide out-of-scope tokens](https://github.com/IslandSQL/IslandSQL/blob/v0.13.0/src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L241-L251), you must not use the `end` keyword as an identifier to terminate a statement within a PL/SQL block.
 
@@ -308,3 +326,96 @@ To solve the problem, the following mechanisms are provided:
 - Detect SQL dialect automatically.
 
 So, if you are using user-defined inquiry directives or PostgreSQL dollar-quoted string constants that start with a pre-defined inquiry directive name then you need to [set the dialect explicitly](src/main/java/ch/islandsql/grammar/IslandSqlDocument.java#L342) to avoid parse errors.
+
+## GraphQL Comments
+
+The [GraphQL specification](https://spec.graphql.org/September2025/#sec-Comments) supports single line comments starting with `#`. 
+IslandSQL does not support this comment style due to conflicts with PostgreSQL's `#` operator and OracleDB identifier containing a `#`.
+Here's an example of an unsupported GraphQL comment usage:
+
+```sql
+create or replace json duality view dept_dv as
+dept @insert @update @delete
+{
+   _id: deptno
+   dname
+   loc
+   ext @flex
+   emps: emp @insert @update @delete
+      {
+         empno
+         ename
+         job
+         emp @unnest @link(from: [mgr]) # show manager id and name as part of emp
+            {
+               mgr    : empno @nocheck
+               mgrname: ename @nocheck
+            }
+         hiredate
+         sal
+         comm
+         ext @flex                      # flexible attributes for emp
+      }
+};
+```
+
+As an alternative, you can use SQL single line and multi-line comments. Here's the same example using SQL comments, which are supported:
+
+```sql
+create or replace json duality view dept_dv as
+dept @insert @update @delete
+{
+   _id: deptno
+   dname
+   loc
+   ext @flex
+   emps: emp @insert @update @delete
+      {
+         empno
+         ename
+         job
+         emp @unnest @link(from: [mgr]) -- show manager id and name as part of emp
+            {
+               mgr    : empno @nocheck
+               mgrname: ename @nocheck
+            }
+         hiredate
+         sal
+         comm
+         ext @flex                      /* flexible attributes for emp */
+      }
+};
+```
+
+However, GraphQL comments are supported in the GraphQL table function since GraphQL is passed as string literal or via a variable.
+Here's an example of a supported usage:
+
+```sql
+select json_serialize(data pretty) as data
+  from graphql('
+          dept
+          {
+             _id: deptno
+             dname
+             loc
+             ext                                  # flexible attributes for dept
+             emps: emp
+                {
+                   empno
+                   ename
+                   job
+                   emp @unnest @link(from: [mgr]) # show manager id and name as part of emp
+                      {
+                         mgr    : empno
+                         mgrname: ename
+                      }
+                   hiredate
+                   sal
+                   comm
+                   ext                            # flexible attributes for emp
+                }
+          }
+       ') dept_dv;
+```
+
+[GraphQL multiline comments](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/img_text/graphql_comment.html) should work as well once they are implemented in the OracleDB.
