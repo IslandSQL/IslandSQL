@@ -4369,6 +4369,7 @@ specialFunctionExpression:
     | featureCompare
     | fromVector
     | fuzzyMatch
+    | graphql
     | graphTable
     | json // PostgreSQL
     | jsonArray
@@ -4644,6 +4645,18 @@ fuzzyMatch:
         COMMA str2=expression
         (COMMA option=(K_UNSCALED|K_RELATE_TO_SHORTER|K_EDIT_TOLERANCE) tolerance=expression?)?
     RPAR
+;
+
+graphql:
+    K_GRAPHQL LPAR query=expression graphqlPassingClause? RPAR
+;
+
+graphqlPassingClause:
+    K_PASSING passingItem+=graphqlPassingItem (COMMA passingItem+=graphqlPassingItem)*
+;
+
+graphqlPassingItem:
+    expr=expression K_AS name=sqlName
 ;
 
 // simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
