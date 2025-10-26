@@ -40,7 +40,7 @@ fragment MORE_TO_SQL_END: COMMENT_OR_WS+ SQL_TEXT+? SQL_END;
 fragment TO_SQL_END: (COMMENT_OR_WS+ SQL_TEXT*?)? SQL_END;
 fragment SQL_END:
       EOF
-    | '\\'? ';' HSPACE? SINGLE_NL?
+    | '\\'? ';' HSPACE? SINGLE_NL? (COMMENT_OR_WS* SLASH_END)?
     | SLASH_END
     | PSQL_EXEC
 ;
@@ -563,7 +563,7 @@ mode PACKAGE_MODE;
 // fail-safe, process tokens that are waiting to be assigned after "more"
 PKG_EOF: EOF -> popMode;
 
-PKG_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' -> popMode;
+PKG_STMT: 'end' (COMMENT_OR_WS+ NAME)? COMMENT_OR_WS* ';' (COMMENT_OR_WS* SLASH_END)? -> popMode;
 
 PKG_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 PKG_FUNCTION: 'function' -> more, pushMode(UNIT_MODE);
@@ -598,7 +598,7 @@ CB_COMPOUND_TRIGGER:
         | 'end' COMMENT_OR_WS+ ('before'|'after') COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
         | 'end' COMMENT_OR_WS+ 'instead' COMMENT_OR_WS+ 'of' COMMENT_OR_WS+ 'each' COMMENT_OR_WS+ 'row' COMMENT_OR_WS* ';'
     ) -> popMode;
-CB_STMT: 'end' (COMMENT_OR_WS+ NAME {!getText().matches("(?is)^end.*\\send$")}?)? COMMENT_OR_WS* ';' -> popMode;
+CB_STMT: 'end' (COMMENT_OR_WS+ NAME {!getText().matches("(?is)^end.*\\send$")}?)? COMMENT_OR_WS* ';' (COMMENT_OR_WS* SLASH_END)? -> popMode;
 
 CB_SELECTION_DIRECTIVE_START: '$if' -> more, pushMode(CONDITIONAL_COMPILATION_MODE);
 
