@@ -72,4 +72,46 @@ public abstract class IslandSqlParserBase extends Parser {
                 || _input.LA(1) == IslandSqlLexer.DOLLAR_ELSE
                 || _input.LA(1) == IslandSqlLexer.DOLLAR_END;
     }
+
+    /**
+     * Hide GraphQL comment tokens.
+     * The <a href="https://spec.graphql.org/September2025/#sec-Comments">GraphQL specification</a> defines
+     * single line comments starting with `#`. We cannot handle this comment in the lexer due to conflicts
+     * with PostgreSQL's `#` operator and OracleDB identifier containing a `#` and there are no clear start
+     * and end tokens for GraphQL grammar in the CREATE JSON RELATIONAL DUALITY VIEW statement to handle it
+     * in a dedicated GraphQL lexer mode. So we call this method in the parser to put all GraphQL comments
+     * on the HIDDEN channel.
+     */
+    public void hideGraphQLComments() {
+        CommonTokenStream input = ((CommonTokenStream) this.getTokenStream());
+        int i = input.index();
+        int size = input.size();
+        boolean inSingleLineComment = false;
+        while (i < size) {
+            Token token = input.get(i);
+            if (token.getType() == IslandSqlLexer.SEMI || token.getType() == IslandSqlLexer.SOL) {
+                // end of statement reached
+                return;
+            }
+            if (!inSingleLineComment && token.getType() == IslandSqlLexer.NUM) {
+                inSingleLineComment = true;
+            }
+            if (inSingleLineComment) {
+                if (token.getText().contains("\n")) {
+                    inSingleLineComment = false;
+                } else {
+                    // part of a GraphQL single-line comment
+                    ((CommonToken) token).setChannel(Token.HIDDEN_CHANNEL);
+                }
+            } else {
+                if (token.getType() == IslandSqlLexer.QUOTED_ID) {
+                    if (token.getText().length() >= 6 && token.getText().startsWith("\"\"\"") && token.getText().endsWith("\"\"\"")) {
+                        // GraphQL multiline comment
+                        ((CommonToken) token).setChannel(Token.HIDDEN_CHANNEL);
+                    }
+                }
+            }
+            i++;
+        }
+    }
 }
