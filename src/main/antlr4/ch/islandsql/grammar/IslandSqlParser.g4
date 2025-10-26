@@ -271,7 +271,7 @@ columnTagsClauseItem:
 
 // added "graphql" prefix to all graphql related clauses to avoid conflicts with grammar fields
 graphqlQueryForDv:
-    graphqlRootQueryField
+    {hideGraphQLComments();} graphqlRootQueryField
 ;
 
 graphqlRootQueryField:
@@ -482,6 +482,7 @@ plsqlPackageOption:
     | defaultCollationClause
     | invokerRightsclause
     | accessibleByClause
+    | resettableClause
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -499,8 +500,13 @@ createPackageBody:
 
 // wrong documentation in 23.3: declare_section is not mandatory
 plsqlPackageBodySource:
-    (schema=sqlName PERIOD)? packageName=sqlName sharingClause?
+    (schema=sqlName PERIOD)? packageName=sqlName options+=plsqlPackageBodyOption*
     (K_IS | K_AS) declareSection? initializeSection? K_END name=sqlName? SEMI
+;
+
+plsqlPackageBodyOption:
+      sharingClause
+    | resettableClause
 ;
 
 initializeSection:
@@ -1980,6 +1986,7 @@ queryBlock:
     groupByClause?
     modelClause?
     windowClause?
+    qualifyClause?
 ;
 
 hint:
@@ -2262,6 +2269,10 @@ windowSpecification:
     queryPartitionClause?
     orderByClause?
     windowingClause?
+;
+
+qualifyClause:
+    K_QUALIFY cond=expression
 ;
 
 queryBlockSetOperator:
@@ -3075,6 +3086,10 @@ unitKind:
     | K_PACKAGE
     | K_TRIGGER
     | K_TYPE
+;
+
+resettableClause:
+    K_RESETTABLE
 ;
 
 // the only documented option is using_nls_comp
@@ -4359,6 +4374,7 @@ specialFunctionExpression:
     | featureCompare
     | fromVector
     | fuzzyMatch
+    | graphql
     | graphTable
     | json // PostgreSQL
     | jsonArray
@@ -4634,6 +4650,18 @@ fuzzyMatch:
         COMMA str2=expression
         (COMMA option=(K_UNSCALED|K_RELATE_TO_SHORTER|K_EDIT_TOLERANCE) tolerance=expression?)?
     RPAR
+;
+
+graphql:
+    K_GRAPHQL LPAR query=expression graphqlPassingClause? RPAR
+;
+
+graphqlPassingClause:
+    K_PASSING passingItem+=graphqlPassingItem (COMMA passingItem+=graphqlPassingItem)*
+;
+
+graphqlPassingItem:
+    expr=expression K_AS name=sqlName
 ;
 
 // simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
@@ -6024,6 +6052,7 @@ keywordAsId:
     | K_ACROSS
     | K_ACTION
     | K_ADD
+    | K_ADD_SET
     | K_AFTER
     | K_AGENT
     | K_AGGREGATE
@@ -6290,6 +6319,7 @@ keywordAsId:
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
+    | K_GRAPHQL
     | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING
@@ -6628,12 +6658,14 @@ keywordAsId:
     | K_RELIES_ON
     | K_RELY
     | K_REMOVE
+    | K_REMOVE_SET
     | K_RENAME
     | K_REPEAT
     | K_REPEATABLE
     | K_REPLACE
     | K_RESERVABLE
     | K_RESET
+    | K_RESETTABLE
     | K_RESPECT
     | K_RESTRICT
     | K_RESTRICTED
