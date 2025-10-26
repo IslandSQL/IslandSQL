@@ -6301,6 +6301,7 @@ keywordAsId:
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
+    | K_GRAPHQL
     | K_GRAPH_TABLE
     | K_GROUP
     | K_GROUPING

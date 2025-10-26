@@ -360,6 +360,7 @@ K_GET: 'get';
 K_GLOBAL: 'global';
 K_GOTO: 'goto';
 K_GRANT: 'grant';
+K_GRAPHQL: 'graphql';
 K_GRAPH_TABLE: 'graph_table';
 K_GROUP: 'group';
 K_GROUPING: 'grouping';
