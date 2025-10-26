@@ -1986,6 +1986,7 @@ queryBlock:
     groupByClause?
     modelClause?
     windowClause?
+    qualifyClause?
 ;
 
 hint:
@@ -2268,6 +2269,10 @@ windowSpecification:
     queryPartitionClause?
     orderByClause?
     windowingClause?
+;
+
+qualifyClause:
+    K_QUALIFY cond=expression
 ;
 
 queryBlockSetOperator:
