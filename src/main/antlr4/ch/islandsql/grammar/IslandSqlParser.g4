@@ -4875,7 +4875,7 @@ jsonValueMapperClause:
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
-        postgresqlFilterClause? overClause?
+        aggregateFilterClause? overClause?
 ;
 
 jsonMergepatch:
@@ -4933,7 +4933,7 @@ regularEntry:
 jsonObjectagg:
     K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression (COLON|K_VALUE) valExpr=expression formatClause?
     options+=jsonObjectaggOption* RPAR
-    postgresqlFilterClause? overClause?
+    aggregateFilterClause? overClause?
 ;
 
 // artificial clause to support different position of jsonUniqueKeys in OracleDB and PostgreSQL
@@ -5422,7 +5422,11 @@ jsonExistsCondition:
 
 listagg:
     K_LISTAGG LPAR (K_ALL|K_DISTINCT)? expr=expression (COMMA delimiter=expression)? listaggOverflowClause? RPAR
-        (K_WITHIN K_GROUP LPAR orderByClause RPAR)? (K_OVER LPAR queryPartitionClause? RPAR)?
+        (K_WITHIN K_GROUP LPAR orderByClause RPAR)? aggregateFilterClause? (K_OVER LPAR queryPartitionClause? RPAR)?
+        (
+            aggregateFilterClause (K_OVER LPAR queryPartitionClause? RPAR)? // OracleDb 26.1 undocumented variant
+          | (K_OVER LPAR queryPartitionClause? RPAR) aggregateFilterClause? // OracleDb 26.1 documented variant
+        )?
 ;
 
 nthValue:
@@ -5698,11 +5702,16 @@ xmlTableColumn:
 
 functionExpression:
     name=sqlName (COMMAT dblink=qualifiedName)? LPAR ((params+=functionParameter (COMMA params+=functionParameter)*)? | functionParameterSuffix?) RPAR
-    withinClause?               // e.g. approx_percentile
-    postgresqlFilterClause?     // e.g. count, sum
-    keepClause?                 // e.g. first, last
-    respectIgnoreNullsClause?   // e.g. lag
-    overClause?                 // e.g. avg
+    functionExpressionOptions+=functionExpressionOption*
+;
+
+// artificial clause since in OracleDB 23.26.1.1.0 the aggregateFilterClause after the overClause
+functionExpressionOption:
+      withinClause              // e.g. approx_percentile
+    | aggregateFilterClause     // e.g. count, sum
+    | keepClause                // e.g. first, last
+    | respectIgnoreNullsClause  // e.g. lag
+    | overClause                // e.g. avg
 ;
 
 functionParameter:
@@ -5793,8 +5802,9 @@ withinClause:
     K_WITHIN K_GROUP LPAR orderByClause RPAR
 ;
 
-postgresqlFilterClause:
-    K_FILTER LPAR whereClause RPAR
+// supported by OracleDB since 26.1, therefore renamed from postgresqlFilterClause
+aggregateFilterClause:
+    K_FILTER LPAR K_WHERE cond=expression RPAR
 ;
 
 keepClause:
