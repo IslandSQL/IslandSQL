@@ -6088,6 +6088,7 @@ keywordAsId:
     | K_ASCII
     | K_ASENSITIVE
     | K_ASSERT
+    | K_ASSERTION
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
@@ -6705,6 +6706,7 @@ keywordAsId:
     | K_SAFE
     | K_SALT
     | K_SAMPLE
+    | K_SATISFY
     | K_SAVE
     | K_SAVEPOINT
     | K_SCALAR
