@@ -74,7 +74,7 @@ statement:
 /*----------------------------------------------------------------------------*/
 
 ddlStatement:
-      createAssertion
+      createAssertionStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
@@ -92,7 +92,7 @@ ddlStatement:
 // Create Assertion
 /*----------------------------------------------------------------------------*/
 
-createAssertion:
+createAssertionStatement:
     K_CREATE K_ASSERTION (K_IF K_NOT K_EXISTS)? (owner=sqlName PERIOD)? assertionName=sqlName
     K_CHECK LPAR
         (
