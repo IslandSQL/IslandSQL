@@ -18,9 +18,9 @@ The following table shows the DBMS and their grammar versions in scope:
 |            | SQLcl    | 25.4 G48247-02           | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/25.3/sqcug/index.html) | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
 |            | SQL      | 26ai G43935-04 (23.26.1) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/)                   | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
 |            | PL/SQL   | 26ai G43964-03 (23.26.1) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/)                   | [PDF](https://islandsql.github.io/IslandSQL/database-pl-sql-language-reference.pdf) |
-| PostgreSQL | psql     | 18.0                     | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/18/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | SQL      | 18.0                     | [SQL Commands](https://www.postgresql.org/docs/18/sql-commands.html)                                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | PL/pgSQL | 18.0                     | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/18/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+| PostgreSQL | psql     | 18.1                     | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/18/app-psql.html)                   | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | SQL      | 18.1                     | [SQL Commands](https://www.postgresql.org/docs/18/sql-commands.html)                                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | PL/pgSQL | 18.1                     | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/18/plpgsql.html)                        | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 
 The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format
 represents the version that was used to define the grammar.
