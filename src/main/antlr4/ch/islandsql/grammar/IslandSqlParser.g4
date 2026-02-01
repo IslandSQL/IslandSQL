@@ -74,7 +74,8 @@ statement:
 /*----------------------------------------------------------------------------*/
 
 ddlStatement:
-      createFunctionStatement
+      createAssertion
+    | createFunctionStatement
     | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
     | createPackageStatement
@@ -85,6 +86,34 @@ ddlStatement:
     | createTypeStatement
     | createTypeBodyStatement
     | createViewStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Assertion
+/*----------------------------------------------------------------------------*/
+
+createAssertion:
+    K_CREATE K_ASSERTION (K_IF K_NOT K_EXISTS)? (owner=sqlName PERIOD)? assertionName=sqlName
+    K_CHECK LPAR
+        (
+            existentialExpression
+          | universalExpression
+        )
+    RPAR constraintState? sqlEnd
+;
+
+existentialExpression:
+    K_NOT? K_EXISTS LPAR subquery RPAR
+;
+
+// undocumented in OracleDB 26.1: alias is optional
+universalExpression:
+    K_ALL LPAR subquery RPAR alias=sqlName? K_SATISFY LPAR
+        (
+            existentialExpression
+          | expression // boolean expression
+        )
+    RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
