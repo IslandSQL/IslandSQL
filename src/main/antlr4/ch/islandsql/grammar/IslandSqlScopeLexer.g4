@@ -293,6 +293,11 @@ COMMIT:
     'commit' {isBeginOfStatement("commit")}? TO_SQL_END
 ;
 
+CREATE_ASSERTION:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
+    'assertion' MORE_TO_SQL_END
+;
+
 CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
