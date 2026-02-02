@@ -684,7 +684,6 @@ graphTableLabelAndProperties:
     graphTableLabelPropertiesClause? graphTableLabelClauses+=graphTableLabelClause*
 ;
 
-// documentation in OracleDB 26.1 is wrong
 graphTableLabelPropertiesClause:
       K_NO K_PROPERTIES                                 # noPropertiesGraphTableLabelPropertiesClause
     | K_PROPERTIES graphTablePropertiesAlternatives     # propertiesGraphTableLabelPropertiesClause
