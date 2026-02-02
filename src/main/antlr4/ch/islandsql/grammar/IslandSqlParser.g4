@@ -6111,6 +6111,7 @@ keywordAsId:
     | K_APPLY
     | K_APPROX
     | K_APPROXIMATE
+    | K_ARE
     | K_ARRAY
     | K_AS
     | K_ASC
@@ -6283,6 +6284,7 @@ keywordAsId:
     | K_DUPLICATED
     | K_DURATION
     | K_EACH
+    | K_EDGE
     | K_EDITION
     | K_EDITIONABLE
     | K_EDITIONING
@@ -6359,6 +6361,7 @@ keywordAsId:
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
+    | K_GRAPH
     | K_GRAPHQL
     | K_GRAPH_TABLE
     | K_GROUP
@@ -6453,6 +6456,7 @@ keywordAsId:
     | K_KEEP
     | K_KEY
     | K_KEYS
+    | K_LABEL
     | K_LAG
     | K_LAG_DIFF
     | K_LAG_DIFF_PERCENT
@@ -6521,6 +6525,7 @@ keywordAsId:
     | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
+    | K_MIXED
     | K_MLE
     | K_MOD
     | K_MODE
@@ -6594,6 +6599,7 @@ keywordAsId:
     | K_OPEN
     | K_OPERATOR
     | K_OPTION
+    | K_OPTIONS
     | K_OR
     | K_ORDER
     | K_ORDERED
@@ -6669,6 +6675,8 @@ keywordAsId:
     | K_PRIVATE
     | K_PROBES
     | K_PROCEDURE
+    | K_PROPERTIES
+    | K_PROPERTY
     | K_PUNCTUATION
     | K_PURE
     | K_QUALIFY
@@ -6862,6 +6870,7 @@ keywordAsId:
     | K_TXID_SNAPSHOT
     | K_TYPE
     | K_TYPENAME
+    | K_TYPES
     | K_UDF
     | K_UESCAPE
     | K_UNBOUNDED
@@ -6909,6 +6918,7 @@ keywordAsId:
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
+    | K_VERTEX
     | K_VIEW
     | K_VIRTUAL
     | K_VISIBLE
