@@ -713,8 +713,8 @@ edgeTableDefinition:
 ;
 
 vertexTableReference:
-      graphElementObjectName                                                                                # nameVertexTableReference
-    | graphElementKey K_REFERENCES graphElementObjectName LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR    # keyVertexTableReference
+      graphElementName=sqlName                                                                              # nameVertexTableReference
+    | graphElementKey K_REFERENCES graphElementName=sqlName LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR  # keyVertexTableReference
 ;
 
 graphOptions:
