@@ -81,6 +81,7 @@ ddlStatement:
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
+    | createPropertyGraphStatement
     | createTableStatement
     | createTriggerStatement
     | createTypeStatement
@@ -645,6 +646,89 @@ terminatedAtomicStatement:
 
 postgreSqlStatementTrailingTokens:
     ~SEMI*?
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Property Graph
+/*----------------------------------------------------------------------------*/
+
+createPropertyGraphStatement:
+    K_CREATE (K_OR K_REPLACE)? K_PROPERTY K_GRAPH (K_IF K_NOT K_EXISTS)?
+    (schema=sqlName PERIOD)? graphName=sqlName vertexTableClause edgeTableClause? graphOptions? sqlEnd
+;
+
+vertexTableClause:
+    K_VERTEX K_TABLES LPAR vertexTables+=vertexTableDefinition (COMMA vertexTables+=vertexTableDefinition)* RPAR
+;
+
+// graphTableLabelAndProperties is mandatory since all elements are in graphTableLabelAndProperties are optional
+vertexTableDefinition:
+    graphElementNameAndKey graphTableLabelAndProperties
+;
+
+graphElementNameAndKey:
+    graphElementObjectName (K_AS graphElementName=sqlName)? graphElementKey?
+;
+
+// undocumented in OracleDB 26.1: schema is optional
+// tableName can be a materialized view, table or synonym
+graphElementObjectName:
+    (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+graphElementKey:
+    K_KEY LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR
+;
+
+graphTableLabelAndProperties:
+    graphTableLabelPropertiesClause? graphTableLabelClauses+=graphTableLabelClause*
+;
+
+// documentation in OracleDB 26.1 is wrong
+graphTableLabelPropertiesClause:
+      K_NO K_PROPERTIES                                 # noPropertiesGraphTableLabelPropertiesClause
+    | K_PROPERTIES graphTablePropertiesAlternatives     # propertiesGraphTableLabelPropertiesClause
+;
+
+// undocumented in OracleDB 26.1: ALL and ARE can also be used interchangeably
+graphTablePropertiesAlternatives:
+      (K_ARE K_ALL? | K_ARE? K_ALL) K_COLUMNS (K_EXCEPT LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR)?    # allColumnsGraphTablePropertiesAlternatives
+    | LPAR exprs+=columnOrExpression (COMMA exprs+=columnOrExpression)* RPAR                                # expressionGraphTablePropertiesAlternatives
+;
+
+columnOrExpression:
+    value=expression (K_AS propertyName=sqlName)?
+;
+
+graphTableLabelClause:
+    (K_LABEL labelName=sqlName | K_DEFAULT K_LABEL) graphTableLabelPropertiesClause?
+;
+
+edgeTableClause:
+    K_EDGE K_TABLES LPAR tabs+=edgeTableDefinition (COMMA edgeTableDefinition)* RPAR
+;
+
+// graphTableLabelAndProperties is mandatory since all elements are in graphTableLabelAndProperties are optional
+edgeTableDefinition:
+    graphElementNameAndKey K_SOURCE source=vertexTableReference
+    K_DESTINATION destination=vertexTableReference graphTableLabelAndProperties
+;
+
+vertexTableReference:
+      graphElementObjectName                                                                                # nameVertexTableReference
+    | graphElementKey K_REFERENCES graphElementObjectName LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR    # keyVertexTableReference
+;
+
+graphOptions:
+    K_OPTIONS LPAR options+=graphOption (COMMA options+=graphOption)* RPAR
+;
+
+// artificial clause
+graphOption:
+      K_ENFORCED K_MODE                         # enforcedGraphOption
+    | K_TRUSTED K_MODE                          # trustedGraphOption
+    | K_ALLOW K_MIXED K_PROPERTY K_TYPES        # allowMixedPropertyGraphOption
+    | K_DISALLOW K_MIXED K_PROPERTY K_TYPES     # disallowMixedPropertyGraphOption
 ;
 
 /*----------------------------------------------------------------------------*/
