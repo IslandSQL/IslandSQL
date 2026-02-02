@@ -74,17 +74,47 @@ statement:
 /*----------------------------------------------------------------------------*/
 
 ddlStatement:
-      createFunctionStatement
+      createAssertionStatement
+    | createFunctionStatement
     | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
     | createProcedureStatement
+    | createPropertyGraphStatement
     | createTableStatement
     | createTriggerStatement
     | createTypeStatement
     | createTypeBodyStatement
     | createViewStatement
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Assertion
+/*----------------------------------------------------------------------------*/
+
+createAssertionStatement:
+    K_CREATE K_ASSERTION (K_IF K_NOT K_EXISTS)? (owner=sqlName PERIOD)? assertionName=sqlName
+    K_CHECK LPAR
+        (
+            existentialExpression
+          | universalExpression
+        )
+    RPAR constraintState? sqlEnd
+;
+
+existentialExpression:
+    K_NOT? K_EXISTS LPAR subquery RPAR
+;
+
+// undocumented in OracleDB 26.1: alias is optional
+universalExpression:
+    K_ALL LPAR subquery RPAR alias=sqlName? K_SATISFY LPAR
+        (
+            existentialExpression
+          | expression // boolean expression
+        )
+    RPAR
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -616,6 +646,87 @@ terminatedAtomicStatement:
 
 postgreSqlStatementTrailingTokens:
     ~SEMI*?
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Property Graph
+/*----------------------------------------------------------------------------*/
+
+createPropertyGraphStatement:
+    K_CREATE (K_OR K_REPLACE)? K_PROPERTY K_GRAPH (K_IF K_NOT K_EXISTS)?
+    (schema=sqlName PERIOD)? graphName=sqlName vertexTableClause edgeTableClause? graphOptions? sqlEnd
+;
+
+vertexTableClause:
+    K_VERTEX K_TABLES LPAR vertexTables+=vertexTableDefinition (COMMA vertexTables+=vertexTableDefinition)* RPAR
+;
+
+// graphTableLabelAndProperties is mandatory since all elements are in graphTableLabelAndProperties are optional
+vertexTableDefinition:
+    graphElementNameAndKey graphTableLabelAndProperties
+;
+
+graphElementNameAndKey:
+    graphElementObjectName (K_AS graphElementName=sqlName)? graphElementKey?
+;
+
+// undocumented in OracleDB 26.1: schema is optional
+// tableName can be a materialized view, table or synonym
+graphElementObjectName:
+    (schema=sqlName PERIOD)? tableName=sqlName
+;
+
+graphElementKey:
+    K_KEY LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR
+;
+
+graphTableLabelAndProperties:
+    graphTableLabelPropertiesClause? graphTableLabelClauses+=graphTableLabelClause*
+;
+
+graphTableLabelPropertiesClause:
+      K_NO K_PROPERTIES                                 # noPropertiesGraphTableLabelPropertiesClause
+    | K_PROPERTIES graphTablePropertiesAlternatives     # propertiesGraphTableLabelPropertiesClause
+;
+
+graphTablePropertiesAlternatives:
+      K_ARE? K_ALL K_COLUMNS (K_EXCEPT LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR)?     # allColumnsGraphTablePropertiesAlternatives
+    | LPAR exprs+=columnOrExpression (COMMA exprs+=columnOrExpression)* RPAR                # expressionGraphTablePropertiesAlternatives
+;
+
+columnOrExpression:
+    value=expression (K_AS propertyName=sqlName)?
+;
+
+graphTableLabelClause:
+    (K_LABEL labelName=sqlName | K_DEFAULT K_LABEL) graphTableLabelPropertiesClause?
+;
+
+edgeTableClause:
+    K_EDGE K_TABLES LPAR tabs+=edgeTableDefinition (COMMA edgeTableDefinition)* RPAR
+;
+
+// graphTableLabelAndProperties is mandatory since all elements are in graphTableLabelAndProperties are optional
+edgeTableDefinition:
+    graphElementNameAndKey K_SOURCE source=vertexTableReference
+    K_DESTINATION destination=vertexTableReference graphTableLabelAndProperties
+;
+
+vertexTableReference:
+      graphElementName=sqlName                                                                              # nameVertexTableReference
+    | graphElementKey K_REFERENCES graphElementName=sqlName LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR  # keyVertexTableReference
+;
+
+graphOptions:
+    K_OPTIONS LPAR options+=graphOption (COMMA options+=graphOption)* RPAR
+;
+
+// artificial clause
+graphOption:
+      K_ENFORCED K_MODE                         # enforcedGraphOption
+    | K_TRUSTED K_MODE                          # trustedGraphOption
+    | K_ALLOW K_MIXED K_PROPERTY K_TYPES        # allowMixedPropertyGraphOption
+    | K_DISALLOW K_MIXED K_PROPERTY K_TYPES     # disallowMixedPropertyGraphOption
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -4875,7 +4986,7 @@ jsonValueMapperClause:
 jsonArrayagg:
     K_JSON_ARRAYAGG LPAR expr=expression
         formatClause? orderByClause? jsonOnNullClause? jsonReturningClause? options+=jsonOption* RPAR
-        postgresqlFilterClause? overClause?
+        aggregateFilterClause? overClause?
 ;
 
 jsonMergepatch:
@@ -4933,7 +5044,7 @@ regularEntry:
 jsonObjectagg:
     K_JSON_OBJECTAGG LPAR K_KEY? keyExpr=expression (COLON|K_VALUE) valExpr=expression formatClause?
     options+=jsonObjectaggOption* RPAR
-    postgresqlFilterClause? overClause?
+    aggregateFilterClause? overClause?
 ;
 
 // artificial clause to support different position of jsonUniqueKeys in OracleDB and PostgreSQL
@@ -5422,7 +5533,11 @@ jsonExistsCondition:
 
 listagg:
     K_LISTAGG LPAR (K_ALL|K_DISTINCT)? expr=expression (COMMA delimiter=expression)? listaggOverflowClause? RPAR
-        (K_WITHIN K_GROUP LPAR orderByClause RPAR)? (K_OVER LPAR queryPartitionClause? RPAR)?
+        (K_WITHIN K_GROUP LPAR orderByClause RPAR)? aggregateFilterClause? (K_OVER LPAR queryPartitionClause? RPAR)?
+        (
+            aggregateFilterClause (K_OVER LPAR queryPartitionClause? RPAR)? // OracleDb 26.1 undocumented variant
+          | (K_OVER LPAR queryPartitionClause? RPAR) aggregateFilterClause? // OracleDb 26.1 documented variant
+        )?
 ;
 
 nthValue:
@@ -5698,11 +5813,16 @@ xmlTableColumn:
 
 functionExpression:
     name=sqlName (COMMAT dblink=qualifiedName)? LPAR ((params+=functionParameter (COMMA params+=functionParameter)*)? | functionParameterSuffix?) RPAR
-    withinClause?               // e.g. approx_percentile
-    postgresqlFilterClause?     // e.g. count, sum
-    keepClause?                 // e.g. first, last
-    respectIgnoreNullsClause?   // e.g. lag
-    overClause?                 // e.g. avg
+    functionExpressionOptions+=functionExpressionOption*
+;
+
+// artificial clause since in OracleDB 23.26.1.1.0 the aggregateFilterClause after the overClause
+functionExpressionOption:
+      withinClause              // e.g. approx_percentile
+    | aggregateFilterClause     // e.g. count, sum
+    | keepClause                // e.g. first, last
+    | respectIgnoreNullsClause  // e.g. lag
+    | overClause                // e.g. avg
 ;
 
 functionParameter:
@@ -5793,8 +5913,9 @@ withinClause:
     K_WITHIN K_GROUP LPAR orderByClause RPAR
 ;
 
-postgresqlFilterClause:
-    K_FILTER LPAR whereClause RPAR
+// supported by OracleDB since 26.1, therefore renamed from postgresqlFilterClause
+aggregateFilterClause:
+    K_FILTER LPAR K_WHERE cond=expression RPAR
 ;
 
 keepClause:
@@ -6072,12 +6193,14 @@ keywordAsId:
     | K_APPLY
     | K_APPROX
     | K_APPROXIMATE
+    | K_ARE
     | K_ARRAY
     | K_AS
     | K_ASC
     | K_ASCII
     | K_ASENSITIVE
     | K_ASSERT
+    | K_ASSERTION
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
@@ -6243,6 +6366,7 @@ keywordAsId:
     | K_DUPLICATED
     | K_DURATION
     | K_EACH
+    | K_EDGE
     | K_EDITION
     | K_EDITIONABLE
     | K_EDITIONING
@@ -6319,6 +6443,7 @@ keywordAsId:
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
+    | K_GRAPH
     | K_GRAPHQL
     | K_GRAPH_TABLE
     | K_GROUP
@@ -6413,6 +6538,7 @@ keywordAsId:
     | K_KEEP
     | K_KEY
     | K_KEYS
+    | K_LABEL
     | K_LAG
     | K_LAG_DIFF
     | K_LAG_DIFF_PERCENT
@@ -6481,6 +6607,7 @@ keywordAsId:
     | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
+    | K_MIXED
     | K_MLE
     | K_MOD
     | K_MODE
@@ -6554,6 +6681,7 @@ keywordAsId:
     | K_OPEN
     | K_OPERATOR
     | K_OPTION
+    | K_OPTIONS
     | K_OR
     | K_ORDER
     | K_ORDERED
@@ -6629,6 +6757,8 @@ keywordAsId:
     | K_PRIVATE
     | K_PROBES
     | K_PROCEDURE
+    | K_PROPERTIES
+    | K_PROPERTY
     | K_PUNCTUATION
     | K_PURE
     | K_QUALIFY
@@ -6695,6 +6825,7 @@ keywordAsId:
     | K_SAFE
     | K_SALT
     | K_SAMPLE
+    | K_SATISFY
     | K_SAVE
     | K_SAVEPOINT
     | K_SCALAR
@@ -6821,6 +6952,7 @@ keywordAsId:
     | K_TXID_SNAPSHOT
     | K_TYPE
     | K_TYPENAME
+    | K_TYPES
     | K_UDF
     | K_UESCAPE
     | K_UNBOUNDED
@@ -6868,6 +7000,7 @@ keywordAsId:
     | K_VERBOSE
     | K_VERSION
     | K_VERSIONS
+    | K_VERTEX
     | K_VIEW
     | K_VIRTUAL
     | K_VISIBLE
