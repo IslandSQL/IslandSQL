@@ -327,6 +327,11 @@ CREATE_PROCEDURE:
     'procedure' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
 ;
 
+CREATE_PROPERTY_GRAPH:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+    'property' COMMENT_OR_WS+ 'graph' MORE_TO_SQL_END
+;
+
 CREATE_TABLE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     (
