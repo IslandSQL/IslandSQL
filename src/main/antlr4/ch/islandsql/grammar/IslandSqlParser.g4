@@ -689,10 +689,9 @@ graphTableLabelPropertiesClause:
     | K_PROPERTIES graphTablePropertiesAlternatives     # propertiesGraphTableLabelPropertiesClause
 ;
 
-// undocumented in OracleDB 26.1: ALL and ARE can also be used interchangeably
 graphTablePropertiesAlternatives:
-      (K_ARE K_ALL? | K_ARE? K_ALL) K_COLUMNS (K_EXCEPT LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR)?    # allColumnsGraphTablePropertiesAlternatives
-    | LPAR exprs+=columnOrExpression (COMMA exprs+=columnOrExpression)* RPAR                                # expressionGraphTablePropertiesAlternatives
+      K_ARE? K_ALL K_COLUMNS (K_EXCEPT LPAR cols+=sqlName (COMMA cols+=sqlName)* RPAR)?     # allColumnsGraphTablePropertiesAlternatives
+    | LPAR exprs+=columnOrExpression (COMMA exprs+=columnOrExpression)* RPAR                # expressionGraphTablePropertiesAlternatives
 ;
 
 columnOrExpression:
