@@ -1344,10 +1344,11 @@ returnClause:
 // undocumented in 23.3: final/instantiable is an unordered group,
 // wrong documentation in 23.3: mandatory parameters and parentheses,
 // parameter direction missing (in/out), default values missing
+// treat type as sqlName to avoid parsing it as userDefinedType (see #308)
 constructorSpec:
-    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=dataType
+    options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=sqlName
     (
-        LPAR (K_SELF K_IN K_OUT selfType=dataType COMMA)?
+        LPAR (K_SELF K_IN K_OUT selfType=sqlName COMMA)?
         parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR
     )?
     K_RETURN K_SELF K_AS K_RESULT ((K_IS | K_AS) callSpec)?
@@ -1492,7 +1493,7 @@ funcDeclInType:
 constructorDeclaration:
     options+=constructorSpecOption* K_CONSTRUCTOR K_FUNCTION type=sqlName
     (
-        LPAR (K_SELF K_IN K_OUT selfType=dataType COMMA)?
+        LPAR (K_SELF K_IN K_OUT selfType=sqlName COMMA)?
         parameters+=parameterDeclaration (COMMA parameters+=parameterDeclaration)* RPAR
     )?
     K_RETURN K_SELF K_AS K_RESULT
