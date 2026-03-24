@@ -1297,7 +1297,7 @@ plsqlTypeOption:
 ;
 
 objectBaseTypeDef:
-    (K_IS | K_AS) (objectTypeDef | varayTypeSpec | nestedTableTypeSpec)
+    (K_IS | K_AS) (objectTypeDef | varrayTypeSpec | nestedTableTypeSpec)
 ;
 
 // wrong documentation in 23.3: optional attributes
@@ -1380,7 +1380,7 @@ objectTypeDefOption:
 ;
 
 // not documented in 23.4: optionality of "not"
-varayTypeSpec:
+varrayTypeSpec:
     (K_VARRAY | K_VARYING? K_ARRAY) LPAR sizeLimit=expression RPAR K_OF
     (
           plsqlDataType (K_NOT? K_NULL)?
