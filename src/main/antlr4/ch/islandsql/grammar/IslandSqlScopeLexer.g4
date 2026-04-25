@@ -55,14 +55,6 @@ fragment ANY_EXCEPT_LOG:
         | ~'l'
     ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
 ;
-fragment ANY_EXCEPT_BODY:
-    (
-          'b' 'o' 'd' ~'y'
-        | 'b' 'o' ~'d'
-        | 'b' ~'o'
-        | ~'b'
-    ) [_$#0-9\p{Alpha}]* // completes identifier, if necessary
-;
 
 // simplified ranges based on https://www.unicode.org/Public/16.0.0/ucd/emoji/emoji-data.txt
 // \p{Emoji} includes #, *, 0-9 and therefore cannot be used
@@ -360,15 +352,10 @@ CREATE_TRIGGER:
     'trigger' COMMENT_OR_WS+ -> pushMode(DECLARE_SECTION_MODE)
 ;
 
-// OracleDB and PostgreSQL type specifications
+// OracleDB and PostgreSQL type specifications, and OracleDB type bodies
 CREATE_TYPE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ (QUOTED_ID|ANY_EXCEPT_BODY) TO_SQL_END
-;
-
-CREATE_TYPE_BODY:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
-    'type' COMMENT_OR_WS+ 'body' COMMENT_OR_WS+ -> pushMode(CODE_BLOCK_MODE)
+    'type' COMMENT_OR_WS+ -> pushMode(TYPE_MODE)
 ;
 
 CREATE_VIEW:
@@ -629,7 +616,6 @@ CB_ID: ID -> more;
 CB_QUOTED_ID: QUOTED_ID -> more;
 CB_ANY_OTHER: . -> more;
 
-
 /*----------------------------------------------------------------------------*/
 // Case Statement or Case Expression Mode (CS)
 /*----------------------------------------------------------------------------*/
@@ -707,6 +693,16 @@ PA_QUOTED_ID: QUOTED_ID -> more;
 PA_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
+// TYPE_MODE (TYPE)
+/*----------------------------------------------------------------------------*/
+
+mode TYPE_MODE;
+
+TYPE_STMT: SQL_END -> popMode;
+TYPE_BODY: 'body' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
+TYPE_SQL_TEXT: SQL_TEXT -> more;
+
+/*----------------------------------------------------------------------------*/
 // Hidden Parentheses Mode (HP)
 /*----------------------------------------------------------------------------*/
 
@@ -729,7 +725,7 @@ HP_QUOTED_ID: QUOTED_ID -> more;
 HP_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// TO_SQL_END_MODE (SQL)
+// Hidden TO_SQL_END_MODE (SQL)
 /*----------------------------------------------------------------------------*/
 
 mode TO_SQL_END_MODE;
@@ -738,7 +734,7 @@ SQL_STMT: SQL_END -> popMode, channel(HIDDEN);
 SQL_SQL_TEXT: SQL_TEXT -> more;
 
 /*----------------------------------------------------------------------------*/
-// TO_SQLPLUS_END_MODE (PLUS)
+// Hidden TO_SQLPLUS_END_MODE (PLUS)
 /*----------------------------------------------------------------------------*/
 
 mode TO_END_SQLPLUS_MODE;
