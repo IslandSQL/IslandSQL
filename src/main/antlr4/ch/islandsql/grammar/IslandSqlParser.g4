@@ -287,10 +287,27 @@ tableTagsClauseItem:
 ;
 
 // only components that are not handled by regularEntry for create_json_relational_duality_view
+// undocumented in 26.2: 'value' as alternative for ':' and 'is'
 keyValueClause:
-      regularEntry columnTagsClause
+      K_KEY? key=expression (K_VALUE|COLON|K_IS) keyValueClauseExpression K_HIDDEN?
     | flexClause
     | K_UNNEST LPAR subquery RPAR
+;
+
+// artificial clause, simplified
+keyValueClauseExpression:
+      columnName=expression columnTagsClause? writeAugmentationClause?
+    | readAugmentationClause
+;
+
+// simplified
+readAugmentationClause:
+    K_GENERATED (K_ON K_READ)? (K_AS? dataType)? K_USING K_PATH? expr=expression
+;
+
+// simplified
+writeAugmentationClause:
+    K_GENERATED K_ON K_WRITE (K_IF K_MISSING)? K_USING K_PATH expr=expression
 ;
 
 flexClause:
