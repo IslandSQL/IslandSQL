@@ -5053,8 +5053,7 @@ entry:
 
 // undocumented in 23.4: "is" instead of ":", "key" in combination with "is"/":"
 regularEntry:
-      K_KEY? key=expression K_VALUE value=expression
-    | K_KEY? key=expression (COLON|K_IS) value=expression
+      K_KEY? key=expression (K_VALUE|COLON|K_IS) value=expression
     | value=expression
 ;
 
