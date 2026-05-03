@@ -297,8 +297,13 @@ flexClause:
     columnName=qualifiedName K_AS K_FLEX K_COLUMN?
 ;
 
+// undocumented in 26.2: alternative syntax with parentheses and comma separator
 columnTagsClause:
-    K_WITH tags+=columnTagsClauseItem+
+    K_WITH
+    (
+          tags+=columnTagsClauseItem+
+        | LPAR tags+=columnTagsClauseItem (COMMA tags+=columnTagsClauseItem)* RPAR
+    )
 ;
 
 // artificial clause
