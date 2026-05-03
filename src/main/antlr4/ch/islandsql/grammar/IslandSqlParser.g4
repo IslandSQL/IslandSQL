@@ -246,7 +246,12 @@ createJsonRelationalDualityView:
           K_EDITIONABLE
         | K_NONEDITIONABLE
     )? K_JSON K_RELATIONAL? K_DUALITY K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    dualityViewReplicationClause?
     K_AS jsonRelationalDualityViewSource
+;
+
+dualityViewReplicationClause:
+    (K_DISABLE | K_ENABLE) K_LOGICAL K_REPLICATION
 ;
 
 // artificial clause because the query cababilities are not fully documented, e.g
