@@ -327,8 +327,9 @@ graphqlDirectives:
     directives=graphqlDirective+
 ;
 
+// undocumented in 26.2: comma can be used as separator between arguments
 graphqlDirective:
-    COMMAT directive=sqlName (LPAR (args+=graphqlArgument)+ RPAR)?
+    COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)?
 ;
 
 graphqlArgument:
