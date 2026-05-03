@@ -6452,6 +6452,7 @@ keywordAsId:
     | K_GROUPS
     | K_HASH
     | K_HAVING
+    | K_HIDDEN
     | K_HIDE
     | K_HIERARCHIES
     | K_HIERARCHY
@@ -6576,6 +6577,7 @@ keywordAsId:
     | K_LOG
     | K_LOGFILE
     | K_LOGGING
+    | K_LOGICAL
     | K_LOGOFF
     | K_LOGON
     | K_LONG
@@ -6794,6 +6796,7 @@ keywordAsId:
     | K_REPEAT
     | K_REPEATABLE
     | K_REPLACE
+    | K_REPLICATION
     | K_RESERVABLE
     | K_RESET
     | K_RESETTABLE
