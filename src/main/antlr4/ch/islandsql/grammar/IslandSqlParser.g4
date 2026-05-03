@@ -265,8 +265,13 @@ jsonRelationalDualityViewSource:
     | graphqlQueryForDv
 ;
 
+// undocumented in 26.2: alternative syntax with parentheses and comma separator
 tableTagsClause:
-    K_WITH tags+=tableTagsClauseItem+
+    K_WITH
+    (
+          tags+=tableTagsClauseItem+
+        | LPAR tags+=tableTagsClauseItem (COMMA tags+=tableTagsClauseItem)* RPAR
+    )
 ;
 
 // artificial clause
