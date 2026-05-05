@@ -2746,11 +2746,16 @@ rowPatternDefinition:
     variableName=sqlName K_AS cond=expression
 ;
 
+// handling join_to_one_clause here and avoiding a join_to_on_from_clause to simplify grammar
+// and handle undocumented variants such row_widened_table_expression with sample clause and similar.
+// this way we use a fromItem for a row_widening_table_expression.
+// the joinToOneClause join variant allows combinations that are not supported by the OracleDB.
 joinVariant:
       innerCrossJoinClause
     | outerJoinClause
     | crossOuterApplyClause
     | nestedClause
+    | joinToOneClause
 ;
 
 // undocumented: forItem instead of tableReference
@@ -2790,6 +2795,33 @@ nestedClause:
               (PERIOD keys+=jsonObjectKey)+
             | (COMMA jsonBasicPathExpression)
         )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause talias=sqlName?
+;
+
+joinToOneClause:
+    K_JOIN K_TO K_ONE LPAR jtoJoinList RPAR
+;
+
+jtoJoinList:
+    jtoJoinSpec? jtoJoinTables+=jtoTableWithOptionalOnClause (jtoListDelimiter jtoJoinTables+=jtoTableWithOptionalOnClause)*
+;
+
+jtoJoinSpec:
+      K_LEFT? K_OUTER K_JOIN    # jtoJoinSpecOuter
+    | K_INNER K_JOIN            # jtoJoinSpecInner
+;
+
+jtoTableWithOptionalOnClause:
+    jtoTableExpression (K_ON cond=expression)?
+;
+
+// simplified, tableReference allows some unsupported variants
+jtoTableExpression:
+    tableReference tableAlias?
+;
+
+jtoListDelimiter:
+      COMMA
+    | jtoJoinSpec
 ;
 
 // parenthesis around sub_av_clause is not documented, but required
