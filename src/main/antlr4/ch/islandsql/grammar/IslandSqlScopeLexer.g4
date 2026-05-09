@@ -290,6 +290,11 @@ CREATE_ASSERTION:
     'assertion' MORE_TO_SQL_END
 ;
 
+CREATE_DIRECTIVE:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+    'directive' COMMENT_OR_WS+ -> pushMode(DIRECTIVE_MODE)
+;
+
 CREATE_FUNCTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE NON_EDITIONABLE
     'function' COMMENT_OR_WS+ -> pushMode(UNIT_MODE)
@@ -693,7 +698,7 @@ PA_QUOTED_ID: QUOTED_ID -> more;
 PA_ANY_OTHER: . -> more;
 
 /*----------------------------------------------------------------------------*/
-// TYPE_MODE (TYPE)
+// Type Mode (TYPE)
 /*----------------------------------------------------------------------------*/
 
 mode TYPE_MODE;
@@ -701,6 +706,21 @@ mode TYPE_MODE;
 TYPE_STMT: SQL_END -> popMode;
 TYPE_BODY: 'body' COMMENT_OR_WS+ -> more, mode(CODE_BLOCK_MODE);
 TYPE_SQL_TEXT: SQL_TEXT -> more;
+
+/*----------------------------------------------------------------------------*/
+// Directive Mode (DIR)
+/*----------------------------------------------------------------------------*/
+
+mode DIRECTIVE_MODE;
+
+// fail-safe, process tokens that are waiting to be assigned after "more"
+DIR_EOF: EOF -> popMode;
+
+DIR_STMT: SQL_END -> popMode;
+
+DIR_DECLARE: 'declare' -> more, mode(DECLARE_SECTION_MODE);
+DIR_BEGIN: 'begin' -> more, mode(CODE_BLOCK_MODE);
+DIR_SQL_TEXT: SQL_TEXT -> more;
 
 /*----------------------------------------------------------------------------*/
 // Hidden Parentheses Mode (HP)
