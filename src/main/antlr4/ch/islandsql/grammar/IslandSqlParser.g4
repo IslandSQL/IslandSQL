@@ -4570,6 +4570,7 @@ specialFunctionExpression:
     | listagg
     | nthValue
     | overlay
+    | property
     | substring
     | tableFunction
     | timeBucket
@@ -5630,6 +5631,18 @@ listaggOverflowClause:
 overlay:
     K_OVERLAY LPAR text=expression K_PLACING placing=expression
         K_FROM from=expression (K_FOR for=expression)? RPAR
+;
+
+// property pseudo operator introduced in 26.2 (used as parameter in functions used within graph_table)
+// see https://docs.oracle.com/en/database/oracle/oracle-database/26/arpls/dbms_oga1.html#GUID-0B496431-F34D-4ACD-B927-55968AACE7E3
+// not documented in SQL Language Reference 26.2
+property:
+    K_PROPERTY LPAR
+        elementType=(K_VERTEX|K_EDGE)
+        inputOrOutput=(K_INPUT|K_OUTPUT)
+        propertyName=sqlName
+        (K_DEFAULT K_ON K_NULL defaultValue=expression)?
+    RPAR
 ;
 
 // PostgreSQL
