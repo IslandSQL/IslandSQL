@@ -75,6 +75,7 @@ statement:
 
 ddlStatement:
       createAssertionStatement
+    | createDirectiveStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
@@ -115,6 +116,42 @@ universalExpression:
           | expression // boolean expression
         )
     RPAR
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Directive
+/*----------------------------------------------------------------------------*/
+
+createDirectiveStatement:
+    createDirective sqlEnd?
+;
+
+// simplified, skpped action_list and allowing any directiveAction combination
+createDirective:
+    K_CREATE (K_OR K_REPLACE)? K_DIRECTIVE (directiveSchemaName=sqlName PERIOD)? directiveName=sqlName
+    K_FOR (dvSchemaName=sqlName PERIOD)? dvName=sqlName K_VALIDATE K_ON actions+=directiveAction+
+    processingClause validationEnableOption directiveUsingClause
+;
+
+// artifical clause
+directiveAction:
+    K_SELECT
+  | K_INSERT
+  | K_UPDATE
+  | K_DELETE
+;
+
+processingClause:
+      (K_BEFORE | K_AFTER) K_OBJECT
+    | K_ON K_COMMIT
+;
+
+validationEnableOption:
+    (K_VALIDATE | K_NOVALIDATE)? (K_ENABLE | K_DISABLE)?
+;
+
+directiveUsingClause:
+    K_USING (expr=expression | plsqlBlock)
 ;
 
 /*----------------------------------------------------------------------------*/
