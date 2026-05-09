@@ -4841,12 +4841,12 @@ graphqlPassingItem:
     expr=expression K_AS name=sqlName
 ;
 
-// simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
-// graph_table_shape, graph_table_columns_clause
+// simplified, includes: graph_reference, graph_name, graph_algorithim_function, graph_ref_as_of_clause,
+// graph_pattern, path_pattern_list, graph_pattern_where_clause, graph_table_shape, graph_table_columns_clause
 graphTable:
     K_GRAPH_TABLE LPAR
-    (schema=sqlName PERIOD)?
-    graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
+    graph=tableReference
+    K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
     (K_WHERE cond=expression)?
     K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
     RPAR
