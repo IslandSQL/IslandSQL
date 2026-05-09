@@ -6757,6 +6757,7 @@ keywordAsId:
     | K_OTHERS
     | K_OUT
     | K_OUTER
+    | K_OUTPUT
     | K_OVER
     | K_OVERFLOW
     | K_OVERLAP

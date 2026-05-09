@@ -612,6 +612,7 @@ K_ORGANIZATION: 'organization';
 K_OTHERS: 'others';
 K_OUT: 'out';
 K_OUTER: 'outer';
+K_OUTPUT: 'output';
 K_OVER: 'over';
 K_OVERFLOW: 'overflow';
 K_OVERLAP: 'overlap';
