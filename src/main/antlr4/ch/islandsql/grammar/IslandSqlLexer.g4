@@ -270,6 +270,7 @@ K_DETAIL: 'detail';
 K_DETERMINISTIC: 'deterministic';
 K_DIAGNOSTICS: 'diagnostics';
 K_DIMENSION: 'dimension';
+K_DIRECTIVE: 'directive';
 K_DIRECTORY: 'directory';
 K_DISABLE: 'disable';
 K_DISALLOW: 'disallow';

@@ -6429,6 +6429,7 @@ keywordAsId:
     | K_DETERMINISTIC
     | K_DIAGNOSTICS
     | K_DIMENSION
+    | K_DIRECTIVE
     | K_DIRECTORY
     | K_DISABLE
     | K_DISALLOW
