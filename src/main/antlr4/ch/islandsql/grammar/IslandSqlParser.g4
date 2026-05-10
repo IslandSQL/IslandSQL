@@ -1715,6 +1715,7 @@ delete:
     ) K_AS? talias=sqlName?                                 // PostgreSQL: as
     fromUsingClause?
     whereClause?
+    waitClause?
     returningClause?
     errorLoggingClause?
 ;
@@ -1879,6 +1880,7 @@ singleTableInsert:
     )
     postgresqlOnConflictClause?
     returningClause? // unlike OracleDB, PostgreSQL allows a returning_clause for a subquery
+    waitClause?
     errorLoggingClause?
 ;
 
@@ -1940,7 +1942,7 @@ unconditionalInsertClause:
 ;
 
 multiTableInsertClause:
-    insertIntoClause (insertValuesClause|insertSetClause)? errorLoggingClause?
+    insertIntoClause (insertValuesClause|insertSetClause)? waitClause? errorLoggingClause?
 ;
 
 conditionalInsertClause:
@@ -2062,6 +2064,7 @@ merge:
         | mergeInsertClause mergeUpdateClause?  // OracleDB
         | mergeWhenClause+ returningClause?     // PostgreSQL
     )
+    waitClause?
     errorLoggingClause?
 ;
 
@@ -2131,7 +2134,7 @@ mergeInsert:
 /*----------------------------------------------------------------------------*/
 
 selectStatement:
-      select sqlEnd
+    select sqlEnd
 ;
 
 select:
@@ -2921,10 +2924,14 @@ forUpdateClause:
     )
     (K_OF columns+=forUpdateColumn (COMMA columns+=forUpdateColumn)*)? // PostgreSQL: tables instead of columns
     (
-          K_NOWAIT
-        | K_WAIT wait=expression
+          waitClause
         | K_SKIP K_LOCKED
     )?
+;
+
+waitClause:
+      K_NOWAIT
+    | K_WAIT (K_FOREVER | wait=expression (unit=(K_SECONDS|K_MILLISECONDS|K_MICROSECONDS))?)
 ;
 
 forUpdateColumn:
@@ -2949,6 +2956,7 @@ update:
     updateSetClause
     fromUsingClause?
     whereClause?
+    waitClause?
     orderByClause?
     returningClause?
     errorLoggingClause?
