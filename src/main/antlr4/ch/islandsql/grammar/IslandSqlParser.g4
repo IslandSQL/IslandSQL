@@ -6546,6 +6546,7 @@ keywordAsId:
     | K_FORCE
     | K_FOREACH
     | K_FOREIGN
+    | K_FOREVER
     | K_FORMAT
     | K_FORWARD
     | K_FROM
@@ -6720,6 +6721,8 @@ keywordAsId:
     | K_MESSAGE
     | K_MESSAGE_TEXT
     | K_METADATA
+    | K_MICROSECONDS
+    | K_MILLISECONDS
     | K_MINUS
     | K_MINUTE
     | K_MINVALUE
@@ -6959,6 +6962,7 @@ keywordAsId:
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
+    | K_SECONDS
     | K_SECURITY
     | K_SEED
     | K_SEGMENT
