@@ -75,6 +75,7 @@ statement:
 
 ddlStatement:
       createAssertionStatement
+    | createDirectiveStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
     | createMaterializedViewStatement
@@ -115,6 +116,42 @@ universalExpression:
           | expression // boolean expression
         )
     RPAR
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Directive
+/*----------------------------------------------------------------------------*/
+
+createDirectiveStatement:
+    createDirective sqlEnd?
+;
+
+// simplified, skpped action_list and allowing any directiveAction combination
+createDirective:
+    K_CREATE (K_OR K_REPLACE)? K_DIRECTIVE (directiveSchemaName=sqlName PERIOD)? directiveName=sqlName
+    K_FOR (dvSchemaName=sqlName PERIOD)? dvName=sqlName K_VALIDATE K_ON actions+=directiveAction+
+    processingClause validationEnableOption directiveUsingClause
+;
+
+// artifical clause
+directiveAction:
+    K_SELECT
+  | K_INSERT
+  | K_UPDATE
+  | K_DELETE
+;
+
+processingClause:
+      (K_BEFORE | K_AFTER) K_OBJECT
+    | K_ON K_COMMIT
+;
+
+validationEnableOption:
+    (K_VALIDATE | K_NOVALIDATE)? (K_ENABLE | K_DISABLE)?
+;
+
+directiveUsingClause:
+    K_USING (expr=expression | plsqlBlock)
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -246,7 +283,12 @@ createJsonRelationalDualityView:
           K_EDITIONABLE
         | K_NONEDITIONABLE
     )? K_JSON K_RELATIONAL? K_DUALITY K_VIEW (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? viewName=sqlName
+    dualityViewReplicationClause?
     K_AS jsonRelationalDualityViewSource
+;
+
+dualityViewReplicationClause:
+    (K_DISABLE | K_ENABLE) K_LOGICAL K_REPLICATION
 ;
 
 // artificial clause because the query cababilities are not fully documented, e.g
@@ -260,8 +302,13 @@ jsonRelationalDualityViewSource:
     | graphqlQueryForDv
 ;
 
+// undocumented in 26.2: alternative syntax with parentheses and comma separator
 tableTagsClause:
-    K_WITH tags+=tableTagsClauseItem+
+    K_WITH
+    (
+          tags+=tableTagsClauseItem+
+        | LPAR tags+=tableTagsClauseItem (COMMA tags+=tableTagsClauseItem)* RPAR
+    )
 ;
 
 // artificial clause
@@ -277,18 +324,40 @@ tableTagsClauseItem:
 ;
 
 // only components that are not handled by regularEntry for create_json_relational_duality_view
+// undocumented in 26.2: 'value' as alternative for ':' and 'is'
 keyValueClause:
-      regularEntry columnTagsClause
+      K_KEY? key=expression (K_VALUE|COLON|K_IS) keyValueClauseExpression K_HIDDEN?
     | flexClause
     | K_UNNEST LPAR subquery RPAR
+;
+
+// artificial clause, simplified
+keyValueClauseExpression:
+      columnName=expression columnTagsClause? writeAugmentationClause?
+    | readAugmentationClause
+;
+
+// simplified
+readAugmentationClause:
+    K_GENERATED (K_ON K_READ)? (K_AS? dataType)? K_USING K_PATH? expr=expression
+;
+
+// simplified
+writeAugmentationClause:
+    K_GENERATED K_ON K_WRITE (K_IF K_MISSING)? K_USING K_PATH expr=expression
 ;
 
 flexClause:
     columnName=qualifiedName K_AS K_FLEX K_COLUMN?
 ;
 
+// undocumented in 26.2: alternative syntax with parentheses and comma separator
 columnTagsClause:
-    K_WITH tags+=columnTagsClauseItem+
+    K_WITH
+    (
+          tags+=columnTagsClauseItem+
+        | LPAR tags+=columnTagsClauseItem (COMMA tags+=columnTagsClauseItem)* RPAR
+    )
 ;
 
 // artificial clause
@@ -312,8 +381,9 @@ graphqlDirectives:
     directives=graphqlDirective+
 ;
 
+// undocumented in 26.2: comma can be used as separator between arguments
 graphqlDirective:
-    COMMAT directive=sqlName (LPAR (args+=graphqlArgument)+ RPAR)?
+    COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)?
 ;
 
 graphqlArgument:
@@ -1645,6 +1715,7 @@ delete:
     ) K_AS? talias=sqlName?                                 // PostgreSQL: as
     fromUsingClause?
     whereClause?
+    waitClause?
     returningClause?
     errorLoggingClause?
 ;
@@ -1809,6 +1880,7 @@ singleTableInsert:
     )
     postgresqlOnConflictClause?
     returningClause? // unlike OracleDB, PostgreSQL allows a returning_clause for a subquery
+    waitClause?
     errorLoggingClause?
 ;
 
@@ -1870,7 +1942,7 @@ unconditionalInsertClause:
 ;
 
 multiTableInsertClause:
-    insertIntoClause (insertValuesClause|insertSetClause)? errorLoggingClause?
+    insertIntoClause (insertValuesClause|insertSetClause)? waitClause? errorLoggingClause?
 ;
 
 conditionalInsertClause:
@@ -1978,6 +2050,8 @@ mergeStatement:
     merge sqlEnd
 ;
 
+// wrong documentation of 26.2: position of returning_clause after error_logging_clause does not work
+// order of waitClause, returningClause and errorLoggingClause is unordered, that is not documented in 26.2
 merge:
     withClause? // PostgreSQL
     {unhideFirstHint();} K_MERGE hint?
@@ -1990,9 +2064,19 @@ merge:
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
         | mergeInsertClause mergeUpdateClause?  // OracleDB
-        | mergeWhenClause+ returningClause?     // PostgreSQL
+        | mergeWhenClause+                      // PostgreSQL
     )
-    errorLoggingClause?
+    (
+          waitClause returningClause errorLoggingClause?
+        | waitClause errorLoggingClause returningClause?
+        | waitClause
+        | returningClause waitClause errorLoggingClause?
+        | returningClause errorLoggingClause waitClause?
+        | returningClause
+        | errorLoggingClause waitClause returningClause?
+        | errorLoggingClause returningClause waitClause?
+        | errorLoggingClause
+    )?
 ;
 
 // artifical clause, undocumented: database link and subquery
@@ -2061,7 +2145,7 @@ mergeInsert:
 /*----------------------------------------------------------------------------*/
 
 selectStatement:
-      select sqlEnd
+    select sqlEnd
 ;
 
 select:
@@ -2713,11 +2797,16 @@ rowPatternDefinition:
     variableName=sqlName K_AS cond=expression
 ;
 
+// handling join_to_one_clause here and avoiding a join_to_on_from_clause to simplify grammar
+// and handle undocumented variants such row_widened_table_expression with sample clause and similar.
+// this way we use a fromItem for a row_widening_table_expression.
+// the joinToOneClause join variant allows combinations that are not supported by the OracleDB.
 joinVariant:
       innerCrossJoinClause
     | outerJoinClause
     | crossOuterApplyClause
     | nestedClause
+    | joinToOneClause
 ;
 
 // undocumented: forItem instead of tableReference
@@ -2757,6 +2846,33 @@ nestedClause:
               (PERIOD keys+=jsonObjectKey)+
             | (COMMA jsonBasicPathExpression)
         )? jsonTableOnErrorClause? jsonTableOnEmptyClause? jsonColumnsClause talias=sqlName?
+;
+
+joinToOneClause:
+    K_JOIN K_TO K_ONE LPAR jtoJoinList RPAR
+;
+
+jtoJoinList:
+    jtoJoinSpec? jtoJoinTables+=jtoTableWithOptionalOnClause (jtoListDelimiter jtoJoinTables+=jtoTableWithOptionalOnClause)*
+;
+
+jtoJoinSpec:
+      K_LEFT? K_OUTER K_JOIN    # jtoJoinSpecOuter
+    | K_INNER K_JOIN            # jtoJoinSpecInner
+;
+
+jtoTableWithOptionalOnClause:
+    jtoTableExpression (K_ON cond=expression)?
+;
+
+// simplified, tableReference allows some unsupported variants
+jtoTableExpression:
+    tableReference tableAlias?
+;
+
+jtoListDelimiter:
+      COMMA
+    | jtoJoinSpec
 ;
 
 // parenthesis around sub_av_clause is not documented, but required
@@ -2819,10 +2935,14 @@ forUpdateClause:
     )
     (K_OF columns+=forUpdateColumn (COMMA columns+=forUpdateColumn)*)? // PostgreSQL: tables instead of columns
     (
-          K_NOWAIT
-        | K_WAIT wait=expression
+          waitClause
         | K_SKIP K_LOCKED
     )?
+;
+
+waitClause:
+      K_NOWAIT
+    | K_WAIT (K_FOREVER | wait=expression (unit=(K_SECONDS|K_MILLISECONDS|K_MICROSECONDS))?)
 ;
 
 forUpdateColumn:
@@ -2847,6 +2967,7 @@ update:
     updateSetClause
     fromUsingClause?
     whereClause?
+    waitClause?
     orderByClause?
     returningClause?
     errorLoggingClause?
@@ -4505,6 +4626,7 @@ specialFunctionExpression:
     | listagg
     | nthValue
     | overlay
+    | property
     | substring
     | tableFunction
     | timeBucket
@@ -4776,12 +4898,12 @@ graphqlPassingItem:
     expr=expression K_AS name=sqlName
 ;
 
-// simplified, includes: graph_reference, graph_name, graph_pattern, path_pattern_list, graph_pattern_where_clause,
-// graph_table_shape, graph_table_columns_clause
+// simplified, includes: graph_reference, graph_name, graph_algorithim_function, graph_ref_as_of_clause,
+// graph_pattern, path_pattern_list, graph_pattern_where_clause, graph_table_shape, graph_table_columns_clause
 graphTable:
     K_GRAPH_TABLE LPAR
-    (schema=sqlName PERIOD)?
-    graph=sqlName K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
+    graph=tableReference
+    K_MATCH patterns+=pathTerm (COMMA patterns+=pathTerm)*
     (K_WHERE cond=expression)?
     K_COLUMNS LPAR columns+=graphTableColumnDefinition (COMMA columns+=graphTableColumnDefinition)* RPAR
     RPAR
@@ -5037,8 +5159,7 @@ entry:
 
 // undocumented in 23.4: "is" instead of ":", "key" in combination with "is"/":"
 regularEntry:
-      K_KEY? key=expression K_VALUE value=expression
-    | K_KEY? key=expression (COLON|K_IS) value=expression
+      K_KEY? key=expression (K_VALUE|COLON|K_IS) value=expression
     | value=expression
 ;
 
@@ -5566,6 +5687,18 @@ listaggOverflowClause:
 overlay:
     K_OVERLAY LPAR text=expression K_PLACING placing=expression
         K_FROM from=expression (K_FOR for=expression)? RPAR
+;
+
+// property pseudo operator introduced in 26.2 (used as parameter in functions used within graph_table)
+// see https://docs.oracle.com/en/database/oracle/oracle-database/26/arpls/dbms_oga1.html#GUID-0B496431-F34D-4ACD-B927-55968AACE7E3
+// not documented in SQL Language Reference 26.2
+property:
+    K_PROPERTY LPAR
+        elementType=(K_VERTEX|K_EDGE)
+        inputOrOutput=(K_INPUT|K_OUTPUT)
+        propertyName=sqlName
+        (K_DEFAULT K_ON K_NULL defaultValue=expression)?
+    RPAR
 ;
 
 // PostgreSQL
@@ -6352,6 +6485,7 @@ keywordAsId:
     | K_DETERMINISTIC
     | K_DIAGNOSTICS
     | K_DIMENSION
+    | K_DIRECTIVE
     | K_DIRECTORY
     | K_DISABLE
     | K_DISALLOW
@@ -6431,6 +6565,7 @@ keywordAsId:
     | K_FORCE
     | K_FOREACH
     | K_FOREIGN
+    | K_FOREVER
     | K_FORMAT
     | K_FORWARD
     | K_FROM
@@ -6452,6 +6587,7 @@ keywordAsId:
     | K_GROUPS
     | K_HASH
     | K_HAVING
+    | K_HIDDEN
     | K_HIDE
     | K_HIERARCHIES
     | K_HIERARCHY
@@ -6576,6 +6712,7 @@ keywordAsId:
     | K_LOG
     | K_LOGFILE
     | K_LOGGING
+    | K_LOGICAL
     | K_LOGOFF
     | K_LOGON
     | K_LONG
@@ -6603,6 +6740,8 @@ keywordAsId:
     | K_MESSAGE
     | K_MESSAGE_TEXT
     | K_METADATA
+    | K_MICROSECONDS
+    | K_MILLISECONDS
     | K_MINUS
     | K_MINUTE
     | K_MINVALUE
@@ -6691,6 +6830,7 @@ keywordAsId:
     | K_OTHERS
     | K_OUT
     | K_OUTER
+    | K_OUTPUT
     | K_OVER
     | K_OVERFLOW
     | K_OVERLAP
@@ -6794,6 +6934,7 @@ keywordAsId:
     | K_REPEAT
     | K_REPEATABLE
     | K_REPLACE
+    | K_REPLICATION
     | K_RESERVABLE
     | K_RESET
     | K_RESETTABLE
@@ -6840,6 +6981,7 @@ keywordAsId:
     | K_SDO_GEOMETRY
     | K_SEARCH
     | K_SECOND
+    | K_SECONDS
     | K_SECURITY
     | K_SEED
     | K_SEGMENT
