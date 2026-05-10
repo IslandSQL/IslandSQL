@@ -2050,6 +2050,8 @@ mergeStatement:
     merge sqlEnd
 ;
 
+// wrong documentation of 26.2: position of returning_clause after error_logging_clause does not work
+// order of waitClause, returningClause and errorLoggingClause is unordered, that is not documented in 26.2
 merge:
     withClause? // PostgreSQL
     {unhideFirstHint();} K_MERGE hint?
@@ -2062,10 +2064,19 @@ merge:
     (
           mergeUpdateClause mergeInsertClause?  // OracleDB
         | mergeInsertClause mergeUpdateClause?  // OracleDB
-        | mergeWhenClause+ returningClause?     // PostgreSQL
+        | mergeWhenClause+                      // PostgreSQL
     )
-    waitClause?
-    errorLoggingClause?
+    (
+          waitClause returningClause errorLoggingClause?
+        | waitClause errorLoggingClause returningClause?
+        | waitClause
+        | returningClause waitClause errorLoggingClause?
+        | returningClause errorLoggingClause waitClause?
+        | returningClause
+        | errorLoggingClause waitClause returningClause?
+        | errorLoggingClause returningClause waitClause?
+        | errorLoggingClause
+    )?
 ;
 
 // artifical clause, undocumented: database link and subquery
