@@ -3392,11 +3392,40 @@ plsqlStatement:
 ;
 
 assignmentStatement:
-    target=expression
+    target=assignmentTarget
     (
           COLON_EQUALS      // OracleDB, PostgreSQL
         | EQUALS            // PostgreSQL
     ) value=postgresqlSqlExpression SEMI
+;
+
+// "expression" as assignmentTarget leads to ambiguities and increases parsing times.
+// Therefore we use here a stricter variant
+assignmentTarget:
+    items+=assignmentTargetItem (PERIOD items+=assignmentTargetItem)*
+;
+
+assignmentTargetItem:
+    item=assignmentTargetType args+=assignmentTargetArguments*
+;
+
+assignmentTargetType:
+      placeholderExpression     # placeHolderAssignmentTargetType
+    | sqlName                   # sqlNameAssignmentTargetType
+;
+
+assignmentTargetArguments:
+      assignmentTargetArgumentList
+    | postgresAssignmentTargetArgumentList
+    | postgresqlSubscript
+;
+
+assignmentTargetArgumentList:
+    LPAR exprs+=expression (COMMA exprs+=expression)* RPAR
+;
+
+postgresAssignmentTargetArgumentList:
+    LSQB exprs+=expression (COMMA exprs+=expression)* RSQB
 ;
 
 // stmts are optional in PL/pgSQL, undocumented in 16.3
