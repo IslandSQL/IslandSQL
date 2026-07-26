@@ -302,6 +302,12 @@ jsonRelationalDualityViewSource:
     | graphqlQueryForDv
 ;
 
+// not documented in SQL Language Reference 26.3, but mentioned in JSON-Relational Duality Developer's Guide
+// guessing syntax based on tests, id cannot be be a qualified name, throws ORA-00931: missing identifier
+identifiedByClause:
+    K_IDENTIFIED K_BY LPAR ids+=sqlName (COMMA ids+=sqlName)* RPAR
+;
+
 // undocumented in 26.2: alternative syntax with parentheses and comma separator
 tableTagsClause:
     K_WITH
@@ -2509,11 +2515,12 @@ fromClause:
 
 // handles table aliases for all from items, simplifies from items in parentheses
 // table_tags_clause is valid only within create_json_relational_duality_view
+// identified_by_clause is valid only within create_json_relational_duality_view
 fromItem:
-      tableReference tableAlias? tableTagsClause? sampleClausePostgresql?   # tableReferenceFromItem
-    | fromItem joins+=joinVariant+                                          # joinClause
-    | inlineAnalyticView tableAlias?                                        # inlineAnalyticViewFromItem
-    | LPAR fromItem RPAR tableAlias?                                        # parenFromItem
+      tableReference tableAlias? identifiedByClause? tableTagsClause? sampleClausePostgresql?   # tableReferenceFromItem
+    | fromItem joins+=joinVariant+                                                              # joinClause
+    | inlineAnalyticView tableAlias?                                                            # inlineAnalyticViewFromItem
+    | LPAR fromItem RPAR tableAlias?                                                            # parenFromItem
 ;
 
 // PostgreSQL allows caliases
