@@ -382,8 +382,10 @@ graphqlDirectives:
 ;
 
 // undocumented in 26.2: comma can be used as separator between arguments
+// handle limit argument introduced in 26.3 as an argument in an unnamed directive, see https://docs.oracle.com/en/database/oracle/oracle-database/26/jsnvu/limit-nested-arrays.html#GUID-BDEFF77A-63AF-4A47-B994-CF528604EF5E
 graphqlDirective:
-    COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)?
+      COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)? # namedDirective
+    | LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR                             # unnamedDirective
 ;
 
 graphqlArgument:
