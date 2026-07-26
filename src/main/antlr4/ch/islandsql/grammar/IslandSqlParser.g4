@@ -302,6 +302,12 @@ jsonRelationalDualityViewSource:
     | graphqlQueryForDv
 ;
 
+// not documented in SQL Language Reference 26.3, but mentioned in JSON-Relational Duality Developer's Guide
+// guessing syntax based on tests, id cannot be be a qualified name, throws ORA-00931: missing identifier
+identifiedByClause:
+    K_IDENTIFIED K_BY LPAR ids+=sqlName (COMMA ids+=sqlName)* RPAR
+;
+
 // undocumented in 26.2: alternative syntax with parentheses and comma separator
 tableTagsClause:
     K_WITH
@@ -382,8 +388,10 @@ graphqlDirectives:
 ;
 
 // undocumented in 26.2: comma can be used as separator between arguments
+// handle limit argument introduced in 26.3 as an argument in an unnamed directive, see https://docs.oracle.com/en/database/oracle/oracle-database/26/jsnvu/limit-nested-arrays.html#GUID-BDEFF77A-63AF-4A47-B994-CF528604EF5E
 graphqlDirective:
-    COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)?
+      COMMAT directive=sqlName (LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR)? # namedDirective
+    | LPAR args+=graphqlArgument (COMMA? args+=graphqlArgument)* RPAR                             # unnamedDirective
 ;
 
 graphqlArgument:
@@ -2507,11 +2515,12 @@ fromClause:
 
 // handles table aliases for all from items, simplifies from items in parentheses
 // table_tags_clause is valid only within create_json_relational_duality_view
+// identified_by_clause is valid only within create_json_relational_duality_view
 fromItem:
-      tableReference tableAlias? tableTagsClause? sampleClausePostgresql?   # tableReferenceFromItem
-    | fromItem joins+=joinVariant+                                          # joinClause
-    | inlineAnalyticView tableAlias?                                        # inlineAnalyticViewFromItem
-    | LPAR fromItem RPAR tableAlias?                                        # parenFromItem
+      tableReference tableAlias? identifiedByClause? tableTagsClause? sampleClausePostgresql?   # tableReferenceFromItem
+    | fromItem joins+=joinVariant+                                                              # joinClause
+    | inlineAnalyticView tableAlias?                                                            # inlineAnalyticViewFromItem
+    | LPAR fromItem RPAR tableAlias?                                                            # parenFromItem
 ;
 
 // PostgreSQL allows caliases
