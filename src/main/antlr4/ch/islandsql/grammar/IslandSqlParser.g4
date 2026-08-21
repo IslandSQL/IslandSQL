@@ -1356,7 +1356,8 @@ createTypeStatement:
 ;
 
 createType:
-    K_CREATE (K_OR K_REPLACE)? (K_EDITIONABLE | K_NONEDITIONABLE)? K_TYPE
+    // OracleDB 26.3: 'force' at this position is undocumented. It is also ineffective. See #324.
+    K_CREATE (K_OR K_REPLACE)? K_FORCE? (K_EDITIONABLE | K_NONEDITIONABLE)? K_TYPE
     (K_IF K_NOT K_EXISTS)? (plsqlTypeSource | postgresqlTypeSource)
 ;
 
