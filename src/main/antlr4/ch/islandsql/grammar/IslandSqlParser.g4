@@ -78,6 +78,7 @@ ddlStatement:
     | createDirectiveStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
+    | createMacroStatement
     | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
@@ -420,6 +421,48 @@ graphqlField:
 graphqlFragmentSpread:
       PERIOD PERIOD PERIOD name=sqlName
     | AST
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Macro
+/*----------------------------------------------------------------------------*/
+
+createMacroStatement:
+    createMacro sqlEnd
+;
+
+createMacro:
+    K_CREATE (K_OR K_REPLACE)? K_MACRO
+    (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? macroName=sqlName macroDefList
+;
+
+// simplified: macroParam instead of parm_list
+macroDefList:
+    (LPAR params+=macroParam (COMMA params+=macroParam)* RPAR)?
+    (K_ON (schema=sqlName PERIOD)? tableName=sqlName)?
+    (K_AS|K_IS) sqlExpr
+;
+
+// artificial clause to simplify grammar
+// in direction is accepted but not documented in 26.4
+macroParam:
+    name=sqlName (K_IN? type=paramType)?
+;
+
+// artifical clause to simplify grammar
+paramType:
+      dataType (K_DEFAULT expr=expression)?                              # scalarParamType
+    | K_TABLE (LPAR cols+=paramColumn (COMMA cols+=paramColumn)* RPAR)?  # tableParamType
+;
+
+// artificial clause to simplify grammar
+paramColumn:
+    name=sqlName type=dataType
+;
+
+sqlExpr:
+      expression    # scalarMacro
+    | subquery      # tableMacro
 ;
 
 /*----------------------------------------------------------------------------*/
