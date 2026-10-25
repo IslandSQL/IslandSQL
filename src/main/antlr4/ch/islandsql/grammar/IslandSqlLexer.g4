@@ -507,6 +507,7 @@ K_LOOP: 'loop';
 K_LSEG: 'lseg';
 K_MACADDR8: 'macaddr8';
 K_MACADDR: 'macaddr';
+K_MACRO: 'macro';
 K_MAIN: 'main';
 K_MAP: 'map';
 K_MAPPING: 'mapping';

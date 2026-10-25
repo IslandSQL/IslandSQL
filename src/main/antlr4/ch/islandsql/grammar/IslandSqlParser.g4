@@ -6760,6 +6760,7 @@ keywordAsId:
     | K_LSEG
     | K_MACADDR8
     | K_MACADDR
+    | K_MACRO
     | K_MAIN
     | K_MAP
     | K_MAPPING
