@@ -6708,6 +6708,7 @@ keywordAsId:
     | K_GLOBAL
     | K_GOTO
     | K_GRANT
+    | K_GRANTED
     | K_GRAPH
     | K_GRAPHQL
     | K_GRAPH_TABLE
@@ -7199,6 +7200,7 @@ keywordAsId:
     | K_TABLESAMPLE
     | K_TABLESPACE
     | K_TABLE_NAME
+    | K_TAG
     | K_TARGET
     | K_TDO
     | K_TEMP
