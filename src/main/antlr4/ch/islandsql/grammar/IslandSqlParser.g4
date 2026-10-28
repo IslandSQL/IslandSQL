@@ -6420,6 +6420,7 @@ keywordAsId:
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
+    | K_ATTRIBUTES
     | K_AUDIT
     | K_AUTHID
     | K_AUTO
@@ -6540,6 +6541,7 @@ keywordAsId:
     | K_DATATYPE
     | K_DATE
     | K_DAY
+    | K_DAYS
     | K_DBTIMEZONE
     | K_DB_ROLE_CHANGE
     | K_DDL
@@ -6689,6 +6691,7 @@ keywordAsId:
     | K_HINT
     | K_HOLD
     | K_HOUR
+    | K_HOURS
     | K_ID
     | K_IDENTIFIED
     | K_IDENTIFIER
@@ -6793,6 +6796,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOG
     | K_LOGFILE
+    | K_LOGGED
     | K_LOGGING
     | K_LOGICAL
     | K_LOGOFF
@@ -6827,6 +6831,7 @@ keywordAsId:
     | K_MILLISECONDS
     | K_MINUS
     | K_MINUTE
+    | K_MINUTES
     | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
@@ -6843,6 +6848,7 @@ keywordAsId:
     | K_MULTISET
     | K_MUTABLE
     | K_NAME
+    | K_NAMESPACE
     | K_NAN
     | K_NATIONAL
     | K_NATURAL
@@ -6881,6 +6887,7 @@ keywordAsId:
     | K_NOT
     | K_NOTHING
     | K_NOTICE
+    | K_NOTIFICATION
     | K_NOTIFY
     | K_NOTNULL
     | K_NOUPDATE
@@ -7027,6 +7034,7 @@ keywordAsId:
     | K_RESTRICT_REFERENCES
     | K_RESULT
     | K_RESULT_CACHE
+    | K_RETENTION
     | K_RETURN
     | K_RETURNED_SQLSTATE
     | K_RETURNING
