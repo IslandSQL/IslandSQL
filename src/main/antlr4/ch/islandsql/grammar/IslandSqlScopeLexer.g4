@@ -194,12 +194,6 @@ CREATE_CAST:
         'cast' MORE_TO_SQL_END -> channel(HIDDEN)
 ;
 
-// hide keywords: select, insert, update, delete
-CREATE_DATA_GRANT:
-    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
-        'data' COMMENT_OR_WS+ 'grant' MORE_TO_SQL_END -> channel(HIDDEN)
-;
-
 // hide keywords: with
 CREATE_DATABASE:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
@@ -294,6 +288,11 @@ COMMIT:
 CREATE_ASSERTION:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     'assertion' MORE_TO_SQL_END
+;
+
+CREATE_DATA_GRANT:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+        'data' COMMENT_OR_WS+ 'grant' MORE_TO_SQL_END
 ;
 
 CREATE_DIRECTIVE:
