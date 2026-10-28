@@ -22,8 +22,9 @@ The following table shows the DBMS and their grammar versions in scope:
 |            | SQL      | 18.6                     | [SQL Commands](https://www.postgresql.org/docs/18/sql-commands.html)                                          | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 |            | PL/pgSQL | 18.6                     | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/18/plpgsql.html)                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 
-The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format
-represents the version that was used to define the grammar.
+The HTML references reflect the latest available documentation.
+The PDF snapshots generally correspond to the versions of the documentation considered during the implementation of the grammar.
+For OracleDB, the combination of continuously updated HTML documentation and delayed PDF publication can result in differences in versions.
 
 ### Statements
 
@@ -34,6 +35,7 @@ The current islands of interests are:
 | Type  | Statement                             |      OracleDB      |     PostgreSQL     |
 |-------|---------------------------------------|:------------------:|:------------------:|
 | DDL   | `create assertion`                    | :white_check_mark: |        n/a         |
+|       | `create data grant`                   | :white_check_mark: |        n/a         |
 |       | `create directive (notify)`           | :white_check_mark: |        n/a         |
 |       | `create directive (validate)`         | :white_check_mark: |        n/a         |
 |       | `create function`                     | :white_check_mark: | :white_check_mark: |
