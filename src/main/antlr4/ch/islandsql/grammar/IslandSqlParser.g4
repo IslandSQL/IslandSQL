@@ -75,6 +75,7 @@ statement:
 
 ddlStatement:
       createAssertionStatement
+    | createDataGrantStatement
     | createDirectiveStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
@@ -117,6 +118,50 @@ universalExpression:
           | expression // boolean expression
         )
     RPAR
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Data Grant
+/*----------------------------------------------------------------------------*/
+
+createDataGrantStatement:
+    createDataGrant sqlEnd
+;
+
+// based on https://docs.oracle.com/en/database/oracle/oracle-database/26/ddscg/create-data-grants.html
+// the syntax in the SQL Language Reference 26.4 is incomplete
+createDataGrant:
+    K_CREATE (K_OR K_REPLACE)? K_DATA K_GRANT K_FILTER? (K_IF K_NOT K_EXISTS)?
+    (schema=sqlName PERIOD)? grantName=sqlName
+    (dataGrantOption | crossTableDataGrantOption)
+;
+
+dataGrantOption:
+    (K_WITH K_TAG tagName=sqlName)?
+    K_AS privs+=privilegeItem (COMMA privs+=privilegeItem)*
+    K_ON (objectSchema=sqlName PERIOD)? objectName=sqlName (K_WHERE predicate=expression)?
+    K_TO roles+=sqlName (COMMA roles+=sqlName)*
+    (K_START K_TIME startTime=expression)? (K_END K_TIME endTime=expression)?
+;
+
+crossTableDataGrantOption:
+    K_AS privs+=privilegeItem (COMMA privs+=privilegeItem)*
+    K_ON (objectSchema=sqlName PERIOD)? objectName=sqlName (K_WHERE predicate=expression)?
+    K_WHEN parentPrivs+=privilegeItem (COMMA parentPrivs+=privilegeItem)*
+    K_GRANTED K_ON (parentSchema=sqlName PERIOD)? parentObjectName=sqlName
+    K_WHERE predicate=expression
+;
+
+// simplified, not all combinations are valid
+privilegeItem:
+    dataGrantPrivilege (LPAR (K_ALL K_COLUMNS K_EXCEPT)? cols+=sqlName (COMMA cols+=sqlName)* RPAR)?
+;
+
+dataGrantPrivilege:
+      K_SELECT
+    | K_INSERT
+    | K_UPDATE
+    | K_DELETE
 ;
 
 /*----------------------------------------------------------------------------*/
