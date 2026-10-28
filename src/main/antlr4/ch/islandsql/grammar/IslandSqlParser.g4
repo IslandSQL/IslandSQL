@@ -120,21 +120,26 @@ universalExpression:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Create Directive
+// Create Directive (combining notify and validate directives)
 /*----------------------------------------------------------------------------*/
 
 createDirectiveStatement:
     createDirective sqlEnd?
 ;
 
-// simplified, skpped action_list and allowing any directiveAction combination
+// simplified, does not differentiate between tables and json-relational-duality-views
 createDirective:
     K_CREATE (K_OR K_REPLACE)? K_DIRECTIVE (directiveSchemaName=sqlName PERIOD)? directiveName=sqlName
-    K_FOR (dvSchemaName=sqlName PERIOD)? dvName=sqlName K_VALIDATE K_ON actions+=directiveAction+
-    processingClause validationEnableOption directiveUsingClause
+    K_FOR (forSchemaName=sqlName PERIOD)? forName=sqlName (validateDirective | notifyDirective)
 ;
 
-// artifical clause
+// artifical clause for validate directive syntax
+// simplified, skpped action_list and allowing any directiveAction combination
+validateDirective:
+    K_VALIDATE K_ON actions+=directiveAction+ processingClause validationEnableOption directiveUsingClause
+;
+
+// artifical clause, select is not applicable for notify directive, but accepted here
 directiveAction:
     K_SELECT
   | K_INSERT
@@ -153,6 +158,46 @@ validationEnableOption:
 
 directiveUsingClause:
     K_USING (expr=expression | plsqlBlock)
+;
+
+// artifical clause for notify directive syntax
+// simplified, combines tables and json-relational-duality-views
+notifyDirective:
+    K_NOTIFY (K_ON actions+=directiveAction+)? notificationUsingClause notificationColumnsClause
+    sysContextClause? (K_ENABLE | K_DISABLE)? retentionClause?
+;
+
+// undocumented in OracleDB 26.4: table and view can be prefixed by a schema
+notificationUsingClause:
+    K_USING K_NOTIFICATION K_TABLE (tableSchemaName=sqlName PERIOD)? tableName=sqlName
+    (K_TABLESPACE tableSpaceName=sqlName)?
+    K_NOTIFICATION K_VIEW (viewSchemaName=sqlName PERIOD)? viewName=sqlName
+;
+
+notificationColumnsClause:
+    (K_WITH
+        (
+              K_LOGGED K_COLUMNS LPAR loggedCols+=sqlName (COMMA loggedCols+=sqlName)* RPAR (K_KEY LPAR keyCols+=sqlName (COMMA keycols+=sqlName)* RPAR)?
+            | K_KEY LPAR keyCols+=sqlName (COMMA keycols+=sqlName)* RPAR
+        )
+    )?
+    ((K_INCLUDING | K_EXCLUDING) K_OLD K_VALUES)?
+;
+
+sysContextClause:
+    namespaces+=sysContextNamespace+
+;
+
+sysContextNamespace:
+    K_CONTEXT K_NAMESPACE name=sqlName K_ATTRIBUTES attrs+=sysContextAttribute (COMMA attrs+=sysContextAttribute)*
+;
+
+sysContextAttribute:
+    name=sqlName (LPAR length=expression RPAR)?
+;
+
+retentionClause:
+    K_RETENTION (K_NONE | NUMBER (K_MINUTES | K_HOURS | K_DAYS))
 ;
 
 /*----------------------------------------------------------------------------*/
