@@ -34,7 +34,8 @@ The current islands of interests are:
 | Type  | Statement                             |      OracleDB      |     PostgreSQL     |
 |-------|---------------------------------------|:------------------:|:------------------:|
 | DDL   | `create assertion`                    | :white_check_mark: |        n/a         |
-|       | `create directive`                    | :white_check_mark: |        n/a         |
+|       | `create directive (notify)`           | :white_check_mark: |        n/a         |
+|       | `create directive (validate)`         | :white_check_mark: |        n/a         |
 |       | `create function`                     | :white_check_mark: | :white_check_mark: |
 |       | `create json relational duality view` | :white_check_mark: |        n/a         |
 |       | `create macro`                        | :white_check_mark: |        n/a         |
