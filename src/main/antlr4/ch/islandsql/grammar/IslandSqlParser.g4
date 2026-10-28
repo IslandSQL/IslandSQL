@@ -78,6 +78,7 @@ ddlStatement:
     | createDirectiveStatement
     | createFunctionStatement
     | createJsonRelationalDualityViewStatement
+    | createMacroStatement
     | createMaterializedViewStatement
     | createPackageStatement
     | createPackageBodyStatement
@@ -119,21 +120,26 @@ universalExpression:
 ;
 
 /*----------------------------------------------------------------------------*/
-// Create Directive
+// Create Directive (combining notify and validate directives)
 /*----------------------------------------------------------------------------*/
 
 createDirectiveStatement:
     createDirective sqlEnd?
 ;
 
-// simplified, skpped action_list and allowing any directiveAction combination
+// simplified, does not differentiate between tables and json-relational-duality-views
 createDirective:
     K_CREATE (K_OR K_REPLACE)? K_DIRECTIVE (directiveSchemaName=sqlName PERIOD)? directiveName=sqlName
-    K_FOR (dvSchemaName=sqlName PERIOD)? dvName=sqlName K_VALIDATE K_ON actions+=directiveAction+
-    processingClause validationEnableOption directiveUsingClause
+    K_FOR (forSchemaName=sqlName PERIOD)? forName=sqlName (validateDirective | notifyDirective)
 ;
 
-// artifical clause
+// artifical clause for validate directive syntax
+// simplified, skpped action_list and allowing any directiveAction combination
+validateDirective:
+    K_VALIDATE K_ON actions+=directiveAction+ processingClause validationEnableOption directiveUsingClause
+;
+
+// artifical clause, select is not applicable for notify directive, but accepted here
 directiveAction:
     K_SELECT
   | K_INSERT
@@ -152,6 +158,46 @@ validationEnableOption:
 
 directiveUsingClause:
     K_USING (expr=expression | plsqlBlock)
+;
+
+// artifical clause for notify directive syntax
+// simplified, combines tables and json-relational-duality-views
+notifyDirective:
+    K_NOTIFY (K_ON actions+=directiveAction+)? notificationUsingClause notificationColumnsClause
+    sysContextClause? (K_ENABLE | K_DISABLE)? retentionClause?
+;
+
+// undocumented in OracleDB 26.4: table and view can be prefixed by a schema
+notificationUsingClause:
+    K_USING K_NOTIFICATION K_TABLE (tableSchemaName=sqlName PERIOD)? tableName=sqlName
+    (K_TABLESPACE tableSpaceName=sqlName)?
+    K_NOTIFICATION K_VIEW (viewSchemaName=sqlName PERIOD)? viewName=sqlName
+;
+
+notificationColumnsClause:
+    (K_WITH
+        (
+              K_LOGGED K_COLUMNS LPAR loggedCols+=sqlName (COMMA loggedCols+=sqlName)* RPAR (K_KEY LPAR keyCols+=sqlName (COMMA keycols+=sqlName)* RPAR)?
+            | K_KEY LPAR keyCols+=sqlName (COMMA keycols+=sqlName)* RPAR
+        )
+    )?
+    ((K_INCLUDING | K_EXCLUDING) K_OLD K_VALUES)?
+;
+
+sysContextClause:
+    namespaces+=sysContextNamespace+
+;
+
+sysContextNamespace:
+    K_CONTEXT K_NAMESPACE name=sqlName K_ATTRIBUTES attrs+=sysContextAttribute (COMMA attrs+=sysContextAttribute)*
+;
+
+sysContextAttribute:
+    name=sqlName (LPAR length=expression RPAR)?
+;
+
+retentionClause:
+    K_RETENTION (K_NONE | NUMBER (K_MINUTES | K_HOURS | K_DAYS))
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -420,6 +466,48 @@ graphqlField:
 graphqlFragmentSpread:
       PERIOD PERIOD PERIOD name=sqlName
     | AST
+;
+
+/*----------------------------------------------------------------------------*/
+// Create Macro
+/*----------------------------------------------------------------------------*/
+
+createMacroStatement:
+    createMacro sqlEnd
+;
+
+createMacro:
+    K_CREATE (K_OR K_REPLACE)? K_MACRO
+    (K_IF K_NOT K_EXISTS)? (schema=sqlName PERIOD)? macroName=sqlName macroDefList
+;
+
+// simplified: macroParam instead of parm_list
+macroDefList:
+    (LPAR params+=macroParam (COMMA params+=macroParam)* RPAR)?
+    (K_ON (schema=sqlName PERIOD)? tableName=sqlName)?
+    (K_AS|K_IS) sqlExpr
+;
+
+// artificial clause to simplify grammar
+// in direction is accepted but not documented in 26.4
+macroParam:
+    name=sqlName (K_IN? type=paramType)?
+;
+
+// artifical clause to simplify grammar
+paramType:
+      dataType (K_DEFAULT expr=expression)?                              # scalarParamType
+    | K_TABLE (LPAR cols+=paramColumn (COMMA cols+=paramColumn)* RPAR)?  # tableParamType
+;
+
+// artificial clause to simplify grammar
+paramColumn:
+    name=sqlName type=dataType
+;
+
+sqlExpr:
+      expression    # scalarMacro
+    | subquery      # tableMacro
 ;
 
 /*----------------------------------------------------------------------------*/
@@ -6377,6 +6465,7 @@ keywordAsId:
     | K_ASSOCIATE
     | K_AT
     | K_ATOMIC
+    | K_ATTRIBUTES
     | K_AUDIT
     | K_AUTHID
     | K_AUTO
@@ -6497,6 +6586,7 @@ keywordAsId:
     | K_DATATYPE
     | K_DATE
     | K_DAY
+    | K_DAYS
     | K_DBTIMEZONE
     | K_DB_ROLE_CHANGE
     | K_DDL
@@ -6646,6 +6736,7 @@ keywordAsId:
     | K_HINT
     | K_HOLD
     | K_HOUR
+    | K_HOURS
     | K_ID
     | K_IDENTIFIED
     | K_IDENTIFIER
@@ -6750,6 +6841,7 @@ keywordAsId:
     | K_LOCKED
     | K_LOG
     | K_LOGFILE
+    | K_LOGGED
     | K_LOGGING
     | K_LOGICAL
     | K_LOGOFF
@@ -6760,6 +6852,7 @@ keywordAsId:
     | K_LSEG
     | K_MACADDR8
     | K_MACADDR
+    | K_MACRO
     | K_MAIN
     | K_MAP
     | K_MAPPING
@@ -6783,6 +6876,7 @@ keywordAsId:
     | K_MILLISECONDS
     | K_MINUS
     | K_MINUTE
+    | K_MINUTES
     | K_MINVALUE
     | K_MISMATCH
     | K_MISSING
@@ -6799,6 +6893,7 @@ keywordAsId:
     | K_MULTISET
     | K_MUTABLE
     | K_NAME
+    | K_NAMESPACE
     | K_NAN
     | K_NATIONAL
     | K_NATURAL
@@ -6837,6 +6932,7 @@ keywordAsId:
     | K_NOT
     | K_NOTHING
     | K_NOTICE
+    | K_NOTIFICATION
     | K_NOTIFY
     | K_NOTNULL
     | K_NOUPDATE
@@ -6983,6 +7079,7 @@ keywordAsId:
     | K_RESTRICT_REFERENCES
     | K_RESULT
     | K_RESULT_CACHE
+    | K_RETENTION
     | K_RETURN
     | K_RETURNED_SQLSTATE
     | K_RETURNING

@@ -313,6 +313,11 @@ CREATE_JSON_RELATIONAL_DUALITY_VIEW:
     'duality' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
 ;
 
+CREATE_MACRO:
+    'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+ OR_REPLACE
+    'macro' COMMENT_OR_WS+ -> pushMode(WITH_CLAUSE_MODE)
+;
+
 CREATE_MATERIALIZED_VIEW:
     'create' {isBeginOfStatement("create")}? COMMENT_OR_WS+
     'materialized' COMMENT_OR_WS+ 'view' COMMENT_OR_WS+

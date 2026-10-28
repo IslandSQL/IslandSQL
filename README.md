@@ -15,12 +15,12 @@ The following table shows the DBMS and their grammar versions in scope:
 | DBMS       | Grammar  | Version                  | HTML Reference (live)                                                                                         | PDF Reference (snapshot)                                                            |
 |------------|----------|--------------------------|---------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
 | OracleDB   | SQL*Plus | 26ai G44104-04 (23.26.3) | [User's Guide and Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqpug/)            | [PDF](https://islandsql.github.io/IslandSQL/sqlplus-users-guide-and-reference.pdf)  |
-|            | SQLcl    | 26.2 G57824-01           | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/26.2/sqcug/index.html) | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
-|            | SQL      | 26ai G57157-01 (23.26.3) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/)                    | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
+|            | SQLcl    | 26.3 G62131-03           | [Users's Guide](https://docs.oracle.com/en/database/oracle/sql-developer-command-line/26.3/sqcug/index.html)  | [PDF](https://islandsql.github.io/IslandSQL/oracle-sqlcl-users-guide.pdf)           |
+|            | SQL      | 26ai G57157-08 (23.26.4) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/sqlrf/)                    | [PDF](https://islandsql.github.io/IslandSQL/sql-language-reference.pdf)             | 
 |            | PL/SQL   | 26ai G43964-05 (23.26.2) | [Language Reference](https://docs.oracle.com/en/database/oracle/oracle-database/26/lnpls/)                    | [PDF](https://islandsql.github.io/IslandSQL/database-pl-sql-language-reference.pdf) |
-| PostgreSQL | psql     | 18.4                     | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/18/app-psql.html)                    | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | SQL      | 18.4                     | [SQL Commands](https://www.postgresql.org/docs/18/sql-commands.html)                                          | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
-|            | PL/pgSQL | 18.4                     | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/18/plpgsql.html)                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+| PostgreSQL | psql     | 18.6                     | [psql — PostgreSQL interactive terminal](https://www.postgresql.org/docs/18/app-psql.html)                    | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | SQL      | 18.6                     | [SQL Commands](https://www.postgresql.org/docs/18/sql-commands.html)                                          | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
+|            | PL/pgSQL | 18.6                     | [PL/pgSQL — SQL Procedural Language](https://www.postgresql.org/docs/18/plpgsql.html)                         | [PDF](https://islandsql.github.io/IslandSQL/postgresql.pdf)                         |
 
 The HTML reference shows the latest version of the document. However, the latest snapshot version in PDF format
 represents the version that was used to define the grammar.
@@ -34,9 +34,11 @@ The current islands of interests are:
 | Type  | Statement                             |      OracleDB      |     PostgreSQL     |
 |-------|---------------------------------------|:------------------:|:------------------:|
 | DDL   | `create assertion`                    | :white_check_mark: |        n/a         |
-|       | `create directive`                    | :white_check_mark: |        n/a         |
+|       | `create directive (notify)`           | :white_check_mark: |        n/a         |
+|       | `create directive (validate)`         | :white_check_mark: |        n/a         |
 |       | `create function`                     | :white_check_mark: | :white_check_mark: |
 |       | `create json relational duality view` | :white_check_mark: |        n/a         |
+|       | `create macro`                        | :white_check_mark: |        n/a         |
 |       | `create materialized view`            | :white_check_mark: | :white_check_mark: |
 |       | `create package`                      | :white_check_mark: |        n/a         |
 |       | `create package body`                 | :white_check_mark: |        n/a         |
