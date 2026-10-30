@@ -242,7 +242,7 @@ sysContextAttribute:
 ;
 
 retentionClause:
-    K_RETENTION (K_NONE | NUMBER (K_MINUTES | K_HOURS | K_DAYS))
+    K_RETENTION (K_NONE | time=expression (K_MINUTES | K_HOURS | K_DAYS))
 ;
 
 /*----------------------------------------------------------------------------*/
