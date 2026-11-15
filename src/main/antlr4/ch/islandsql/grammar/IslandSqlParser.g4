@@ -4604,9 +4604,6 @@ expression:
     | left=expression
         operator=simpleComparisonOperator
         right=expression                                        # simpleComparisonCondition    // presendence 12
-    | operator=K_NOT cond=expression                            # notCondition
-    | left=expression operator=K_AND right=expression           # logicalCondition
-    | left=expression operator=K_OR right=expression            # logicalCondition
     | expr=expression
         operator=K_IS K_NOT? (K_NAN|K_INFINITE)                 # floatingPointCondition
     | expr=expression operator=K_IS K_ANY                       # isAnyCondition            // "any" only is handled as sqlName
@@ -4654,6 +4651,10 @@ expression:
     | left=expression K_OVERLAPS right=expression               # overlapsExpression
     | left=expression K_IS K_NOT?
         form=sqlName? operator=K_NORMALIZED                     # normalizedExpression
+    // lowest precedence: not, and, or (in this order) must follow all other conditions
+    | operator=K_NOT cond=expression                            # notCondition
+    | left=expression operator=K_AND right=expression           # logicalCondition
+    | left=expression operator=K_OR right=expression            # logicalCondition
 ;
 
 postgresqlSubscript:
